@@ -42,6 +42,14 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 using namespace std;
 
+extern FILE* global_log_file;
+
+std::string srcloc(const char* filepath, const int& linenumber, const char* function){
+	std::string filename = extractfilename(filepath);
+	std::string msg = strprint("%s (line %d) in %s()\n", filename.c_str(), linenumber, function);
+	return msg;
+}
+
 std::string commandlinestring(int argc, char** argv){
 	std::string str = "Executing:";
 	for (int i = 0; i < argc; i++){
@@ -169,6 +177,23 @@ std::string strprint(const char* fmt, ...)
 	std::string s = strprint_va(fmt, vargs);
 	va_end(vargs);
 	return s;
+}
+
+void logmsg(const std::string& msg){
+	if (global_log_file){
+		fprintf(global_log_file, msg.c_str());
+	}
+	printf(msg.c_str());
+	};
+
+void logmsg(const char* fmt, ...)
+{
+	va_list vargs;
+	va_start(vargs, fmt);
+	std::string msg = strprint_va(fmt, vargs);
+	va_end(vargs);
+
+	logmsg(msg);
 }
 
 void messageoutput(const std::string& msg)
