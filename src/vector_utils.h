@@ -141,6 +141,17 @@ template<typename T> std::vector<T> operator/(const std::vector<T>& a, const std
 
 
 //Functions
+template<typename T> void pow10_apply(std::vector<T>& v)
+{
+	std::for_each(v.begin(), v.end(), [](T& item){ item = std::pow(10.0, item); });
+};
+
+template<typename T> std::vector<T> pow10(const std::vector<T>& v)
+{
+	std::vector<T> a = v;
+	pow10_apply(a); return a;
+};
+
 template<typename T> std::vector<T> log10(const std::vector<T>& v)
 {
 	std::vector<T> a = v;
