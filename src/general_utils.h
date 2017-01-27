@@ -27,11 +27,8 @@ std::string srcloc(const char* filepath, const int& linenumber, const char* func
 std::string commandlinestring(int argc, char** argv);
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate);
 
-bool mpi_initialised();
-std::string mpi_processername();
 int my_size();
 int my_rank();
-void my_barrier();
 
 std::string strprint_va(const char* fmt, va_list argptr);
 std::string strprint(const char* fmt, ...);

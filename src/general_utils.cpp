@@ -25,9 +25,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 	#include <errno.h>
 #endif
 
-
 #if defined _MPI_ENABLED
-#include <mpi.h>
+#include "mpi_wrapper.h"
 #endif
 
 #if defined _OPENMP
@@ -63,36 +62,10 @@ std::string versionstring(const std::string& version, const std::string& compile
 	return s;
 };
 
-
-bool mpi_initialised(){
-#if defined _MPI_ENABLED
-	int initialised;
-	MPI_Initialized(&initialised);
-	if (initialised)return true;
-	else return false;
-#else
-	return false;
-#endif
-};
-
-std::string mpi_processername(){
-#if defined _MPI_ENABLED
-	int len;
-	char pname[MPI_MAX_PROCESSOR_NAME+1];
-	MPI_Get_processor_name(pname, &len);
-	pname[len] = '\0';
-	return std::string(pname);
-#else
-	return std::string(" ");
-#endif
-};
-
 int my_size(){
-#if defined _MPI_ENABLED
-	if (mpi_initialised()){
-		int size;
-		MPI_Comm_size(MPI_COMM_WORLD, &size);
-		return size;
+#if defined _MPI_ENABLED			
+	if (cMpiEnv::isinitialised()){		
+		return cMpiEnv::world_size();
 	}
 	else return 1;
 #else
@@ -103,27 +76,18 @@ int my_size(){
 int my_rank(){
 
 	int threadnum = 0;
+
 #if defined _OPENMP
 	threadnum = omp_get_thread_num();
 #endif
 
 #if defined _MPI_ENABLED
-	if (mpi_initialised()){
-		int rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		return rank;
-	}
+	if (cMpiEnv::isinitialised()){
+		return cMpiEnv::world_rank();
+	}	
 	else return threadnum;
 #else
 	return threadnum;
-#endif
-}
-
-void my_barrier(){
-#if defined _MPI_ENABLED
-	if (mpi_initialised()){
-		MPI_Barrier(MPI_COMM_WORLD);		
-	}	
 #endif
 }
 

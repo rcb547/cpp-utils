@@ -9,6 +9,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _mpi_wrapper_H
 #define _mpi_wrapper_H
 
+#include <stdint.h>
 #include <vector>
 #include <mpi.h>
 #include <general_utils.h>
@@ -35,29 +36,16 @@ public:
 		if (startandstop)stop();
 	};
 
-	int size(){
-		int _size;
-		MPI_Comm_size(MPI_COMM_WORLD, &_size);
-		return _size;
-	};
-
-	int rank(){
-		int _rank;
-		MPI_Comm_size(MPI_COMM_WORLD, &_rank);
-		return _rank;
-	};
-
-	std::string pname(){
+	static std::string processor_name(){
 		int len;
 		char pname[MPI_MAX_PROCESSOR_NAME + 1];
 		MPI_Get_processor_name(pname, &len);		
 		return std::string(pname);
 	};
 
-
 	void start(int argc, char** argv){
 		MPI_Init(&argc, &argv);		
-		rootmessage("MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", size(), rank(), pname().c_str());
+		rootmessage("MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", world_size(), world_rank(), processor_name().c_str());
 		return;
 	};
 
@@ -101,7 +89,15 @@ public:
 	static MPI_Datatype mpitype(const std::vector<T>& v){
 		T dummy;
 		return mpitype(dummy);
-	};
+	}
+
+	static bool isinitialised(){
+		int initialised;
+		int ierr = MPI_Initialized(&initialised);
+		chkerr(ierr);
+		if (initialised)return true;
+		else return false;
+	}
 
 	static MPI_Comm world_comm(){
 		return MPI_COMM_WORLD;		
@@ -129,7 +125,7 @@ public:
 		printf("sizeof(int32_t) = %lu\n", sizeof(int32_t));
 		printf("sizeof(int64_t) = %lu\n", sizeof(int64_t));
 		printf("sizeof(size_t) = %lu\n", sizeof(size_t));		
-	};
+	}
 
 };
 
@@ -141,11 +137,11 @@ public:
 
 	cMpiComm(){
 		comm = MPI_COMM_NULL;
-	};
+	}
 
 	cMpiComm(const MPI_Comm& _comm){
 		set(_comm);
-	};
+	}
 
 	operator const MPI_Comm& ()
 	{		
