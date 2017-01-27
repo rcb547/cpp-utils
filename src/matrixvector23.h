@@ -6,14 +6,14 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef matrixvector23H
-#define matrixvector23H
+#ifndef matrixvector23_H
+#define matrixvector23_H
 
 template<class T> class Vector2{
 
 public:
 
-	T e1,e2;	
+	T e1,e2;
 
 	Vector2(){e1=e2=0;}
 	Vector2(T x, T y){e1=x; e2=y;}	  
@@ -134,12 +134,12 @@ public:
 	inline Matrix33<T> transpose(const Matrix33<T>& A)
 	{	
 		Matrix33<T> B;
-		B.e11 = A.e11; 
+		B.e11 = A.e11;
 		B.e12 = A.e21;
 		B.e13 = A.e31;
-		B.e21 = A.e12; 
+		B.e21 = A.e12;
 		B.e22 = A.e22;
-		B.e31 = a.e13; 
+		B.e31 = A.e13;
 		B.e33 = A.e33;
 		return B;
 	}
@@ -157,10 +157,10 @@ public:
 		B.e12 =  A.e11*A.e33 - A.e13*A.e31;
 		B.e13 = -A.e11*A.e23 + A.e13*A.e21;
 
-		B.e11 =  A.e21*A.e32 - A.e22 A.e31;
-		B.e12 = -A.e11 A.e32 + A.e12 A.e31;
-		B.e13 =  A.e11 A.e22 - A.e12 A.e21;
-		B *= (1/det);
+		B.e11 =  A.e21*A.e32 - A.e22*A.e31;
+		B.e12 = -A.e11*A.e32 + A.e12*A.e31;
+		B.e13 =  A.e11*A.e22 - A.e12*A.e21;
+		B *= (1.0/det);
 
 		return B;
 	}
