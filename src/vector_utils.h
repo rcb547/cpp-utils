@@ -10,9 +10,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _vector_utils_H
 
 #include <cmath>
-#include <algorithm>
 #include <numeric>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 //Vector scalar unary op
 template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a,  const S& s)
@@ -198,18 +199,21 @@ template<typename T> T stddev(const std::vector<T>& v)
 
 template<typename T>
 void append(std::vector<T>& a, const std::vector<T>& b){	
-	a.insert(std::end(a), std::begin(b), std::end(b));	
+	//This does not work for Intel: a.insert(std::end(a), std::begin(b), std::end(b));	
+	a.insert(a.end(), b.begin(), b.end());
 }
 
 template<typename T>
 void prepend(std::vector<T>& a, const std::vector<T>& b){
-	a.insert(std::begin(a), std::begin(b), std::end(b));
+	//This does not work for Intel: a.insert(std::begin(a), std::begin(b), std::end(b));
+	a.insert(a.begin(), b.begin(), b.end());
 }
 
-template<typename T> 
+template<typename T>
 std::vector<T> concaternate(const std::vector<T>& a, const std::vector<T>& b){
 	std::vector<T> c=a;
-	c.insert(std::end(c), std::begin(b), std::end(b));
+	//This does not work for Intel: c.insert(std::end(c), std::begin(b), std::end(b));
+	c.insert(c.end(), b.begin(), b.end());
 	return c;
 }
 

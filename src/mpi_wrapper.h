@@ -21,9 +21,6 @@ class cMpiEnv{
 
 public:
 	bool startandstop;
-	int size;
-	int rank;
-	std::string pname;
 
 	cMpiEnv(){
 		startandstop = false;		
@@ -32,24 +29,35 @@ public:
 	cMpiEnv(int argc, char** argv, bool _startandstop=true){
 		startandstop = _startandstop;
 		if (startandstop)start(argc, argv);
-		setsizerankpname();
 	};
 
 	~cMpiEnv(){
 		if (startandstop)stop();
 	};
 
-	void setsizerankpname(){
-		MPI_Comm_size(MPI_COMM_WORLD, &size);
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		pname = getpname();		
-		return;
+	int size(){
+		int _size;
+		MPI_Comm_size(MPI_COMM_WORLD, &_size);
+		return _size;
 	};
+
+	int rank(){
+		int _rank;
+		MPI_Comm_size(MPI_COMM_WORLD, &_rank);
+		return _rank;
+	};
+
+	std::string pname(){
+		int len;
+		char pname[MPI_MAX_PROCESSOR_NAME + 1];
+		MPI_Get_processor_name(pname, &len);		
+		return std::string(pname);
+	};
+
 
 	void start(int argc, char** argv){
 		MPI_Init(&argc, &argv);		
-		setsizerankpname();
-		rootmessage("MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", size, rank, pname.c_str());
+		rootmessage("MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", size(), rank(), pname().c_str());
 		return;
 	};
 
@@ -57,13 +65,6 @@ public:
 		rootmessage("Finalizing MPI\n");
 		MPI_Finalize();
 	}
-
-	std::string getpname(){
-		int len;
-		char pname[MPI_MAX_PROCESSOR_NAME + 1];
-		MPI_Get_processor_name(pname, &len);		
-		return std::string(pname);		
-	};
 
 	static std::string errorstring(int ierr){
 
@@ -190,19 +191,19 @@ public:
 		size_t sz = (size_t)ceil(log10(size()));
 		if (sz == 0)sz = 1;
 		std::string szfmt = "[%" + strprint("%lu",sz) + "lu] ";
-				
-		for (size_t i = 0; i < size(); i++){
+		
+		for (int i = 0; i < size(); i++){
 			if (i == rank()){
 				va_list vargs;
 				va_start(vargs, fmt);
 				std::printf(szfmt.c_str(), rank());
-				std::vprintf(fmt, vargs);				
+				std::vprintf(fmt, vargs);
 				std::fflush(stdout);
-				va_end(vargs);				
+				va_end(vargs);
 			}
 			barrier();
 		}
-		return;		
+		return;
 	}
 
 	template < typename T >
@@ -264,7 +265,7 @@ public:
 	template < typename T >
 	bool irecv_vec(std::vector<T>& v, int source){				
 		MPI_Status status;
-		MPI_Flag flag;
+		int flag;
 		MPI_Request request;
 		int tag = 0;
 		int n;
@@ -302,7 +303,7 @@ public:
 	};
 
 	template < typename T >
-	T sum(T& value){		
+	T sum(T& value){
 		T s;
 		int ierr = MPI_Allreduce(&value, &s, 1, cMpiEnv::mpitype(value), MPI_SUM, comm);
 		chkerr(ierr);

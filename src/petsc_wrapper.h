@@ -69,12 +69,11 @@ public:
 	void set_petsc_default(const int size, const int rank, const PetscInt nglobal)
 	{		
 		end = 0;
-		PetscInt n;
 		for (PetscInt i = 0; i <= rank; i++){
-			n = nglobal / (PetscInt)size + ((nglobal % (PetscInt)size) > i);
+			PetscInt n = nglobal / (PetscInt)size + ((nglobal % (PetscInt)size) > i);
 			end += n;
+			start = end - n;
 		}
-		start = end - n;		
 	}
 
 	PetscInt nlocal() const
@@ -121,6 +120,7 @@ public:
 		if (pobj()){
 			const char* name;
 			PetscErrorCode ierr = PetscObjectGetName(*pobj(), &name);
+			CHKERR(ierr);
 			return name;
 		}
 		else return (char*)NULL;
@@ -913,7 +913,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 		if (_nglobalcols <= 0) _nglobalcols = cmax + 1;
 
 		PetscInt nnz = rowind.size();
-		if (colind.size() != nnz || values.size() != nnz){
+		if ((int)colind.size() != nnz || (int)values.size() != nnz){
 			printf("cPetscDistMatrix::create_globalindices(...) rowind, colind, and vals must be the same size\n");
 			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
 		}
@@ -975,7 +975,8 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 	bool preallocate(std::vector<PetscInt>& d_nnz, std::vector<PetscInt>& o_nnz) const
 	{
-		PetscErrorCode ierr = MatMPIAIJSetPreallocation(mat(), PETSC_NULL, d_nnz.data(), PETSC_NULL, o_nnz.data()); CHKERR(ierr);
+		PetscErrorCode ierr = MatMPIAIJSetPreallocation(mat(), (PetscInt)PETSC_NULL, d_nnz.data(), (PetscInt)PETSC_NULL, o_nnz.data());
+		CHKERR(ierr);
 		return true;
 	}
 
@@ -993,7 +994,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 	bool isassembled() const {
 		if (mat() == PETSC_NULL)return false;
 		PetscBool status;
-		PetscErrorCode ierr = MatAssembled(mat(), &status);
+		PetscErrorCode ierr = MatAssembled(mat(), &status); CHKERR(ierr);
 		if (status == PETSC_TRUE)return true;
 		return false;
 	}
@@ -1011,13 +1012,12 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 			printf("cPetscDistMatrix::set_diagonal_local() not a square matrix\n");
 			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
 		}
-		else if(localdiagonal.size() != nlocalrows()){
+		else if((int)localdiagonal.size() != nlocalrows()){
 			printf("cPetscDistMatrix::set_diagonal_local() incompatible size\n");
 			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
 		}
 		
-		PetscErrorCode ierr;				
-		PetscInt nlocal = nlocalrows();		
+		PetscErrorCode ierr;
 		const cOwnership r = rowownership();
 		PetscInt k = 0;
 		for (PetscInt gi = r.start; gi < r.end; gi++){
