@@ -42,7 +42,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 using namespace std;
 
-extern FILE* global_log_file;
+static FILE* global_log_file = (FILE*)NULL;
 
 std::string srcloc(const char* filepath, const int& linenumber, const char* function){
 	std::string filename = extractfilename(filepath);
@@ -179,12 +179,29 @@ std::string strprint(const char* fmt, ...)
 	return s;
 }
 
+void open_global_log_file(const std::string& globallogfilename){
+	if (global_log_file == NULL){
+		global_log_file = fileopen(globallogfilename, "w");
+	}		
+};
+
+FILE* global_log_file_pointer(){
+	return global_log_file;		
+};
+
+void close_global_log_file(){
+	if (global_log_file != NULL){
+		fclose(global_log_file);
+	}
+	global_log_file = (FILE*)NULL;
+};
+
 void logmsg(const std::string& msg){
 	if (global_log_file){
 		fprintf(global_log_file, msg.c_str());
 	}
 	printf(msg.c_str());
-	};
+};
 
 void logmsg(const char* fmt, ...)
 {
@@ -195,6 +212,7 @@ void logmsg(const char* fmt, ...)
 
 	logmsg(msg);
 }
+
 
 void messageoutput(const std::string& msg)
 {

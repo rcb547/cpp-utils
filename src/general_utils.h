@@ -35,6 +35,11 @@ void my_barrier();
 
 std::string strprint_va(const char* fmt, va_list argptr);
 std::string strprint(const char* fmt, ...);
+
+void  open_global_log_file(const std::string& globallogfilename);
+void  close_global_log_file();
+FILE* global_log_file_pointer();
+
 void logmsg(const std::string& msg);
 void logmsg(const char* fmt, ...);
 void message(const char* fmt, ...);
