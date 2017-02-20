@@ -9,9 +9,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _intrepid_H
 #define _intrepid_H
 
+#include <math.h>
 #include <cmath>
-#include <climits>
 #include <cfloat>
+#include <climits>
 #include <vector>
 #include <list>
 
@@ -124,23 +125,23 @@ public:
 		else return false;
 	}	
 
-	static bool isnull(const float& number)
+	static bool isnull(const float number)
 	{
 		_GSTITEM_
 		if (number == floatnull()) return true;
-		else if (std::isfinite<float>(number) == false){
+		else if (isfinite<float>(number) == false){
 			return true;
-		}		
+		}
 		return false;
 	}
 
-	static bool isnull(const double& number)
+	static bool isnull(const double number)
 	{
 		_GSTITEM_
 		if (number == doublenull()) return true;
-		else if (std::isfinite<double>(number) == false){
+		else if (isfinite<double>(number) == false){
 			return true;
-		}		
+		}
 		return false;
 	}
 

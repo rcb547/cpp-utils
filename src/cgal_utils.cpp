@@ -1,19 +1,28 @@
+/*
+This source code file is licensed under the GNU GPL Version 2.0 Licence by the following copyright holder:
+Crown Copyright Commonwealth of Australia (Geoscience Australia) 2015.
+The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.html. If you require a paper copy of the GNU GPL 2.0 Licence, please write to Free Software Foundation, Inc. 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-#  pragma warning (push)
-#  pragma warning (disable : 4127)
-#  pragma warning (disable : 4191)
-#  pragma warning (disable : 4242)
-#  pragma warning (disable : 4244)
-#  pragma warning (disable : 4365)
-#  pragma warning (disable : 4371)
-#  pragma warning (disable : 4512)
-#  pragma warning (disable : 4571)
-#  pragma warning (disable : 4619)
-#  pragma warning (disable : 4640)
-#  pragma warning (disable : 4702)
-#  pragma warning (disable : 4625)
-#  pragma warning (disable : 4626)
-#  pragma warning (disable : 4365)
+Author: Ross C. Brodie, Geoscience Australia.
+*/
+
+#if defined _WIN32
+#pragma warning (push)
+#pragma warning (disable : 4127)
+#pragma warning (disable : 4191)
+#pragma warning (disable : 4242)
+#pragma warning (disable : 4244)
+#pragma warning (disable : 4365)
+#pragma warning (disable : 4371)
+#pragma warning (disable : 4512)
+#pragma warning (disable : 4571)
+#pragma warning (disable : 4619)
+#pragma warning (disable : 4640)
+#pragma warning (disable : 4702)
+#pragma warning (disable : 4625)
+#pragma warning (disable : 4626)
+#pragma warning (disable : 4365)
+#endif
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/convex_hull_2.h>
@@ -24,7 +33,10 @@
 #include <CGAL/Polyline_simplification_2/simplify.h>
 #include <CGAL/Polyline_simplification_2/Stop_below_count_threshold.h>
 #include <CGAL/Polyline_simplification_2/Stop_above_cost_threshold.h>
-#  pragma warning (pop)
+
+#if defined _WIN32
+#pragma warning (pop)
+#endif
 
 #include <vector>
 #include <list>
@@ -90,7 +102,7 @@ bool line_data_alpha_shape_polygon_ch(
 	double r = 1.5*sqrt(*ait);
 	A.set_alpha(r*r);
 	
-	int nsc = A.number_of_solid_components();
+	//int nsc = A.number_of_solid_components();
 	//printf("alpha radius=%lf\n", r);
 	//printf("Number of solid components=%d\n", nsc);
 	
@@ -134,7 +146,7 @@ bool line_data_alpha_shape_polygon_ch(
 		//if (A.classify(p) == Alpha_shape_2::Classification_type::SINGULAR)continue;
 		polygon.push_back(p);
 	}
-	size_t nhull = polygon.container().size();
+	//size_t nhull = polygon.container().size();
 	//printf("Number of hull vertices = %lu\n", nhull);
 
 	if (true){
