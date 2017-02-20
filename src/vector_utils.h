@@ -153,15 +153,15 @@ template<typename T> std::vector<T> pow10(const std::vector<T>& v)
 	pow10_apply(a); return a;
 };
 
+template<typename T> void log10_apply(std::vector<T>& v)
+{
+	std::for_each(v.begin(), v.end(), [](T& item){ item = std::log10(item); });
+};
+
 template<typename T> std::vector<T> log10(const std::vector<T>& v)
 {
 	std::vector<T> a = v;
 	log10_apply(a); return a;
-};
-
-template<typename T> void log10_apply(std::vector<T>& v)
-{
-	std::for_each(v.begin(), v.end(), [](T& item){ item = std::log10(item); });
 };
 
 template<typename T> T min(const std::vector<T>& v)
