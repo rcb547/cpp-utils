@@ -16,7 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cassert>
 
 
-class cEarth1D{ 
+class cEarth1D { 
 	
 public:
 	std::vector<double> conductivity;	
@@ -35,17 +35,17 @@ public:
 		thickness    = _thickness;
 	}
 
-	inline const size_t nlayers(){return conductivity.size();}
-	inline const size_t nl(){ return conductivity.size(); }
+	inline const size_t nlayers() const {return conductivity.size();}
+	inline const size_t nl() const { return conductivity.size(); }
 
-	void print(){
+	void print() const {
 		for(size_t i=0; i<nlayers()-1; i++){
 			printf("%d\t%8.6lf\t%6.2lf\n",(int)i,conductivity[i],thickness[i]);
 		}
 		printf("%d\t%8.6lf\n\n",(int)nlayers(),conductivity[nlayers()-1]);
 	}
 
-	double meanlog10conductivity()
+	double meanlog10conductivity() const 
 	{
 		if (nl() == 1)return conductivity[0];
 		//Returns the thickness weighted mean (in linear space) conductivity (but calculated in 10g10 space)
@@ -64,7 +64,7 @@ public:
 		return pow(10.0, sumc / sumt);
 	}
 
-	double meanconductivity()
+	double meanconductivity() const 
 	{
 		if (nl() == 1)return conductivity[0];
 		//Returns the thickness weighted mean (in linear space) conductivity (but calculated in linear space)
