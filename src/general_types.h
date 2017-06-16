@@ -286,21 +286,5 @@ public:
 	int nk() const { return (int) data[0][0].size(); }
 };
 
-/*
-struct sAirborneSampleId{
-	size_t uniqueid;
-	size_t surveynumber;
-	size_t daynumber;
-	size_t flightnumber;
-	size_t linenumber;
-	double fidnumber;
-};
-
-struct sAirborneSampleLocation{
-	double x;
-	double y;
-	double z;
-	double groundelevation;
-};*/
 
 #endif
