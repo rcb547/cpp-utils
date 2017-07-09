@@ -9,9 +9,25 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _general_constants_H
 #define _general_constants_H
 
-#define MUZERO 12.56637061435917295384e-7
-#define EZERO  8.854e-12
+#ifndef MUZERO
+#define MUZERO 12.56637061435917295384e-7 //magnetic permeability of free space
+#endif 
+
+#ifndef EZERO
+#define EZERO  8.854e-12  //electrical permitivity of free space
+#endif 
+
+#ifndef UGC
 #define UGC    6.67384e-11 //universal gravitational constant
+#endif 
+
+#ifndef D2R
+#define D2R 0.0174532925199432957692369076848 //convert degrees to radians
+#endif 
+
+#ifndef R2D
+#define R2D 57.295779513082320876798154814105  //convert radians to degrees
+#endif 
 
 #define NLOG10 2.3025850929940459 //Natrural log(10)
 
@@ -27,8 +43,5 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define ONEONTHREEPI 0.1061032953945969  
 #define ONEONFOURPI  0.0795774715459477
 #define THREEONFOURPI  0.2387324146378430
-
-#define D2R 0.0174532925199432957692369076848
-#define R2D 57.295779513082320876798154814105
 
 #endif
