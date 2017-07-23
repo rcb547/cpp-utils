@@ -271,7 +271,7 @@ template<typename T> T stddev(const size_t n, const T* v)
 };
 
 template<typename T>
-std::vector<T> increment(const T n, const T start = 0, const T inc = 1)
+std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 {
 	std::vector<T> v(n);
 	v[0] = start;

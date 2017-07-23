@@ -10,6 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _ndarray_H
 
 #include "stacktrace.h"
+#include "vector_utils.h"
 
 //It is best to define CNDARRAY_BOUNDSCHECK as a compiler preprocessor definition so that it is defined across all source units
 //#define CNDARRAY_BOUNDSCHECK
@@ -20,7 +21,7 @@ class cNDArray{
 
 private:
 	std::vector<T> datastore;		
-	std::vector<cNDArray<T, ND - 1>> higher_dims;
+	std::vector<cNDArray<T, ND - 1>> hdims;
 	T* pdata = (T*) NULL;
 
 	void allocate(const std::vector<size_t>& dims){
@@ -41,12 +42,12 @@ private:
 		size_t stride = n / dims[thisdim];
 
 		cNDArray<T, ND - 1> c(dims, thisdim, pdata);
-		higher_dims.push_back(c);
+		hdims.push_back(c);
 
 		T* p = dataptr;
-		higher_dims.resize(dims[thisdim]);
-		for (size_t i = 0; i < higher_dims.size(); i++){
-			higher_dims[i].initialise(dims, thisdim + 1, p);
+		hdims.resize(dims[thisdim]);
+		for (size_t i = 0; i < hdims.size(); i++){
+			hdims[i].initialise(dims, thisdim + 1, p);
 			p += stride;
 		}		
 		return true;
@@ -97,19 +98,20 @@ public:
 
 	std::vector<size_t>  get_dims() const {
 		_GSTITEM_		
-		std::vector<size_t>  d = { higher_dims.size() };
-		append(d, higher_dims[0].get_dims());
-		return d;
+		std::vector<size_t> hd     = hdims[0].get_dims();
+		std::vector<size_t> dims  = { hdims.size() };
+		dims.insert(dims.end(), hd.begin(), hd.end());
+		return dims;
 	}
 
 	size_t size(){
 		_GSTITEM_
-		return higher_dims.size();
+		return hdims.size();
 	}
 
 	size_t nelements(){
 		_GSTITEM_
-			return size() * higher_dims[0].nelements();
+		return size() * hdims[0].nelements();
 	}
 
 	T* data(){
@@ -124,13 +126,13 @@ public:
 
 	cNDArray<T, ND - 1>& operator[](const size_t& i){		
 		#ifdef CNDARRAY_BOUNDSCHECK
-		if (i < 0 || i >= higher_dims.size()){
-			_GSTITEM_; std::printf("Subscript %lu is out of range (array size is %lu)\n", i, higher_dims.size());
+		if (i < 0 || i >= hdims.size()){
+			_GSTITEM_; std::printf("Subscript %lu is out of range (array size is %lu)\n", i, hdims.size());
 			_GSTPRINT_; std::exception e("Subscript out of range exception\n");
 			throw(e);
 		}
 		#endif // CNDARRAY_BOUNDSCHECK		
-		return higher_dims[i];	
+		return hdims[i];	
 	}
 
 	T& element(const size_t& i){
