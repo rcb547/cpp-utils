@@ -35,6 +35,7 @@ std::vector<cBlock> Blocks;
 void loadfromfile(const std::string& filemname);
 void loadfromfilepointer(FILE* fp, bool rootlevel);
 
+std::string get_as_string(size_t n=0) const;
 void print(size_t n=0) const;
 void write(FILE* fp, size_t n=0) const;
 std::string identifier(std::string entry) const;

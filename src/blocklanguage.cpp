@@ -68,43 +68,40 @@ void cBlock::loadfromfilepointer(FILE* fp, bool rootlevel)
 	}
 }
 
-void cBlock::print(size_t n) const
+std::string cBlock::get_as_string(size_t n) const
 {
-	for (size_t j = 0; j < n; j++) std::cout << "  ";
-	 std::cout << Name.c_str() << " Begin" << std::endl;
+	std::string s;
+
+	for (size_t j = 0; j < n; j++) s += strprint("\t");
+	s += strprint("%s Begin\n", Name.c_str());
 
 	for (size_t i = 0; i < Entries.size(); i++){
-		for (size_t j = 0; j < n + 1; j++) std::cout << "  ";
-		 std::cout << Entries[i].c_str() << std::endl;
+		for (size_t j = 0; j < n + 1; j++)s += strprint("\t");
+		s += strprint("%s\n", Entries[i].c_str());
 	}
 
 	for (size_t i = 0; i < Blocks.size(); i++){
-		Blocks.at(i).print(n + 1);
+		s += Blocks[i].get_as_string(n + 1);
 	}
 
-	for (size_t j = 0; j < n; j++) std::cout << "  ";
-	 std::cout << Name.c_str() << " End" << std::endl;
-	return;
+	for (size_t j = 0; j < n; j++) s += strprint("\t");
+	s += strprint("%s End\n", Name.c_str());
+	return s;
+}
+
+void cBlock::print(size_t n) const
+{
+	std::string s = get_as_string(n);
+	std::cout << s.c_str();
 }
 
 void cBlock::write(FILE* fp, size_t n) const
 {
-	for (size_t j = 0; j < n; j++)fprintf(fp, "\t");
-	fprintf(fp, "%s Begin\n", Name.c_str());
-
-	for (size_t i = 0; i < Entries.size(); i++){
-		for (size_t j = 0; j < n + 1; j++)fprintf(fp, "\t");
-		fprintf(fp, "%s\n", Entries[i].c_str());
-	}
-
-	for (size_t i = 0; i < Blocks.size(); i++){
-		Blocks[i].write(fp, n + 1);
-	}
-
-	for (size_t j = 0; j < n; j++)fprintf(fp, "\t");
-	fprintf(fp, "%s End\n", Name.c_str());
-	return;
+	std::string s = get_as_string(n);
+	fprintf(fp, s.c_str());
+	return;		
 }
+
 std::string cBlock::identifier(std::string entry) const
 {
 	size_t index = entry.find("=");
