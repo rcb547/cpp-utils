@@ -53,17 +53,17 @@ int FieldDefinition::intvalue(const std::vector<std::string>& fields) const
 	}
 	else if(coldeftype == COLDEF_DEFAULTVALUE){				
 		if(defaultvector.size()==0){
-			return cBlock::ud_int();
+			return ud_int();
 		}
 		return (int)defaultvector[0];
 	}
 	else if(coldeftype == COLDEF_UNAVAILABLE){
-		return cBlock::ud_int();
+		return ud_int();
 	}
 	else{
 		warningmessage("FieldDefinition::intvalue() unknown column definition\n");
 	}
-	return cBlock::ud_int();
+	return ud_int();
 	
 }
 double FieldDefinition::doublevalue(const std::vector<std::string>& fields) const 
@@ -79,17 +79,17 @@ double FieldDefinition::doublevalue(const std::vector<std::string>& fields) cons
 	}
 	else if(coldeftype == COLDEF_DEFAULTVALUE){				
 		if(defaultvector.size()==0){
-			return cBlock::ud_double();
+			return ud_double();
 		}
 		return defaultvector[0];
 	}
 	else if(coldeftype == COLDEF_UNAVAILABLE){
-		return cBlock::ud_double();
+		return ud_double();
 	}
 	else{
 		warningmessage("FieldDefinition::doublevalue() unknown column definition\n");
 	}
-	return cBlock::ud_double();
+	return ud_double();
 }
 std::vector<int> FieldDefinition::intvector(const std::vector<std::string>& fields, const size_t& n) const
 { 

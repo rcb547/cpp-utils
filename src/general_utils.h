@@ -14,6 +14,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
+#include <cstdint>
 #include <ctime>
 #include <climits>
 #include <vector>
@@ -318,6 +319,43 @@ std::vector<double> log10space(const double x1, const double x2, const size_t n)
 bool filegetline(FILE* fp, std::string& str);
 
 int LevenshteinDistance(char* s, int len_s, char* t, int len_t);
+
+static size_t ud_size_t(){ return UINT64_MAX; }
+static short  ud_short(){ return SHRT_MIN; }
+static int    ud_int(){ return INT_MIN; }
+static float  ud_float(){ return  -FLT_MAX; }
+static double ud_double(){ return -DBL_MAX; }
+static std::string ud_string(){ return "*ENTRYNOTFOUND*"; }
+
+static bool isundefined(const size_t& v){ 
+	if(v == ud_size_t())return true;
+	return false;
+}
+
+static bool isundefined(const short& v){
+	if (v == ud_short())return true;
+	return false;
+}
+
+static bool isundefined(const int& v){
+	if (v == ud_int())return true;
+	return false;
+}
+
+static bool isundefined(const float& v){
+	if (v == ud_float())return true;
+	return false;
+}
+
+static bool isundefined(const double& v){
+	if (v == ud_double())return true;
+	return false;
+}
+
+static bool isundefined(const std::string& v){
+	if (v == ud_string())return true;
+	return false;
+}
 
 #endif
 

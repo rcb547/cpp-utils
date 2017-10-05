@@ -6,17 +6,20 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-//---------------------------------------------------------------------------
 #ifndef _blocklanguage_H
 #define _blocklanguage_H
 
+#include <iostream>
 #include <cstring>
-#include <vector>
 #include <climits>
 #include <cfloat>
-#include <stdint.h>
+//#include <cstdint>
+#include <cstdlib>
+#include <vector>
 
-////////////////////////////////////////////////////////////////////////////////
+#include "general_utils.h"
+#include "file_utils.h"
+
 class cBlock{
 
 private:
@@ -24,67 +27,493 @@ private:
 
 public:
 
-cBlock();
-cBlock(const std::string& filename);
+	std::string Filename;
+	std::string Name;
+	std::vector<std::string> Entries;
+	std::vector<cBlock> Blocks;
 
-std::string Filename;
-std::string Name;
-std::vector<std::string> Entries;
-std::vector<cBlock> Blocks;
+	cBlock::cBlock() { }
+	cBlock::cBlock(const std::string& filename)
+	{
+		loadfromfile(filename);
+	}
 
-void loadfromfile(const std::string& filemname);
-void loadfromfilepointer(FILE* fp, bool rootlevel);
+	//static std::string ud_string(){ return "ENTRY NOT FOUND"; }
+	
+	void loadfromfile(const std::string& filename)
+	{
+		Filename = filename;
+		FILE* fp = fileopen(filename, "r");
+		if (fp == NULL){
+			printf("cBlock::loadfromfile - Could not open file: %s\n", filename.c_str());
+			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
+		}
+		loadfromfilepointer(fp, true);
+		fclose(fp);
+	}
 
-std::string get_as_string(size_t n=0) const;
-void print(size_t n=0) const;
-void write(FILE* fp, size_t n=0) const;
-std::string identifier(std::string entry) const;
-void printidentifiers() const;
-std::string value(std::string entry) const;
-void printvalues() const;
-std::string getentry(std::string id) const;
-cBlock findblock(std::string name) const;
-std::vector<cBlock> findblocks(std::string name) const;
-std::string findidentifer(std::string id) const;
+	void loadfromfilepointer(FILE* fp, bool rootlevel)
+	{
+		std::string linestr;
+		while (filegetline(fp, linestr)){
+			std::string s = trim(linestr);
+			if (s.length() == 0)continue;
 
-static std::string ud_string(){return "ENTRY NOT FOUND";}
-static short  ud_short(){return SHRT_MIN;}
-static size_t ud_size_t(){ return UINT64_MAX;}
-static int    ud_int(){return INT_MIN;}
-static float  ud_float(){return  -FLT_MAX;}
-static double ud_double(){return -DBL_MAX;}
+			std::vector<std::string> vs = tokenize(s);
+			if (vs.size() >= 2){
+				if (strcasecmp(vs[1], "End") == 0){
+					break;
+				}
+				else if (strcasecmp(vs[1], "Begin") == 0){
+					if (rootlevel == true){
+						Name = vs[0];
+						rootlevel = false;
+					}
+					else{
+						cBlock newblock;
+						newblock.Name = vs[0];
+						newblock.loadfromfilepointer(fp, false);
+						Blocks.push_back(newblock);
+					}
+					continue;
+				}
+				Entries.push_back(s);
+			}
+			else{
+				Entries.push_back(s);
+			}
+		}
+	}
 
+	std::string get_as_string(size_t n = 0) const
+	{
+		std::string s;
 
+		for (size_t j = 0; j < n; j++) s += strprint("\t");
+		s += strprint("%s Begin\n", Name.c_str());
 
-std::string getstringvalue(std::string id) const;
-bool getboolvalue(std::string id) const;
-short getshortvalue(std::string id) const;
-int getintvalue(std::string id) const;
-size_t getsizetvalue(std::string id) const;
-float getfloatvalue(std::string id) const;
-double getdoublevalue(std::string id) const;
+		for (size_t i = 0; i < Entries.size(); i++){
+			for (size_t j = 0; j < n + 1; j++)s += strprint("\t");
+			s += strprint("%s\n", Entries[i].c_str());
+		}
 
-std::vector<int> getintvector(std::string id) const;
-std::vector<double> getdoublevector(std::string id) const;
-std::vector<std::string> getstringvector(std::string id) const;
-std::vector< std::vector<double> > getdoublematrix(std::string id) const;
-std::vector<std::string> getblockstrings(std::string id) const;
+		for (size_t i = 0; i < Blocks.size(); i++){
+			s += Blocks[i].get_as_string(n + 1);
+		}
 
-//Get many std::strings from different lines with numeric end
-std::vector<std::string> getmultiplestrings(std::string id) const;
-std::vector<double> getmultipledoubles(std::string id) const;
-std::vector<int> getmultipleints(std::string id) const;
+		for (size_t j = 0; j < n; j++) s += strprint("\t");
+		s += strprint("%s End\n", Name.c_str());
+		return s;
+	}
 
-bool getvalue(std::string id, bool& value) const;
-bool getvalue(std::string id, short& value) const;
-bool getvalue(std::string id, int& value) const;
-bool getvalue(std::string id, size_t& value) const;
-bool getvalue(std::string id, float& value) const;
-bool getvalue(std::string id, double& value) const;
-bool getvalue(std::string id, std::string& value) const;
+	void print(size_t n = 0) const
+	{
+		std::string s = get_as_string(n);
+		std::cout << s.c_str();
+	}
 
-std::vector<std::vector<std::string>> getblockleftright(const std::string id) const;
+	void write(FILE* fp, size_t n = 0) const
+	{
+		std::string s = get_as_string(n);
+		fprintf(fp, s.c_str());
+		return;
+	}
 
+	std::string identifier(std::string entry) const
+	{
+		size_t index = entry.find("=");
+		std::string id = entry.substr(0, index - 1);
+		return trim(id);
+	}
+	void printidentifiers() const
+	{
+		for (size_t i = 0; i < Entries.size(); i++){
+			std::cout << identifier(Entries.at(i)).c_str() << std::endl;
+		}
+
+		for (size_t i = 0; i < Blocks.size(); i++){
+			Blocks.at(i).printidentifiers();
+		}
+
+	}
+	std::string value(std::string entry) const
+	{
+		size_t index = entry.find("=");
+		size_t len = entry.size() - index - 1;
+		if (len == 0)return std::string("");
+		std::string s = entry.substr(index + 1, len);
+		return trim(s);
+	}
+	void printvalues()  const
+	{
+		for (size_t i = 0; i < Entries.size(); i++){
+			std::cout << value(Entries.at(i)).c_str() << std::endl;
+		}
+
+		for (size_t i = 0; i < Blocks.size(); i++){
+			Blocks.at(i).printvalues();
+		}
+	}
+	std::string getentry(std::string id) const
+	{
+		size_t index = id.find(".");
+		if (index != std::string::npos){
+			std::string start = id.substr(0, index);
+			std::string end = id.substr(index + 1, id.size() - index - 1);
+			if (strcasecmp(start, Name) == 0){
+				return getentry(end);
+			}
+			else{
+				cBlock b = findblock(start);
+				return b.getentry(end);
+			}
+		}
+		else{
+			return findidentifer(id);
+		}
+	}
+	cBlock findblock(std::string name) const
+	{
+		size_t index = name.find(".");
+
+		if (index != std::string::npos){
+			std::string start = name.substr(0, index);
+			std::string end = name.substr(index + 1, name.size() - index - 1);
+			cBlock b = findblock(start);
+			return b.findblock(end);
+		}
+
+		for (size_t i = 0; i < Blocks.size(); i++){
+			if (strcasecmp(Blocks[i].Name, name) == 0){
+				return Blocks[i];
+			}
+		}
+		return cBlock();
+
+	}
+	std::vector<cBlock> findblocks(std::string name) const
+	{
+		std::vector<cBlock> v;
+		size_t index = name.find(".");
+		if (index != std::string::npos){
+			std::string start = name.substr(0, index);
+			std::string end = name.substr(index + 1, name.size() - index - 1);
+			cBlock b = findblock(start);
+			return b.findblocks(end);
+		}
+
+		for (size_t i = 0; i < Blocks.size(); i++){
+			if (strcasecmp(Blocks[i].Name, name) == 0){
+				v.push_back(Blocks[i]);
+			}
+		}
+		return v;
+	};
+	std::string findidentifer(std::string id) const
+	{
+		for (size_t i = 0; i < Entries.size(); i++){
+			if (strcasecmp(identifier(Entries[i]), id) == 0){
+				return Entries[i];
+			}
+		}
+		return ud_string();
+	}
+	std::string getstringvalue(std::string id) const
+	{
+		return value(getentry(id));
+	}
+
+	short getshortvalue(std::string id) const
+	{
+		short v;
+		int status;
+		std::string entry = getentry(id);
+		if (strcasecmp(entry, ud_string()) == 0){
+			return ud_short();
+		}
+		else{
+			status = sscanf(value(entry).c_str(), "%hd", &v);
+		}
+
+		if (status == 1) return v;
+		else return ud_short();
+	}
+	int getintvalue(std::string id) const
+	{
+		int v;
+		int status;
+		std::string entry = getentry(id);
+		if (strcasecmp(entry, ud_string()) == 0){
+			return ud_int();
+		}
+		else{
+			status = sscanf(value(entry).c_str(), "%d", &v);
+		}
+
+		if (status == 1) return v;
+		else return ud_int();
+	}
+	size_t getsizetvalue(std::string id) const
+	{
+		size_t v;
+		int status;
+		std::string entry = getentry(id);
+		if (strcasecmp(entry, ud_string()) == 0){
+			return ud_size_t();
+		}
+		else{
+			long tmp;
+			status = std::sscanf(value(entry).c_str(), "%ld", &tmp);
+			v = (size_t)tmp;
+		}
+
+		if (status == 1) return v;
+		else return ud_size_t();
+	}
+	float getfloatvalue(std::string id) const
+	{
+		float v;
+		int status;
+		std::string entry = getentry(id);
+		if (strcasecmp(entry, ud_string()) == 0){
+			return ud_float();
+		}
+		else{
+			status = sscanf(value(entry).c_str(), "%f", &v);
+		}
+
+		if (status == 1) return v;
+		else return ud_float();
+	}
+	double getdoublevalue(std::string id) const
+	{
+		double v;
+		int status;
+		std::string entry = getentry(id);
+		if (strcasecmp(entry, ud_string()) == 0){
+			return ud_double();
+		}
+		else{
+			status = sscanf(value(entry).c_str(), "%lf", &v);
+		}
+
+		if (status == 1) return v;
+		else return ud_double();
+	}
+
+	std::vector<int> getintvector(std::string id) const
+	{
+		int v;
+		std::vector<int> vec;
+		std::string s = getstringvalue(id);
+
+		if (strcasecmp(s, ud_string()) == 0){
+			return vec;
+		}
+
+		std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
+		for (size_t i = 0; i < fields.size(); i++){
+			sscanf(fields[i].c_str(), "%d", &v);
+			vec.push_back(v);
+		}
+		return vec;
+	}
+	std::vector<double> getdoublevector(std::string id) const
+	{
+		double v;
+		std::vector<double> vec;
+		std::string s = getstringvalue(id);
+
+		if (strcasecmp(s, ud_string()) == 0){
+			return vec;
+		}
+
+		std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
+		for (size_t i = 0; i < fields.size(); i++){
+			sscanf(fields[i].c_str(), "%lf", &v);
+			vec.push_back(v);
+		}
+		return vec;
+	}
+	std::vector<std::string> getstringvector(std::string id) const
+	{
+		std::vector<std::string> fields;
+		std::string s = getstringvalue(id);
+
+		if (strcasecmp(s, ud_string()) == 0){
+			return fields;
+		}
+
+		fields = fieldparsestring(s.c_str(), delimiters.c_str());
+		for (size_t i = 0; i < fields.size(); i++){
+			fields[i] = trim(fields[i]);
+		}
+		return fields;
+	}
+	std::vector<std::vector<double>> getdoublematrix(std::string id) const
+	{
+		std::vector<std::vector<double>> matrix;
+		cBlock b = findblock(id);
+		for (size_t i = 0; i < b.Entries.size(); i++){
+			double v;
+			std::vector<double> vec;
+
+			std::string s = b.Entries[i];
+			std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
+			for (size_t j = 0; j < fields.size(); j++){
+				sscanf(fields[j].c_str(), "%lf", &v);
+				vec.push_back(v);
+			}
+			matrix.push_back(vec);
+		}
+		return matrix;
+	}
+	bool getboolvalue(std::string id) const
+	{
+		std::string s = getstringvalue(id);
+		size_t k = s.find_first_of(" \t\r\n");
+		std::string value = s.substr(0, k);
+		if (strcasecmp(value, "yes") == 0)return true;
+		else if (strcasecmp(value, "no") == 0)return false;
+		else if (strcasecmp(value, "true") == 0)return true;
+		else if (strcasecmp(value, "false") == 0)return false;
+		else if (strcasecmp(value, "1") == 0)return true;
+		else if (strcasecmp(value, "0") == 0)return false;
+		else if (strcasecmp(value, "off") == 0)return false;
+		else if (strcasecmp(value, "on") == 0)return true;
+		else return false;
+	}
+
+	bool getvalue(std::string id, bool& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = false;
+			return false;
+		}
+		value = getboolvalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, short& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_short();
+			return false;
+		}
+		value = getshortvalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, int& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_int();
+			return false;
+		}
+		value = getintvalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, size_t& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_size_t();
+			return false;
+		}
+		value = getsizetvalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, float& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_float();
+			return false;
+		}
+		value = getfloatvalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, double& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_double();
+			return false;
+		}
+		value = getdoublevalue(id);
+		return true;
+	}
+	bool getvalue(std::string id, std::string& value) const
+	{
+		if (getentry(id).compare(ud_string()) == 0){
+			//value = ud_string();
+			return false;
+		}
+		value = getstringvalue(id);
+		return true;
+	}
+
+	std::vector<int> getmultipleints(std::string id) const
+	{
+		std::vector<std::string> str = getmultiplestrings(id);
+		std::vector<int> result;
+
+		int val;
+		for (size_t i = 0; i < str.size(); i++){
+			sscanf(str[i].c_str(), "%d", &val);
+			result.push_back(val);
+		}
+		return result;
+	}
+	std::vector<double> getmultipledoubles(std::string id) const
+	{
+		std::vector<std::string> str = getmultiplestrings(id);
+		std::vector<double> result;
+
+		double val;
+		for (size_t i = 0; i < str.size(); i++){
+			sscanf(str[i].c_str(), "%lf", &val);
+			result.push_back(val);
+		}
+		return result;
+	}
+	std::vector<std::string> getmultiplestrings(std::string id) const
+	{
+		int i;
+		std::vector<std::string> result;
+
+		std::string str = getstringvalue(id);
+		if (str.length() > 0 && strcasecmp(str, ud_string()) != 0){
+			result.push_back(str);
+		}
+		for (i = 0; i < 100; i++){
+			std::string token = id;
+			token += strprint("%d", i);
+
+			str = getstringvalue(token);
+			if (strcasecmp(str, ud_string()) != 0){
+				result.push_back(str);
+			}
+		}
+		return result;
+	}
+	std::vector<std::string> getblockstrings(std::string id) const
+	{
+		std::vector<std::string> result;
+		cBlock b = findblock(id);
+		for (size_t i = 0; i < b.Entries.size(); i++){
+			std::string s = b.Entries[i];
+			result.push_back(s);
+		}
+		return result;
+	}
+	std::vector<std::vector<std::string>> getblockleftright(const std::string id) const
+	{
+		std::vector<std::string> s = getblockstrings(id);
+		std::vector<std::vector<std::string>> v(s.size());
+		for (size_t i = 0; i < s.size(); i++){
+			v[i] = split(s[i], '=');
+			if (v[i].size() == 1)v[i].push_back("");
+			v[i][0] = trim(v[i][0]);
+			v[i][1] = trim(v[i][1]);
+		}
+		return v;
+	}
 };
-////////////////////////////////////////////////////////////////////////////////
+
 #endif
