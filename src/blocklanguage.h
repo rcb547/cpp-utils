@@ -32,8 +32,8 @@ public:
 	std::vector<std::string> Entries;
 	std::vector<cBlock> Blocks;
 
-	cBlock::cBlock() { }
-	cBlock::cBlock(const std::string& filename)
+	cBlock() { }
+	cBlock(const std::string& filename)
 	{
 		loadfromfile(filename);
 	}

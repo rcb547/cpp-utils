@@ -1322,3 +1322,41 @@ int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 	else if (b <= c)return b;
 	return c;
 }
+
+size_t ud_size_t(){ return UINT64_MAX; }
+short  ud_short(){ return SHRT_MIN; }
+int    ud_int(){ return INT_MIN; }
+float  ud_float(){ return  -FLT_MAX; }
+double ud_double(){ return -DBL_MAX; }
+std::string ud_string(){ return "*ENTRYNOTFOUND*"; }
+
+bool isundefined(const size_t& v){ 
+	if(v == ud_size_t())return true;
+	return false;
+}
+
+bool isundefined(const short& v){
+	if (v == ud_short())return true;
+	return false;
+}
+
+bool isundefined(const int& v){
+	if (v == ud_int())return true;
+	return false;
+}
+
+bool isundefined(const float& v){
+	if (v == ud_float())return true;
+	return false;
+}
+
+bool isundefined(const double& v){
+	if (v == ud_double())return true;
+	return false;
+}
+
+bool isundefined(const std::string& v){
+	if (v == ud_string())return true;
+	return false;
+}
+
