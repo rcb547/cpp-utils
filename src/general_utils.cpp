@@ -115,7 +115,7 @@ std::string strprint_va(const char* fmt, va_list vargs)
 	std::string str;
 	str.resize(bufsize);
 
-	int status = vsnprintf(&(str[0]), bufsize, fmt, vargs);
+	int status = std::vsnprintf(&(str[0]), bufsize, fmt, vargs);
 	if (status < 0){
 		str = std::string("");
 		return str;
@@ -142,6 +142,7 @@ std::string strprint(const char* fmt, ...)
 	va_end(vargs);
 	return s;
 }
+
 
 void open_global_log_file(const std::string& globallogfilename){
 	if (global_log_file == NULL){

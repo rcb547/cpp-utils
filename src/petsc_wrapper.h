@@ -173,17 +173,17 @@ public:
 
 	static void printsizeofs()
 	{
-		printf("sizeof(MPI_Int) = %lu\n", sizeof(MPI_INT));
-		printf("sizeof(bool) = %lu\n", sizeof(bool));
-		printf("sizeof(int) = %lu\n", sizeof(int));
-		printf("sizeof(int32_t) = %lu\n", sizeof(int32_t));
-		printf("sizeof(int64_t) = %lu\n", sizeof(int64_t));
-		printf("sizeof(size_t) = %lu\n", sizeof(size_t));
-		printf("sizeof(PetscInt) = %lu\n", sizeof(PetscInt));
-		printf("sizeof(PetscScalar) = %lu\n", sizeof(PetscScalar));
-		printf("sizeof(Petsc64bitInt) = %lu\n", sizeof(Petsc64bitInt));
-		printf("sizeof(PetscBLASInt) = %lu\n", sizeof(PetscBLASInt));
-		printf("sizeof(PetscMPIInt) = %lu\n", sizeof(PetscMPIInt));
+		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
+		printf("sizeof(bool) = %zu\n", sizeof(bool));
+		printf("sizeof(int) = %zu\n", sizeof(int));
+		printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
+		printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
+		printf("sizeof(size_t) = %zu\n", sizeof(size_t));
+		printf("sizeof(PetscInt) = %zu\n", sizeof(PetscInt));
+		printf("sizeof(PetscScalar) = %zu\n", sizeof(PetscScalar));
+		printf("sizeof(Petsc64bitInt) = %zu\n", sizeof(Petsc64bitInt));
+		printf("sizeof(PetscBLASInt) = %zu\n", sizeof(PetscBLASInt));
+		printf("sizeof(PetscMPIInt) = %zu\n", sizeof(PetscMPIInt));
 	};
 
 	static void chkerrabort(PetscErrorCode ierr, const int linenumber, const char* functionname, const char* srcfile, const char* srcdirectory){
@@ -474,7 +474,7 @@ public:
 		for (int i = 0; i < mpisize(); i++){
 			mpibarrier();
 			if (i == mpirank()){
-				printf("%s rank %d owns %d to %d  - total of %d rows\n",
+				printf("%s rank %d owns %I64d to %I64d  - total of %I64d rows\n",
 					mpiprocname().c_str(),
 					mpirank(),
 					ownership().start,
@@ -1166,7 +1166,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 	void printsize() const
 	{
-		printf("Matrix (%s) size = %d x %d\n", cname(), nglobalrows(), nglobalcols());
+		printf("Matrix (%s) size = %I64d x %I64d\n", cname(), nglobalrows(), nglobalcols());
 	}
 	
 	void printdistributions() const
@@ -1174,7 +1174,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 		for (int i = 0; i < mpisize(); i++){
 			mpibarrier();
 			if (i == mpirank()){
-				printf("%s rank %d owns rows %d to %d  - total of %d rows\n", mpiprocname().c_str(), mpirank(), rowownership().start, rowownership().end - 1, nlocalrows());
+				printf("%s rank %d owns rows %I64d to %I64d  - total of %I64d rows\n", mpiprocname().c_str(), mpirank(), rowownership().start, rowownership().end - 1, nlocalrows());
 				fflush(stdout);
 			}			
 		}
@@ -1235,7 +1235,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 					PetscErrorCode ierr = MatGetRow(mat(), gi, &nnz, &colind, &val); CHKERR(ierr);
 					for (PetscInt j = 0; j<nnz; j++){
-						fprintf(fp, "%d\t%d\t%20.16le\n", gi, colind[j], val[j]);
+						fprintf(fp, "%I64d\t%I64d\t%20.16le\n", gi, colind[j], val[j]);
 					}
 
 					if (gi == nglobalrows() - 1){
@@ -1248,7 +1248,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 				//Always write a zero into last row/col if it is empty
 				if (p == mpisize() - 1 && writezeroatlowerright){
-					fprintf(fp, "%d\t%d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
+					fprintf(fp, "%I64d\t%I64d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
 				}
 
 				fclose(fp);

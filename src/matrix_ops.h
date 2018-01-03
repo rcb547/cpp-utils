@@ -49,7 +49,7 @@ MatrixDouble submatrix(const MatrixDouble& X, const TNT::Subscript i0, const TNT
 MatrixDouble pseudoinverse(const MatrixDouble& X);
 MatrixDouble pseudoinverse_od(const MatrixDouble& X);
 MatrixDouble lower_cholesky(const MatrixDouble& A);
-MatrixDouble identitymatrix(TNT::Subscript n);
+MatrixDouble identitymatrix(size_t n);
 MatrixDouble inverse(const MatrixDouble& A);
 void print(const MatrixDouble& A, const std::string& name="");
 
