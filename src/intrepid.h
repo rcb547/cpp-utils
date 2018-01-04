@@ -1274,7 +1274,7 @@ public:
 	}
 
 	template <typename T> 
-	bool getgroupbydata(const ILField& f, std::vector<T>& v, const int band=0){
+	bool getgroupbydata(const ILField& f, std::vector<T>& v, const size_t band=0){
 		v.resize(nlines());
 		for (size_t li = 0; li < nlines(); li++){
 			ILSegment S = f.Segments[li];

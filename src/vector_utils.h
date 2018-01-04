@@ -176,7 +176,8 @@ template<typename T> T max(const std::vector<T>& v)
 
 template<typename T> T sum(const std::vector<T>& v)
 {
-	return std::accumulate(v.cbegin(), v.cend(), 0.0);
+	T init = 0;
+	return std::accumulate(v.cbegin(), v.cend(), init);
 };
 
 template<typename T> T mean(const std::vector<T>& v)
