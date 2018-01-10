@@ -9,14 +9,36 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "gdal_priv.h"
 #include <ogr_spatialref.h>
 
+#include "gdal_utils.h"
 
-bool projection(const std::vector<double>& xin, const std::vector<double>& yin, std::vector<double>& xout, std::vector<double>& yout)
+OGRSpatialReference getsrs(const std::string& datum, const std::string& projection, const std::string& units)
+{
+	OGRSpatialReference srs;	
+	OGRErr err = srs.importFromERM(datum.c_str(), projection.c_str(), units.c_str());
+	return srs;
+}
+
+OGRSpatialReference getsrs(const int epsgcode)
+{
+	OGRSpatialReference srs;
+	OGRErr err = srs.importFromEPSG(epsgcode);	
+	return srs;
+}
+
+
+bool transform(
+	const int& epsgcodein,
+	const std::vector<double>& xin,
+	const std::vector<double>& yin,
+	const int& epsgcodeout,
+	std::vector<double>& xout,
+	std::vector<double>& yout)
 {
 	GDALAllRegister();
 	OGRErr err;
 	OGRSpatialReference inSRS, outSRS;
-	err = inSRS.importFromEPSG(28355);//GDA94,MGA55
-	err = outSRS.importFromEPSG(4283);//GDA94,Geodetic
+	err = inSRS.importFromEPSG(epsgcodein);
+	err = outSRS.importFromEPSG(epsgcodeout);	
 
 	xout = xin;
 	yout = yin;

@@ -8,8 +8,22 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #ifndef _gdal_utils_H
 #define _gdal_utils_H
+#include <ogr_spatialref.h>
 
-bool projection(const std::vector<double>& xin, const std::vector<double>& yin, std::vector<double>& xout, std::vector<double>& yout);
+OGRSpatialReference getsrs(
+	const std::string& datum,
+	const std::string& projection,
+	const std::string& units
+	);
+
+bool transform(
+	const int& epsgcodein,
+	const std::vector<double>& xin,
+	const std::vector<double>& yin,
+	const int& epsgcodeout,
+	std::vector<double>& xout,
+	std::vector<double>& yout
+	);
 
 #endif
 
