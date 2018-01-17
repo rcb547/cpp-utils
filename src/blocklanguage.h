@@ -209,6 +209,17 @@ public:
 		}
 		return v;
 	};
+
+	size_t findidentiferindex(std::string id) const
+	{
+		for (size_t i = 0; i < Entries.size(); i++){
+			if (strcasecmp(identifier(Entries[i]), id) == 0){
+				return i;
+			}
+		}		
+		return ud_size_t();
+	}
+
 	std::string findidentifer(std::string id) const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
@@ -218,6 +229,7 @@ public:
 		}
 		return ud_string();
 	}
+
 	std::string getstringvalue(std::string id) const
 	{
 		return value(getentry(id));

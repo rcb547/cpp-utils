@@ -9,7 +9,14 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _colormap_H
 #define _colormap_H
 
+#include <sstream>
 #include <vector>
+#include "blocklanguage.h"
+
+enum eColorMapType{
+	COLORMAPTYPE_BUILTIN,
+	COLORMAPTYPE_ERMLUT
+};
 
 class cColorMap {
 
@@ -22,8 +29,37 @@ public:
 		setjet();
 	}
 
-	cColorMap(const std::string name){
-		set(name);
+	cColorMap(const std::string name, const eColorMapType type = COLORMAPTYPE_BUILTIN){
+		std::string m;
+		switch (type){
+			case COLORMAPTYPE_BUILTIN:
+				set(name);
+				break;
+			case COLORMAPTYPE_ERMLUT:
+				loadErMapperLUT(name);				
+				break;
+			default:
+				m = strprint("cColorMap::cColorMap() unknown eColorMapType line %d of %s", __LINE__, __FILE__);
+				throw(std::runtime_error(m));
+				break;
+		}
+	}
+
+	void loadErMapperLUT(const std::string lutfile){
+		cBlock B(lutfile);
+		size_t n = B.getsizetvalue("NrEntries");		
+		size_t p = B.findidentiferindex("LUT");		
+		r.resize(n);
+		g.resize(n);
+		b.resize(n);
+		int k, ir, ig, ib;
+		for (size_t i = 0; i < n; i++){
+			std::istringstream ss(B.Entries[p+1+i]);
+			ss >> k >> ir >> ig >> ib;
+			r[i] = (unsigned char)(ir / 256);
+			g[i] = (unsigned char)(ig / 256);
+			b[i] = (unsigned char)(ib / 256);
+		}
 	}
 
 	void set(const std::string name){
