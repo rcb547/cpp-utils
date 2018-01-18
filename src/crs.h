@@ -9,6 +9,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _crs_H
 #define _crs_H
 
+#include <sstream>
+
 class cCRS{
 
 public:
@@ -18,7 +20,7 @@ public:
 	double inverse_flattening = 0;
 	bool valid = false;
 
-	cCRS(std::string datum){
+	cCRS(const std::string& datum){
 		if (datum == "GDA94"){
 			name = datum;
 			epsg_code = "EPSG:4283";
@@ -44,6 +46,27 @@ public:
 			name = datum;
 		}
 	};
+
+	static int epsgcode(const std::string& datumprojection){		
+		
+		int code;
+		if (std::sscanf(datumprojection.c_str(), "EPSG:%d", &code) == 1){
+			return code;
+		}
+		else if (datumprojection == "GDA94|GEODETIC") return 4283;
+		else if (datumprojection == "WGS84|GEODETIC") return 4326;		
+		else if (datumprojection == "AGD66|GEODETIC") return 4202;
+		else if (datumprojection == "AGD84|GEODETIC") return 4203;		
+		else if (datumprojection == "GDA94|MGA49") return 28349;
+		else if (datumprojection == "GDA94|MGA50") return 28350;
+		else if (datumprojection == "GDA94|MGA51") return 28351;
+		else if (datumprojection == "GDA94|MGA52") return 28352;
+		else if (datumprojection == "GDA94|MGA53") return 28353;
+		else if (datumprojection == "GDA94|MGA54") return 28354;
+		else if (datumprojection == "GDA94|MGA55") return 28355;
+		else if (datumprojection == "GDA94|MGA56") return 28356;		
+		else return -1;
+	}
 
 };
 

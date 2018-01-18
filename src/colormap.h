@@ -29,8 +29,7 @@ public:
 		setjet();
 	}
 
-	cColorMap(const std::string name, const eColorMapType type = COLORMAPTYPE_BUILTIN){
-		std::string m;
+	cColorMap(const std::string name, const eColorMapType type = COLORMAPTYPE_BUILTIN){		
 		switch (type){
 			case COLORMAPTYPE_BUILTIN:
 				set(name);
@@ -39,8 +38,8 @@ public:
 				loadErMapperLUT(name);				
 				break;
 			default:
-				m = strprint("cColorMap::cColorMap() unknown eColorMapType line %d of %s", __LINE__, __FILE__);
-				throw(std::runtime_error(m));
+				std::string msg = strprint("Unknown eColorMapType") + _SRC_;
+				throw(std::runtime_error(msg));
 				break;
 		}
 	}
