@@ -11,13 +11,19 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cstring>
 #include <vector>
-#include "general_utils.h"
 
-class cAsciiColumnField{
+#include "general_utils.h"
+#include "file_utils.h"
+
+class cAsciiColumnField {
 
 public:
 	size_t order;
 	size_t startcolumn;
+	size_t endcolumn() const
+	{
+		return startcolumn + nbands - 1;
+	}
 	size_t startchar;
 	size_t endchar;
 	std::string name;

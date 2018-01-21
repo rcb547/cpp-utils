@@ -137,10 +137,6 @@ void swap_endian(std::vector<T>& array)
 	}
 }
 
-int log10stretch(double val, double lowclip, double highclip);
-double inverselog10stretch(int bin, double lowclip, double highclip);
-int linearstretch(double val, double lowclip, double highclip);
-double inverselinearstretch(int bin, double lowclip, double highclip);
 bool regression(double* x, double*y, size_t n, double* gradient, double* intercept);
 bool regression(const std::vector<double>& x, const std::vector<double>& y, double& gradient, double& intercept);
 bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double>& y, double& x1, double& y1, double& x2, double& y2);
@@ -178,7 +174,7 @@ void   linearinterp(const size_t n, const double* x, const double* y, size_t ni,
 std::vector<double> linearinterp(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& xi);
 
 bool isreportable(int rec);
-bool isinrange(const sRange& r, const int& i);
+bool isinrange(const cRange<int>& r, const int& i);
 
 double overlap(const double al, const double ah, const double bl, const double bh);
 double fractionaloverlap(const double al, const double ah, const double bl, const double bh);
@@ -254,7 +250,7 @@ std::string trim(const std::string& s);
 std::string stripquotes(const std::string& s);
 std::vector<std::string> tokenize(const std::string& str);
 std::vector<std::string> parsestrings(const std::string& str, const std::string& delims);
-std::vector<sRange> parserangelist(std::string& str);
+std::vector<cRange<int>> parserangelist(std::string& str);
 
 #define SORT_UP 0
 #define SORT_DOWN 1
@@ -319,20 +315,6 @@ std::vector<double> log10space(const double x1, const double x2, const size_t n)
 bool filegetline(FILE* fp, std::string& str);
 
 int LevenshteinDistance(char* s, int len_s, char* t, int len_t);
-
-size_t ud_size_t();
-short  ud_short();
-int    ud_int();
-float  ud_float();
-double ud_double();
-std::string ud_string();
-bool isundefined(const size_t& v);
-bool isundefined(const short& v);
-bool isundefined(const int& v);
-bool isundefined(const float& v);
-bool isundefined(const double& v);
-bool isundefined(const std::string& v);
-
 
 #endif
 

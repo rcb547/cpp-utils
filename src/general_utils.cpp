@@ -406,44 +406,6 @@ double correlation_coefficient(std::vector<double>x, std::vector<double>y)
 
 }
 
-int log10stretch(double val, double lowclip, double highclip)
-{
-	if (val <= lowclip)return  0;
-	if (val >= highclip)return 255;
-
-	int bin;
-	double logl = log10(lowclip);
-	double logh = log10(highclip);
-	if (val <= 0.0) bin = 0;
-	else bin = (int)(256.0 * (log10(val) - logl) / (logh - logl));
-	if (bin > 255)bin = 255;
-	if (bin < 0)bin = 0;
-	return bin;
-}
-
-double inverselog10stretch(int bin, double lowclip, double highclip)
-{
-	double logl = log10(lowclip);
-	double logh = log10(highclip);
-	double lval = ((double)bin * (logh - logl) / 255.0) + logl;
-	return pow(10.0, lval);
-}
-
-int linearstretch(double val, double lowclip, double highclip)
-{
-	int bin;
-	if (val <= lowclip) bin = 0;
-	else if (val >= highclip) bin = 255;
-	else bin = (int)(256.0 * (val - lowclip) / (highclip - lowclip));
-	if (bin > 255)bin = 255;
-	if (bin < 0)bin = 0;
-	return bin;
-}
-
-double inverselinearstretch(int bin, double lowclip, double highclip){
-	return ((double)bin * (highclip - lowclip) / 255.0) + lowclip;
-}
-
 bool regression(double* x, double*y, size_t n, double* gradient, double* intercept)
 {
 	//regression line y=mx + b // Thomas/Finney pp887
@@ -872,7 +834,7 @@ bool isreportable(int rec)
 	else return false;
 }
 
-bool isinrange(const sRange& r, const int& i)
+bool isinrange(const cRange<int>& r, const int& i)
 {
 	if (i<r.from || i>r.to)return false;
 	else return true;
@@ -1207,12 +1169,12 @@ std::vector<std::string> parsestrings(const std::string& str, const std::string&
 	return list;
 }
 
-std::vector<sRange> parserangelist(std::string& str)
+std::vector<cRange<int>> parserangelist(std::string& str)
 {
 	std::vector<std::string> items = parsestrings(str, ",");
 
-	std::vector<sRange> list;
-	sRange r;
+	std::vector<cRange<int>> list;
+	cRange<int> r;
 
 	for (size_t i = 0; i < items.size(); i++){
 		int f, t;
@@ -1324,40 +1286,5 @@ int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 	return c;
 }
 
-size_t ud_size_t(){ return UINT64_MAX; }
-short  ud_short(){ return SHRT_MIN; }
-int    ud_int(){ return INT_MIN; }
-float  ud_float(){ return  -FLT_MAX; }
-double ud_double(){ return -DBL_MAX; }
-std::string ud_string(){ return "*ENTRYNOTFOUND*"; }
 
-bool isundefined(const size_t& v){ 
-	if(v == ud_size_t())return true;
-	return false;
-}
-
-bool isundefined(const short& v){
-	if (v == ud_short())return true;
-	return false;
-}
-
-bool isundefined(const int& v){
-	if (v == ud_int())return true;
-	return false;
-}
-
-bool isundefined(const float& v){
-	if (v == ud_float())return true;
-	return false;
-}
-
-bool isundefined(const double& v){
-	if (v == ud_double())return true;
-	return false;
-}
-
-bool isundefined(const std::string& v){
-	if (v == ud_string())return true;
-	return false;
-}
 

@@ -8,6 +8,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #ifndef _gdal_utils_H
 #define _gdal_utils_H
+
 #include <ogr_spatialref.h>
 
 OGRSpatialReference getsrs(

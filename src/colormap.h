@@ -13,9 +13,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include "blocklanguage.h"
 
-enum eColorMapType{
-	COLORMAPTYPE_BUILTIN,
-	COLORMAPTYPE_ERMLUT
+enum class eColorMapType{
+	BUILTIN,
+	ERMLUT
 };
 
 class cColorMap {
@@ -25,26 +25,49 @@ public:
 	std::vector<unsigned char> g;
 	std::vector<unsigned char> b;
 
-	cColorMap(){
-		setjet();
-	}
+	cColorMap(){ setjet(); }
 
-	cColorMap(const std::string name, const eColorMapType type = COLORMAPTYPE_BUILTIN){		
+	cColorMap(const std::string name, const eColorMapType type = eColorMapType::BUILTIN){
 		switch (type){
-			case COLORMAPTYPE_BUILTIN:
-				set(name);
+		case eColorMapType::BUILTIN:
+				loadbuiltin(name);
 				break;
-			case COLORMAPTYPE_ERMLUT:
+		case eColorMapType::ERMLUT:
 				loadErMapperLUT(name);				
 				break;
-			default:
-				std::string msg = strprint("Unknown eColorMapType") + _SRC_;
-				throw(std::runtime_error(msg));
-				break;
+		default:
+			std::string msg = strprint("Unknown eColorMapType") + _SRC_;
+			throw(std::runtime_error(msg));
+			break;
 		}
 	}
 
-	void loadErMapperLUT(const std::string lutfile){
+	cColorMap(const cBlock& b){
+		std::string s;		
+		if(b.getvalue("ColourMap", s)==false){
+			std::string msg("ColourMap not set\n");
+			throw(std::runtime_error(_SRC_ + msg));
+		}
+		else{
+			bool status = load(s);
+			if (status == false){
+				std::string msg = strprint("Unknown ColourMap %s\n", s.c_str());
+				throw(std::runtime_error(_SRC_ + msg));
+			}
+		}
+	}
+
+	bool load(const std::string s){		
+		if (exists(s)){
+			return loadErMapperLUT(s);			
+		}
+		return loadbuiltin(s);		
+	}
+
+	bool loadErMapperLUT(const std::string lutfile){
+		
+		if (exists(lutfile) == false)return false;
+
 		cBlock B(lutfile);
 		size_t n = B.getsizetvalue("NrEntries");		
 		size_t p = B.findidentiferindex("LUT");		
@@ -59,9 +82,10 @@ public:
 			g[i] = (unsigned char)(ig / 256);
 			b[i] = (unsigned char)(ib / 256);
 		}
+		return true;
 	}
 
-	void set(const std::string name){
+	bool loadbuiltin(const std::string name){
 
 		if (strcasecmp(name, "jet") == 0){
 			setjet();
@@ -85,8 +109,9 @@ public:
 			setcomtal();
 		}
 		else{
-			message("Unknown ColourMap %s\n", name.c_str());
+			return false;			
 		}
+		return true;
 	}
 
 	void set(const unsigned char* ar, const unsigned char* ag, const unsigned char* ab, size_t n){

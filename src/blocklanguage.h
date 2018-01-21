@@ -13,7 +13,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <climits>
 #include <cfloat>
-//#include <cstdint>
+
 #include <cstdlib>
 #include <vector>
 
@@ -33,13 +33,12 @@ public:
 	std::vector<cBlock> Blocks;
 
 	cBlock() { }
+
 	cBlock(const std::string& filename)
 	{
 		loadfromfile(filename);
 	}
 
-	//static std::string ud_string(){ return "ENTRY NOT FOUND"; }
-	
 	void loadfromfile(const std::string& filename)
 	{
 		Filename = filename;
@@ -85,7 +84,7 @@ public:
 		}
 	}
 
-	std::string get_as_string(size_t n = 0) const
+	std::string get_as_string(const size_t n = 0) const
 	{
 		std::string s;
 
@@ -106,7 +105,7 @@ public:
 		return s;
 	}
 
-	void print(size_t n = 0) const
+	void print(const size_t n = 0) const
 	{
 		std::string s = get_as_string(n);
 		std::cout << s.c_str();
@@ -119,7 +118,7 @@ public:
 		return;
 	}
 
-	std::string identifier(std::string entry) const
+	std::string identifier(const std::string entry) const
 	{
 		size_t index = entry.find("=");
 		std::string id = entry.substr(0, index - 1);
@@ -136,7 +135,7 @@ public:
 		}
 
 	}
-	std::string value(std::string entry) const
+	std::string value(const std::string entry) const
 	{
 		size_t index = entry.find("=");
 		size_t len = entry.size() - index - 1;
@@ -154,7 +153,7 @@ public:
 			Blocks.at(i).printvalues();
 		}
 	}
-	std::string getentry(std::string id) const
+	std::string getentry(const std::string id) const
 	{
 		size_t index = id.find(".");
 		if (index != std::string::npos){
@@ -172,7 +171,8 @@ public:
 			return findidentifer(id);
 		}
 	}
-	cBlock findblock(std::string name) const
+	
+	const cBlock findblock(const std::string name) const
 	{
 		size_t index = name.find(".");
 
@@ -189,9 +189,9 @@ public:
 			}
 		}
 		return cBlock();
-
 	}
-	std::vector<cBlock> findblocks(std::string name) const
+	
+	std::vector<cBlock> findblocks(const std::string name) const
 	{
 		std::vector<cBlock> v;
 		size_t index = name.find(".");
@@ -210,7 +210,7 @@ public:
 		return v;
 	};
 
-	size_t findidentiferindex(std::string id) const
+	size_t findidentiferindex(const std::string id) const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
 			if (strcasecmp(identifier(Entries[i]), id) == 0){
@@ -220,7 +220,7 @@ public:
 		return ud_size_t();
 	}
 
-	std::string findidentifer(std::string id) const
+	std::string findidentifer(const std::string id) const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
 			if (strcasecmp(identifier(Entries[i]), id) == 0){
@@ -230,12 +230,12 @@ public:
 		return ud_string();
 	}
 
-	std::string getstringvalue(std::string id) const
+	std::string getstringvalue(const std::string id) const
 	{
 		return value(getentry(id));
 	}
 
-	short getshortvalue(std::string id) const
+	short getshortvalue(const std::string id) const
 	{
 		short v;
 		int status;
@@ -250,7 +250,7 @@ public:
 		if (status == 1) return v;
 		else return ud_short();
 	}
-	int getintvalue(std::string id) const
+	int getintvalue(const std::string id) const
 	{
 		int v;
 		int status;
@@ -265,7 +265,7 @@ public:
 		if (status == 1) return v;
 		else return ud_int();
 	}
-	size_t getsizetvalue(std::string id) const
+	size_t getsizetvalue(const std::string id) const
 	{
 		size_t v;
 		int status;
@@ -282,7 +282,7 @@ public:
 		if (status == 1) return v;
 		else return ud_size_t();
 	}
-	float getfloatvalue(std::string id) const
+	float getfloatvalue(const std::string id) const
 	{
 		float v;
 		int status;
@@ -297,7 +297,7 @@ public:
 		if (status == 1) return v;
 		else return ud_float();
 	}
-	double getdoublevalue(std::string id) const
+	double getdoublevalue(const std::string id) const
 	{
 		double v;
 		int status;
@@ -313,7 +313,7 @@ public:
 		else return ud_double();
 	}
 
-	std::vector<int> getintvector(std::string id) const
+	std::vector<int> getintvector(const std::string id) const
 	{
 		int v;
 		std::vector<int> vec;
@@ -330,7 +330,7 @@ public:
 		}
 		return vec;
 	}
-	std::vector<double> getdoublevector(std::string id) const
+	std::vector<double> getdoublevector(const std::string id) const
 	{
 		double v;
 		std::vector<double> vec;
@@ -347,7 +347,7 @@ public:
 		}
 		return vec;
 	}
-	std::vector<std::string> getstringvector(std::string id) const
+	std::vector<std::string> getstringvector(const std::string id) const
 	{
 		std::vector<std::string> fields;
 		std::string s = getstringvalue(id);
@@ -362,7 +362,7 @@ public:
 		}
 		return fields;
 	}
-	std::vector<std::vector<double>> getdoublematrix(std::string id) const
+	std::vector<std::vector<double>> getdoublematrix(const std::string id) const
 	{
 		std::vector<std::vector<double>> matrix;
 		cBlock b = findblock(id);
@@ -380,7 +380,7 @@ public:
 		}
 		return matrix;
 	}
-	bool getboolvalue(std::string id) const
+	bool getboolvalue(const std::string id) const
 	{
 		std::string s = getstringvalue(id);
 		size_t k = s.find_first_of(" \t\r\n");
@@ -396,7 +396,7 @@ public:
 		else return false;
 	}
 
-	bool getvalue(std::string id, bool& value) const
+	bool getvalue(const std::string id, bool& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = false;
@@ -405,7 +405,7 @@ public:
 		value = getboolvalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, short& value) const
+	bool getvalue(const std::string id, short& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_short();
@@ -414,7 +414,7 @@ public:
 		value = getshortvalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, int& value) const
+	bool getvalue(const std::string id, int& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_int();
@@ -423,7 +423,7 @@ public:
 		value = getintvalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, size_t& value) const
+	bool getvalue(const std::string id, size_t& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_size_t();
@@ -432,7 +432,7 @@ public:
 		value = getsizetvalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, float& value) const
+	bool getvalue(const std::string id, float& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_float();
@@ -441,7 +441,7 @@ public:
 		value = getfloatvalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, double& value) const
+	bool getvalue(const std::string id, double& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_double();
@@ -450,7 +450,7 @@ public:
 		value = getdoublevalue(id);
 		return true;
 	}
-	bool getvalue(std::string id, std::string& value) const
+	bool getvalue(const std::string id, std::string& value) const
 	{
 		if (getentry(id).compare(ud_string()) == 0){
 			//value = ud_string();
@@ -460,7 +460,7 @@ public:
 		return true;
 	}
 
-	std::vector<int> getmultipleints(std::string id) const
+	std::vector<int> getmultipleints(const std::string id) const
 	{
 		std::vector<std::string> str = getmultiplestrings(id);
 		std::vector<int> result;
@@ -472,7 +472,7 @@ public:
 		}
 		return result;
 	}
-	std::vector<double> getmultipledoubles(std::string id) const
+	std::vector<double> getmultipledoubles(const std::string id) const
 	{
 		std::vector<std::string> str = getmultiplestrings(id);
 		std::vector<double> result;
@@ -484,7 +484,7 @@ public:
 		}
 		return result;
 	}
-	std::vector<std::string> getmultiplestrings(std::string id) const
+	std::vector<std::string> getmultiplestrings(const std::string id) const
 	{
 		int i;
 		std::vector<std::string> result;
@@ -504,7 +504,7 @@ public:
 		}
 		return result;
 	}
-	std::vector<std::string> getblockstrings(std::string id) const
+	std::vector<std::string> getblockstrings(const std::string id) const
 	{
 		std::vector<std::string> result;
 		cBlock b = findblock(id);

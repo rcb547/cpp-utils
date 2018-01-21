@@ -28,7 +28,6 @@ private:
 public:
 	std::vector<cAsciiColumnField> fields;
 
-
 	cAsciiColumnFile(){
 		initialise();
 	};

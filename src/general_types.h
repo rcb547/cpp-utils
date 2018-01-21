@@ -9,10 +9,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _general_types_H
 #define _general_types_H
 
-#include <climits>
 #include <cstring>
 #include <complex>
 #include <vector>
+#include "undefinedvalues.h"
 
 typedef std::vector<double>  dvector;
 typedef std::vector<dvector> dmatrix;
@@ -214,9 +214,28 @@ public:
 	}
 };
 
-struct sRange{
-	int from;
-	int to;
+template<typename T>
+class cRange{
+
+public:
+	T from;
+	T to;
+
+	cRange(){
+		from = undefinedvalue(from);
+		to   = undefinedvalue(to);
+	}
+
+	cRange(const T& _from, const T& _to){
+		from = _from;
+		to   = _to;
+	}
+
+	bool valid(){
+		if (isdefined(from) && isdefined(to)) return true;		
+		return false;
+	}
+
 };
 
 struct sBoundingBox{

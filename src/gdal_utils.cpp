@@ -6,8 +6,12 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#include "gdal_priv.h"
 #include <ogr_spatialref.h>
+
+#pragma warning( push )  
+#pragma warning (disable: 4251)
+#include <gdal_priv.h>
+#pragma warning( pop )   
 
 #include "gdal_utils.h"
 
@@ -49,7 +53,7 @@ bool transform(
 		return false;
 	}
 
-	if (!poCT->Transform(xout.size(), xout.data(), yout.data())){
+	if (!poCT->Transform((int) xout.size(), xout.data(), yout.data())){
 		printf("Transformation operation failed.\n");
 		return false;
 	}

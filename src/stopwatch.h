@@ -13,11 +13,11 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 
 
-class cStopWatch{
+class cStopWatch{	
 
 	std::chrono::high_resolution_clock::time_point t0;
 	std::chrono::high_resolution_clock::time_point t1;
-
+	
 public:
 
 	cStopWatch(){ reset(); }
@@ -30,14 +30,14 @@ public:
 
 	double etime(){
 		using namespace std::chrono;
-		duration<double> time_span = duration_cast<duration<double>>(t1 - t0);
+		duration<double> time_span = duration_cast<std::chrono::microseconds>(t1 - t0);		
 		return time_span.count();
 	}
 
 	double etimenow(){
 		using namespace std::chrono;
 		t1 = high_resolution_clock::now();
-		duration<double> time_span = duration_cast<duration<double>>(t1 - t0);
+		duration<double> time_span = duration_cast<std::chrono::microseconds>(t1 - t0);				
 		return time_span.count();
 	}
 
