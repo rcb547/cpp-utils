@@ -39,27 +39,27 @@ inline std::string ud_string(){
 	return std::string("Undefined std::string");	
 }
 
-inline short undefinedvalue(const short& v){
+inline short undefinedvalue(const short&){
 	return ud_short();
 }
 
-inline int undefinedvalue(const int& v){
+inline int undefinedvalue(const int&){
 	return ud_int();
 }
 
-inline size_t undefinedvalue(const size_t& v){
+inline size_t undefinedvalue(const size_t&){
 	return ud_size_t();
 }
 
-inline float undefinedvalue(const float& v){
+inline float undefinedvalue(const float&){
 	return ud_float();
 }
 
-inline double undefinedvalue(const double& v){
+inline double undefinedvalue(const double&){
 	return ud_double();
 }
 
-inline std::string undefinedvalue(const std::string& v){
+inline std::string undefinedvalue(const std::string&){
 	return ud_string();
 }
 

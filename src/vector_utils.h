@@ -276,7 +276,7 @@ std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 {
 	std::vector<T> v(n);
 	v[0] = start;
-	for (T i = 1; i<n; i++) v[i] = v[i - 1] + inc;
+	for (size_t i = 1; i<n; i++) v[i] = v[i - 1] + inc;
 	return v;
 };
 

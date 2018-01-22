@@ -851,9 +851,7 @@ double overlap(const double al, const double ah, const double bl, const double b
 	else{
 		if (ah <= bh)return ah - al;//a is all inside b
 		else return bh - al;//a overlaps high end of b
-	}
-	warningmessage("overlap(): Found undefined condition al=%lf ah=%lf bl=%lf bh=%lf\n", al, ah, bl, bh);
-	return 0;
+	}		
 }
 
 double fractionaloverlap(const double al, const double ah, const double bl, const double bh)

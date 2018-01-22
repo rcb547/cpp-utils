@@ -22,6 +22,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #pragma warning (disable : 4625)
 #pragma warning (disable : 4626)
 #pragma warning (disable : 4365)
+#pragma warning (disable : 4996)
 #endif
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
