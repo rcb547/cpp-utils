@@ -236,7 +236,7 @@ unsigned int factorial(unsigned int n);
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
-
+std::vector<std::string> trimsplit(const std::string &s, char delim);
 
 void allocate1darray(int*& a,const size_t n);
 void allocate1darray(double*& a, const size_t n);

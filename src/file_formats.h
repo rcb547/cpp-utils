@@ -133,12 +133,12 @@ public:
 	void print(){		
 		printf("\n");
 		printf(" name=%s", name.c_str());
-		printf(" order=%zu", order);
-		printf(" startcolumn=%zu", startcolumn);		
-		printf(" bands=%zu", nbands);
+		printf(" order=%lu", order);
+		printf(" startcolumn=%lu", startcolumn);		
+		printf(" bands=%lu", nbands);
 		printf(" type=%c", fmttype);
-		printf(" width=%zu", fmtwidth);
-		printf(" decimals=%zu", fmtdecimals);
+		printf(" width=%lu", fmtwidth);
+		printf(" decimals=%lu", fmtdecimals);
 		printf(" units=%s", units.c_str());
 		printf(" nullvalue=%s", nullvaluestr.c_str());
 		printf(" nullvalue=%lf", nullvalue);
@@ -259,12 +259,137 @@ class cOutputFileInfo{
 			std::string s = fields[i].aseggdf_header_record();
 			fprintf(fp, s.c_str());
 		}
-		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size()+1);
+		fprintf(fp, "DEFN %lu ST=RECD,RT=;END DEFN\n", fields.size()+1);
 		fclose(fp);
 	};
 
 };
 
+class cASEGGDF2Header {
+
+private:
+
+	std::vector<cAsciiColumnField> fields;
+
+public:
+
+	cASEGGDF2Header(const std::string& dfnpath){
+		read(dfnpath);
+	}
+
+	bool read(const std::string& dfnpath){
+
+		fields.clear();
+
+		FILE* fp = fileopen(dfnpath, "r");
+		std::string str;
+
+		size_t startcolumn = 1;
+		filegetline(fp, str);
+		while (filegetline(fp, str)){
+
+			std::vector<std::string> tokens = trimsplit(str, ';');
+			if (strcasecmp(tokens[1], "end defn") == 0){
+				break;
+			}
+
+			cAsciiColumnField F;
+
+			int intorder;
+			sscanf(tokens[0].c_str(), "DEFN %d ST = RECD, RT = ", &intorder);
+			intorder--;
+			F.order = (size_t)intorder;
+			F.startcolumn = startcolumn;
+
+			tokens = trimsplit(tokens[1], ':');
+			F.name = tokens[0];
+			std::string formatstr = tokens[1];
+
+			int nbands = 1;
+			int width = 0;
+			int decimals = 0;
+
+			if (sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmttype, &width, &decimals) == 4){
+				//
+			}
+			else if (sscanf(formatstr.c_str(), "%c%d.%d", &F.fmttype, &width, &decimals) == 3){
+				//
+			}
+			else if (sscanf(formatstr.c_str(), "%c%d", &F.fmttype, &width) == 2){
+				//
+			}
+			else{
+				std::string msg = _SRC_ + strprint("Unknown format string in ASEGGDF2 DFN File (%s)\n",formatstr.c_str());
+				throw(std::runtime_error(msg));				
+			}
+			F.nbands = nbands;
+			F.fmtwidth = width;
+			F.fmtdecimals = decimals;
+			startcolumn += F.nbands;
+
+			if (tokens.size() > 2){
+				std::string remainder = tokens[2];
+				tokens = trimsplit(remainder, ',');
+				for (size_t i = 0; i < tokens.size(); i++){
+					std::vector<std::string> t = trimsplit(tokens[i], '=');
+					if (strcasecmp(t[0], "unit") == 0 || strcasecmp(t[0], "units") == 0){
+						F.units = t[1];
+					}
+					else if (strcasecmp(t[0], "name") == 0){
+						F.expandedname = t[1];
+					}
+					else if (strcasecmp(t[0], "null") == 0){
+						F.nullvaluestr = t[1];
+						F.nullvalue = atof(t[1].c_str());
+					}
+					else{						
+						if (i < tokens.size() - 1) 
+							F.comment += tokens[i] + ", ";
+						else{
+							F.comment += tokens[i];
+						}
+							
+					}
+				}
+			}
+			fields.push_back(F);
+		};
+		fclose(fp);
+
+		size_t k = 0;
+		for (size_t i = 0; i < fields.size(); i++){
+			fields[i].startchar = k;
+			fields[i].endchar = k - 1 + fields[i].fmtwidth * fields[i].nbands;
+			k = fields[i].endchar + 1;
+		}
+		return true;
+	};
+
+	void write(const std::string dfnpath){
+		FILE* fp = fileopen(dfnpath, "w");
+		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
+		for (size_t i = 0; i < fields.size(); i++){
+			std::string s = fields[i].aseggdf_header_record();
+			fprintf(fp, s.c_str());
+		}
+		fprintf(fp, "DEFN %lu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
+		fclose(fp);
+	};
+
+	std::vector<std::string> tokenise(const std::string& str, const char delim){
+		std::string s = trim(str);
+		std::vector<std::string> tokens;
+		size_t p = s.find_first_of(delim);
+		while (p < s.size()){
+			tokens.push_back(trim(s.substr(0, p)));
+			s = s.substr(p + 1, s.length());
+			p = s.find_first_of(delim);
+		}
+		tokens.push_back(trim(s));
+		return tokens;
+	}
+
+};
 #endif
 
  

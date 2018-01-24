@@ -1262,6 +1262,15 @@ std::vector<std::string> split(const std::string &s, char delim) {
 	return elems;
 }
 
+std::vector<std::string> trimsplit(const std::string &s, char delim) {
+	std::vector<std::string> elems;
+	split(s, delim, elems);
+	for (size_t i = 0; i < elems.size(); i++){
+		elems[i] = trim(elems[i]);
+	}
+	return elems;
+}
+
 int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 {
 	//Adapted from https://en.wikipedia.org/wiki/Levenshtein_distance#Example
