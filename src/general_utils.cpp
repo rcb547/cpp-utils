@@ -523,100 +523,6 @@ int strncasecmp(const std::string& A, const std::string& B, const size_t n)
 #endif
 }
 
-std::vector<std::string> fieldparsestring_old(const char* str, const char delim)
-{
-	int numquotes = 0;
-	bool priorwhitespace = true;
-
-	size_t len = 0;
-	size_t k = 0;
-	while (str[k] != '\0')
-	{
-		len++;
-		if (str[k] == '"')numquotes++;
-		k++;
-	}
-
-	if (numquotes % 2 != 0){
-		warningmessage("fieldparsestd::string(): Unmatched quotes\n");
-		std::vector<std::string> v;
-		return v;
-	}
-
-	if (len == 0){
-		warningmessage("fieldparsestd::string(): Zero length std::string\n");
-		std::vector<std::string> v;
-		return v;
-	}
-
-	std::vector<int> delimpos;
-	delimpos.push_back(-1);
-	for (size_t i = 0; i < len; i++){
-		char c = str[i];
-
-		if (c == ' ' || c == '\t')
-		{
-			if (priorwhitespace == false){
-				delimpos.push_back((int)i);
-			}
-			priorwhitespace = true;
-		}
-		else if (c == delim)
-		{
-			delimpos.push_back((int)i);
-			priorwhitespace = true;
-		}
-		else if (c == '\r' || c == '\n' || c == '\0')
-		{
-			delimpos.push_back((int)i);
-			break;
-		}
-		else if (i == len - 1)
-		{
-			delimpos.push_back((int)i + 1);
-			break;
-		}
-		else{
-			priorwhitespace = false;
-		}
-	}
-
-	size_t nfields = delimpos.size() - 1;
-	std::vector<std::string> v(nfields);
-	for (size_t i = 0; i < nfields; i++){
-		size_t a = (size_t)(delimpos[i] + 1);
-		size_t b = (size_t)(delimpos[i + 1] - 1);
-		v[i] = std::string(&(str[a]), b - a + 1);
-	}
-	return v;
-}
-
-std::vector<std::string> fieldparsestring(const char* s, const char* delims)
-{
-	std::vector<std::string> fields;
-	fields.reserve(400);
-	std::string work = std::string(s);
-	char* p = strtok(&(work[0]), delims);
-	while (p != NULL)
-	{
-		fields.push_back(std::string(p));
-		p = strtok(NULL, delims);
-	}
-	return fields;
-}
-
-std::vector<double> getdoublevector(const char* str, const char* delims)
-{
-	double v;
-	std::vector<double> vec;
-	std::vector<std::string> fields = fieldparsestring(str, delims);
-	for (size_t i = 0; i < fields.size(); i++){
-		sscanf(fields[i].c_str(), "%lf", &v);
-		vec.push_back(v);
-	}
-	return vec;
-}
-
 std::string timestamp()
 {	
 	time_t ltime;
@@ -1192,6 +1098,100 @@ std::vector<cRange<int>> parserangelist(std::string& str)
 	return list;
 }
 
+std::vector<std::string> fieldparsestring_old(const char* str, const char delim)
+{
+	int numquotes = 0;
+	bool priorwhitespace = true;
+
+	size_t len = 0;
+	size_t k = 0;
+	while (str[k] != '\0')
+	{
+		len++;
+		if (str[k] == '"')numquotes++;
+		k++;
+	}
+
+	if (numquotes % 2 != 0){
+		warningmessage("fieldparsestd::string(): Unmatched quotes\n");
+		std::vector<std::string> v;
+		return v;
+	}
+
+	if (len == 0){
+		warningmessage("fieldparsestd::string(): Zero length std::string\n");
+		std::vector<std::string> v;
+		return v;
+	}
+
+	std::vector<int> delimpos;
+	delimpos.push_back(-1);
+	for (size_t i = 0; i < len; i++){
+		char c = str[i];
+
+		if (c == ' ' || c == '\t')
+		{
+			if (priorwhitespace == false){
+				delimpos.push_back((int)i);
+			}
+			priorwhitespace = true;
+		}
+		else if (c == delim)
+		{
+			delimpos.push_back((int)i);
+			priorwhitespace = true;
+		}
+		else if (c == '\r' || c == '\n' || c == '\0')
+		{
+			delimpos.push_back((int)i);
+			break;
+		}
+		else if (i == len - 1)
+		{
+			delimpos.push_back((int)i + 1);
+			break;
+		}
+		else{
+			priorwhitespace = false;
+		}
+	}
+
+	size_t nfields = delimpos.size() - 1;
+	std::vector<std::string> v(nfields);
+	for (size_t i = 0; i < nfields; i++){
+		size_t a = (size_t)(delimpos[i] + 1);
+		size_t b = (size_t)(delimpos[i + 1] - 1);
+		v[i] = std::string(&(str[a]), b - a + 1);
+	}
+	return v;
+}
+
+std::vector<std::string> fieldparsestring(const char* s, const char* delims)
+{
+	std::vector<std::string> fields;
+	fields.reserve(400);
+	std::string work = std::string(s);
+	char* p = strtok(&(work[0]), delims);
+	while (p != NULL)
+	{
+		fields.push_back(std::string(p));
+		p = strtok(NULL, delims);
+	}
+	return fields;
+}
+
+std::vector<double> getdoublevector(const char* str, const char* delims)
+{
+	double v;
+	std::vector<double> vec;
+	std::vector<std::string> fields = fieldparsestring(str, delims);
+	for (size_t i = 0; i < fields.size(); i++){
+		sscanf(fields[i].c_str(), "%lf", &v);
+		vec.push_back(v);
+	}
+	return vec;
+}
+
 std::vector<float> dvec2fvec(std::vector<double>& vd)
 {
 	std::vector<float> vf(vd.size());
@@ -1247,8 +1247,8 @@ unsigned int factorial(unsigned int n){
 	return fact;
 }
 
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-	std::stringstream ss(s);
+std::vector<std::string> &split(const std::string &str, const char delim, std::vector<std::string> &elems) {
+	std::stringstream ss(str);
 	std::string item;
 	while (std::getline(ss, item, delim)) {
 		elems.push_back(item);
@@ -1256,19 +1256,32 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 	return elems;
 }
 
-std::vector<std::string> split(const std::string &s, char delim) {
+std::vector<std::string> split(const std::string &str, const char delim) {
 	std::vector<std::string> elems;
-	split(s, delim, elems);
+	split(str, delim, elems);
 	return elems;
 }
 
-std::vector<std::string> trimsplit(const std::string &s, char delim) {
+std::vector<std::string> trimsplit(const std::string &str, const char delim) {
 	std::vector<std::string> elems;
-	split(s, delim, elems);
+	split(str, delim, elems);
 	for (size_t i = 0; i < elems.size(); i++){
 		elems[i] = trim(elems[i]);
 	}
 	return elems;
+}
+
+std::vector<std::string> tokenise(const std::string& str, const char delim){
+	std::string s = trim(str);
+	std::vector<std::string> tokens;
+	size_t p = s.find_first_of(delim);
+	while (p < s.size()){
+		tokens.push_back(trim(s.substr(0, p)));
+		s = s.substr(p + 1, s.length());
+		p = s.find_first_of(delim);
+	}
+	tokens.push_back(trim(s));
+	return tokens;
 }
 
 int LevenshteinDistance(char* s, int len_s, char* t, int len_t)

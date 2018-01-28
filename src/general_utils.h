@@ -149,10 +149,6 @@ std::string stringvalue(const bool value);
 int strcasecmp(const std::string& A, const std::string& B);
 int strncasecmp(const std::string& A, const std::string& B, size_t n);
 
-std::vector<std::string> fieldparsestring_old(const char* str, const char delim);
-std::vector<std::string> fieldparsestring(const char* str, const char* delims);
-std::vector<double> getdoublevector(const char* str, const char* delims);
-
 std::string timestamp();
 std::string timestring(const std::string format, std::time_t t = 0);
 
@@ -234,10 +230,11 @@ double percentmemoryused();
 void guage(int ntot, int n, int pdiv1, int pdiv2);
 unsigned int factorial(unsigned int n);
 
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
-std::vector<std::string> split(const std::string &s, char delim);
-std::vector<std::string> trimsplit(const std::string &s, char delim);
-
+std::vector<std::string> &split(const std::string &str, const char delim, std::vector<std::string> &elems);
+std::vector<std::string> split(const std::string &str, const char delim);
+std::vector<std::string> trimsplit(const std::string &str,  const char delim);
+std::vector<std::string> tokenise(const std::string& str, const char delim);
+	;
 void allocate1darray(int*& a,const size_t n);
 void allocate1darray(double*& a, const size_t n);
 void deallocate1darray(double*& a);
@@ -251,6 +248,9 @@ std::string stripquotes(const std::string& s);
 std::vector<std::string> tokenize(const std::string& str);
 std::vector<std::string> parsestrings(const std::string& str, const std::string& delims);
 std::vector<cRange<int>> parserangelist(std::string& str);
+std::vector<std::string> fieldparsestring_old(const char* str, const char delim);
+std::vector<std::string> fieldparsestring(const char* str, const char* delims);
+std::vector<double> getdoublevector(const char* str, const char* delims);
 
 #define SORT_UP 0
 #define SORT_DOWN 1

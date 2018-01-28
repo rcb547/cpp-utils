@@ -11,9 +11,15 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cstring>
 #include <vector>
+#include <fstream>
 
 #include "general_utils.h"
 #include "file_utils.h"
+
+enum eFieldType {
+	REAL,
+	INTEGER
+};
 
 class cAsciiColumnField {
 
@@ -147,35 +153,33 @@ public:
 		printf("\n");
 	}
 
-	std::string datatype(){
-		std::string dtype;
+	eFieldType datatype() const {		
 		if (fmttype == 'I' || fmttype == 'i'){
-			dtype = "Integer";
+			return eFieldType::INTEGER;
 		}
 		else if (fmttype == 'F' || fmttype == 'f'){
-			dtype = "Real";
+			return eFieldType::REAL;
 		}
 		else if (fmttype == 'E' || fmttype == 'e'){
-			dtype = "Real";
+			return eFieldType::INTEGER;
 		}
-		else{
-			dtype = "Unknown";
-			warningmessage("Unknown data type <%c>\n", fmttype);
+		else{			
+			warningmessage("Unknown data type <%c>\n", fmttype);			
 		}
-		return dtype;
+		return eFieldType::REAL;
 	};
 
-	bool isinteger(){
-		if (strcasecmp(datatype(), "Integer") == 0)return true;
+	bool isinteger() const {
+		if ( datatype() == eFieldType::INTEGER) return true;
 		return false;
 	}
 
-	bool isreal(){
-		if (strcasecmp(datatype(), "Real") == 0)return true;
+	bool isreal() const {
+		if (datatype() == eFieldType::REAL) return true;
 		return false;
 	}
 
-	bool isnull(const double v){
+	bool isnull(const double v) const {
 		if (hasnullvalue){
 			if (v == nullvalue)return true;
 		}
@@ -257,7 +261,7 @@ class cOutputFileInfo{
 		fprintf(fp,"DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
 		for (size_t i = 0; i < fields.size(); i++){
 			std::string s = fields[i].aseggdf_header_record();
-			fprintf(fp, s.c_str());
+			fprintf(fp, "%s", s.c_str());
 		}
 		fprintf(fp, "DEFN %lu ST=RECD,RT=;END DEFN\n", fields.size()+1);
 		fclose(fp);
@@ -365,7 +369,7 @@ public:
 		return true;
 	};
 
-	void write(const std::string dfnpath){
+	void write(const std::string& dfnpath){
 		FILE* fp = fileopen(dfnpath, "w");
 		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
 		for (size_t i = 0; i < fields.size(); i++){
@@ -376,20 +380,233 @@ public:
 		fclose(fp);
 	};
 
-	std::vector<std::string> tokenise(const std::string& str, const char delim){
-		std::string s = trim(str);
-		std::vector<std::string> tokens;
-		size_t p = s.find_first_of(delim);
-		while (p < s.size()){
-			tokens.push_back(trim(s.substr(0, p)));
-			s = s.substr(p + 1, s.length());
-			p = s.find_first_of(delim);
+	const std::vector<cAsciiColumnField>& getfields() const {
+		return fields;
+	};
+};
+
+class cFieldManager{
+
+private:
+
+public:
+	std::vector<cAsciiColumnField> fields;
+
+	cFieldManager(){};
+
+	cFieldManager(const std::vector<cAsciiColumnField> _fields){
+		fields = _fields;
+	};
+
+	static size_t nullfieldindex(){ return UINT64_MAX; };
+
+	size_t fieldindexbyname(const std::string& fieldname) const
+	{
+		for (size_t fi = 0; fi < fields.size(); fi++){
+			if (strcasecmp(fields[fi].name, fieldname) == 0) return fi;
 		}
-		tokens.push_back(trim(s));
-		return tokens;
+		return nullfieldindex();
 	}
 
+	bool fieldindexbyname(const std::string& fieldname, size_t& index) const
+	{
+		for (size_t fi = 0; fi < fields.size(); fi++){
+			if (strcasecmp(fields[fi].name, fieldname) == 0){
+				index = fi;
+				return true;
+			}
+		}
+		index = nullfieldindex();
+		return false;
+	}
+
+	size_t ncolumns() const {
+		size_t n = 0;
+		for (size_t i = 0; i < fields.size(); i++){
+			n += fields[i].nbands;
+		}
+		return n;
+	}
 };
+
+class cColumnFile {
+
+private:
+	std::ifstream file;
+	std::string currentrecord;
+	std::vector<std::string> currentcolumns;
+	size_t recordsreadsuccessfully;
+
+public:
+	
+	cFieldManager F;
+
+	cColumnFile(){ initialise(); };
+
+	cColumnFile(const std::string& datafile, const std::string& headerfile){
+		initialise();
+		openread(datafile);
+		cASEGGDF2Header A(headerfile);
+		F = cFieldManager(A.getfields());
+	};
+
+	~cColumnFile(){
+		if (file.is_open())file.close();		
+	};
+
+	void initialise(){		
+		recordsreadsuccessfully = 0;
+	};
+
+	const cAsciiColumnField& fields(const size_t fi){
+		return F.fields[fi];
+	}
+
+	const size_t nfields() const {
+		return F.fields.size();
+	}
+
+	const size_t ncolumns() const {
+		return F.ncolumns();
+	}
+
+	const char* currentrecord_cstr(){ return currentrecord.c_str(); };
+
+	const std::string& currentrecordstring(){ return currentrecord; };
+
+	bool openread(const std::string& datafilename){
+		std::string path = datafilename;
+		fixseparator(path);
+		file.open(path, std::fstream::in);
+		if (file.is_open())return true;
+		else{
+			std::string msg = _SRC_ + strprint("Could not open file (%s)\n", path.c_str());
+			throw(std::runtime_error(msg));
+		}
+		return false;
+	};
+
+	void close(){ file.close(); };
+
+	bool readnextrecord(){
+		if (file.eof())return false;
+		std::getline(file,currentrecord);
+		recordsreadsuccessfully++;
+		return true;		
+	}
+
+	size_t parserecord(){
+		currentcolumns = parsestrings(currentrecord, " ,\t\r\n");
+		return currentcolumns.size();
+	}
+
+	bool getcolumn(const size_t columnnumber, int& v){
+		v = atoi(currentcolumns[columnnumber].c_str());
+		return true;
+	}
+
+	bool getcolumn(const size_t columnnumber, double& v){
+		v = atof(currentcolumns[columnnumber].c_str());
+		return true;
+	}
+
+	bool getfield(const size_t findex, int& v){
+		size_t base = fields(findex).startcolumn - 1;
+		v = atoi(currentcolumns[base].c_str());
+		return true;
+	}
+
+	bool getfield(const size_t findex, double& v){
+		size_t base = fields(findex).startcolumn - 1;
+		v = atof(currentcolumns[base].c_str());
+		return true;
+	}
+
+	bool getfield(const size_t findex, std::vector<int>& v){
+		size_t base = fields(findex).startcolumn - 1;
+		size_t nb = fields(findex).nbands;
+		v.resize(nb);
+		for (size_t bi = 0; bi < nb; bi++){
+			v[bi] = atoi(currentcolumns[base].c_str());
+			base++;
+		}
+		return true;
+	}
+
+	bool getfield(const size_t findex, std::vector<double>& v){
+		size_t base = fields(findex).startcolumn - 1;
+		size_t nb = fields(findex).nbands;
+		v.resize(nb);
+		for (size_t bi = 0; bi < nb; bi++){
+			v[bi] = atof(currentcolumns[base].c_str());
+			base++;
+		}
+		return true;
+	}
+
+	bool getfieldlog10(const size_t findex, std::vector<double>& v){
+		size_t base = fields(findex).startcolumn - 1;
+		size_t nb   = fields(findex).nbands;
+
+		v.resize(nb);
+		for (size_t bi = 0; bi < nb; bi++){
+			v[bi] = atof(currentcolumns[base].c_str());
+			if (fields(findex).isnull(v[bi]) == false){
+				v[bi] = log10(v[bi]);
+			}
+			base++;
+		}
+		return true;
+	}
+
+	size_t readnextgroup(const size_t fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields){
+		
+		if (file.eof())return 0;
+
+		intfields.clear();
+		doublefields.clear();
+		intfields.resize(nfields());
+		doublefields.resize(nfields());
+
+		int lastline;
+		size_t count = 0;
+		do{
+			if (recordsreadsuccessfully == 0) readnextrecord();
+			if (parserecord() != ncolumns()){
+				continue;
+			}
+			int line;
+			getfield(fgroupindex, line);
+
+			if (count == 0)lastline = line;
+
+			if (line != lastline){
+				return count;
+			}
+
+			for (size_t fi = 0; fi < nfields(); fi++){
+				size_t nbands = fields(fi).nbands;
+				if (fields(fi).datatype() == eFieldType::INTEGER){
+					std::vector<int> v;
+					getfield(fi, v);
+					for (size_t bi = 0; bi < nbands; bi++){
+						intfields[fi].push_back(v[bi]);
+					}
+				}
+				else{
+					std::vector<double> v;
+					getfield(fi, v);
+					for (size_t bi = 0; bi < nbands; bi++){
+						doublefields[fi].push_back(v[bi]);
+					}
+				}
+			}
+			count++;
+		} while (readnextrecord());
+		return count;
+	};
+};
+
 #endif
 
  
