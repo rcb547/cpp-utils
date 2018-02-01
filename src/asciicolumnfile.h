@@ -286,7 +286,7 @@ public:
 
 			for (size_t fi = 0; fi < nfields; fi++){
 				size_t nbands = fields[fi].nbands;
-				if (fields[fi].datatype() == "Integer"){
+				if (fields[fi].datatype() == eFieldType::INTEGER){
 					std::vector<int> v;
 					getfield(fi, v);
 					for (size_t bi = 0; bi < nbands; bi++){

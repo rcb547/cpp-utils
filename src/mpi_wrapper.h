@@ -119,12 +119,12 @@ public:
 
 	static void printsizeofs()
 	{
-		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
-		printf("sizeof(bool) = %zu\n", sizeof(bool));
-		printf("sizeof(int) = %zu\n", sizeof(int));
-		printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
-		printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
-		printf("sizeof(size_t) = %zu\n", sizeof(size_t));		
+		printf("sizeof(MPI_Int) = %lu\n", sizeof(MPI_INT));
+		printf("sizeof(bool) = %lu\n", sizeof(bool));
+		printf("sizeof(int) = %lu\n", sizeof(int));
+		printf("sizeof(int32_t) = %lu\n", sizeof(int32_t));
+		printf("sizeof(int64_t) = %lu\n", sizeof(int64_t));
+		printf("sizeof(size_t) = %lu\n", sizeof(size_t));		
 	}
 
 };

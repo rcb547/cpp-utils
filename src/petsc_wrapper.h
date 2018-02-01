@@ -173,17 +173,17 @@ public:
 
 	static void printsizeofs()
 	{
-		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
-		printf("sizeof(bool) = %zu\n", sizeof(bool));
-		printf("sizeof(int) = %zu\n", sizeof(int));
-		printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
-		printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
-		printf("sizeof(size_t) = %zu\n", sizeof(size_t));
-		printf("sizeof(PetscInt) = %zu\n", sizeof(PetscInt));
-		printf("sizeof(PetscScalar) = %zu\n", sizeof(PetscScalar));
-		printf("sizeof(Petsc64bitInt) = %zu\n", sizeof(Petsc64bitInt));
-		printf("sizeof(PetscBLASInt) = %zu\n", sizeof(PetscBLASInt));
-		printf("sizeof(PetscMPIInt) = %zu\n", sizeof(PetscMPIInt));
+		printf("sizeof(MPI_Int) = %lu\n", sizeof(MPI_INT));
+		printf("sizeof(bool) = %lu\n", sizeof(bool));
+		printf("sizeof(int) = %lu\n", sizeof(int));
+		printf("sizeof(int32_t) = %lu\n", sizeof(int32_t));
+		printf("sizeof(int64_t) = %lu\n", sizeof(int64_t));
+		printf("sizeof(size_t) = %lu\n", sizeof(size_t));
+		printf("sizeof(PetscInt) = %lu\n", sizeof(PetscInt));
+		printf("sizeof(PetscScalar) = %lu\n", sizeof(PetscScalar));
+		printf("sizeof(Petsc64bitInt) = %lu\n", sizeof(Petsc64bitInt));
+		printf("sizeof(PetscBLASInt) = %lu\n", sizeof(PetscBLASInt));
+		printf("sizeof(PetscMPIInt) = %lu\n", sizeof(PetscMPIInt));
 	};
 
 	static void chkerrabort(PetscErrorCode ierr, const int linenumber, const char* functionname, const char* srcfile, const char* srcdirectory){

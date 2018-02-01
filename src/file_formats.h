@@ -16,10 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 #include "file_utils.h"
 
-enum eFieldType {
-	REAL,
-	INTEGER
-};
+enum eFieldType {REAL,INTEGER};
 
 class cAsciiColumnField {
 
