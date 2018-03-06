@@ -10,9 +10,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _undefinedvalues_H
 
 #include <cstdint>
-#include <cfloat>
+#include <limits>
 #include <string>
-#include <climits>
+
 
 inline size_t ud_size_t(){
 	//return UINT64_MAX; 
@@ -28,11 +28,13 @@ inline int    ud_int(){
 }
 inline float  ud_float(){
 	//return  -FLT_MAX;
-	return (std::numeric_limits<float>::lowest)();
+	//return (std::numeric_limits<float>::lowest)();
+	return -(std::numeric_limits<float>::max)();
 }
 inline double ud_double(){ 
 	//return -DBL_MAX; 
-	return (std::numeric_limits<double>::lowest)();
+	//return (std::numeric_limits<double>::lowest)();
+	return -(std::numeric_limits<double>::max)();
 }
 inline std::string ud_string(){
 	//return "*ENTRYNOTFOUND*";
