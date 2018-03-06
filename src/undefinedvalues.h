@@ -15,29 +15,21 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 
 inline size_t ud_size_t(){
-	//return UINT64_MAX; 
 	return (std::numeric_limits<size_t>::max)();	
 }
 inline short  ud_short(){
-	//return SHRT_MIN; 
 	return (std::numeric_limits<short>::min)();
 }
 inline int    ud_int(){
-	//return INT_MIN;
 	return (std::numeric_limits<int>::min)();
 }
 inline float  ud_float(){
-	//return  -FLT_MAX;
-	//return (std::numeric_limits<float>::lowest)();
-	return -(std::numeric_limits<float>::max)();
+	return (std::numeric_limits<float>::lowest)();
 }
 inline double ud_double(){ 
-	//return -DBL_MAX; 
-	//return (std::numeric_limits<double>::lowest)();
-	return -(std::numeric_limits<double>::max)();
+	return (std::numeric_limits<double>::lowest)();
 }
 inline std::string ud_string(){
-	//return "*ENTRYNOTFOUND*";
 	return std::string("Undefined std::string");	
 }
 
