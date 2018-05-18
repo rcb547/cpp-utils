@@ -66,7 +66,7 @@ private:
 
 public:
 	
-	FieldDefinition::FieldDefinition() { }
+	FieldDefinition() { }
 
 	void set(const cBlock& b, const std::string& fieldname)
 	{
