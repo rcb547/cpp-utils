@@ -27,7 +27,7 @@ void writetofile(const VectorDouble& x, std::string path)
 {	
 	FILE* fp = fileopen(path.c_str(),"w");
 	for(size_t i=0; i<x.dim(); i++){		
-		fprintf(fp,"%lu\t%lg\n",i+1,x[i]);	
+		fprintf(fp,"%lg\n",x[i]);
 	}
 	fclose(fp);
 }
@@ -35,7 +35,7 @@ void writetofile(const std::vector<double>& x, std::string path)
 {	
 	FILE* fp = fileopen(path.c_str(),"w");
 	for(size_t i=0; i<x.size(); i++){		
-		fprintf(fp,"%lu\t%lg\n",i+1,x[i]);	
+		fprintf(fp,"%lg\n",x[i]);
 	}
 	fclose(fp);
 }
