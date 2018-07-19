@@ -46,10 +46,10 @@ private:
 
 	void applyoperator(int& val) const {
 		if (op == ' ') return;
-		else if (op == '+') val += opval;
-		else if (op == '-') val -= opval;
-		else if (op == '*') val *= opval;
-		else if (op == '/') val /= opval;
+		else if (op == '+') val += (int) opval;
+		else if (op == '-') val -= (int) opval;
+		else if (op == '*') val *= (int) opval;
+		else if (op == '/') val /= (int) opval;
 		else warningmessage("FieldDefinition::applyoperator() unknown operator %c\n", op);		
 		return;
 	}
