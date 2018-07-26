@@ -1627,12 +1627,12 @@ public:
 		double reltol, abstol, divtol;
 		PetscInt maxits;
 		ierr = KSPGetTolerances(ksp, &reltol, &abstol, &divtol, &maxits); CHKERR(ierr);
-		//reltol = 1e-10;
-		//abstol = 1e-50;
-		//divtol = 1e4;
+		reltol = 1e-10;
+		abstol = 1e-50;
+		divtol = 1e4;
 		maxits = nglobalcols();
-		//ierr = KSPSetTolerances(ksp, reltol, abstol, divtol, maxits); CHKERR(ierr);
-		ierr = KSPSetTolerances(ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, maxits); CHKERR(ierr);
+		ierr = KSPSetTolerances(ksp, reltol, abstol, divtol, maxits); CHKERR(ierr);
+		//ierr = KSPSetTolerances(ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, maxits); CHKERR(ierr);
 
 		//Point to function that monitors/outputs convergence progress at each CG iteration
 		ierr = KSPMonitorSet(ksp, kspmonitor, this, PETSC_NULL); CHKERR(ierr);
@@ -1667,7 +1667,7 @@ public:
 		std::string s;
 		if (_converged) s += strprint("CG Converged\n");
 		else  s += strprint("CG Diverged\n");		
-		s += strprint("\tIterations=%d\n", _niterations);
+		s += strprint("\tCG Iterations=%d\n", _niterations);
 		s += strprint("\tReason = %d (%s)\n", _conv_reason_code, _conv_reason_str.c_str());
 		s += strprint("\tResidual norm at start = %8.6le\n", _rnorm_start);
 		s += strprint("\tResidual norm at end = %8.6le\n", _rnorm_end);
