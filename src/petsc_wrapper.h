@@ -1531,7 +1531,7 @@ public:
 
 	bool set_multiply_function_vec(void* func){
 		PetscErrorCode ierr;
-	ierr = MatShellSetOperation(mat(), MATOP_MULT,(void(*)(void))func); CHKERR(ierr);		
+		ierr = MatShellSetOperation(mat(), MATOP_MULT,(void(*)(void))func); CHKERR(ierr);		
 		return true;
 	}
 
