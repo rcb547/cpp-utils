@@ -113,8 +113,9 @@ public:
 
 	void write(FILE* fp, size_t n = 0) const
 	{
+		if (fp == (FILE*)NULL) return;
 		std::string s = get_as_string(n);
-		fprintf(fp, s.c_str());
+		fprintf(fp, s.c_str());		
 		return;
 	}
 
