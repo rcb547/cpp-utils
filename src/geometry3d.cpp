@@ -30,7 +30,7 @@ void cVec::scale(double scalefactor)
 	y=y*scalefactor;
 	z=z*scalefactor;
 }
-cVec cVec::scaledcopy(double scalefactor)
+cVec cVec::scaledcopy(double scalefactor) const 
 {
 	cVec temp(x*scalefactor,y*scalefactor,z*scalefactor);
 	return temp;

@@ -474,7 +474,7 @@ public:
 		for (int i = 0; i < mpisize(); i++){
 			mpibarrier();
 			if (i == mpirank()){
-				printf("%s rank %d owns %I64d to %I64d  - total of %I64d rows\n",
+				printf("%s rank %d owns %d to %d  - total of %d rows\n",
 					mpiprocname().c_str(),
 					mpirank(),
 					ownership().start,
@@ -1166,7 +1166,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 	void printsize() const
 	{
-		printf("Matrix (%s) size = %I64d x %I64d\n", cname(), nglobalrows(), nglobalcols());
+		printf("Matrix (%s) size = %d x %d\n", cname(), nglobalrows(), nglobalcols());
 	}
 	
 	void printdistributions() const
@@ -1174,7 +1174,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 		for (int i = 0; i < mpisize(); i++){
 			mpibarrier();
 			if (i == mpirank()){
-				printf("%s rank %d owns rows %I64d to %I64d  - total of %I64d rows\n", mpiprocname().c_str(), mpirank(), rowownership().start, rowownership().end - 1, nlocalrows());
+				printf("%s rank %d owns rows %d to %d  - total of %d rows\n", mpiprocname().c_str(), mpirank(), rowownership().start, rowownership().end - 1, nlocalrows());
 				fflush(stdout);
 			}			
 		}
@@ -1235,7 +1235,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 					PetscErrorCode ierr = MatGetRow(mat(), gi, &nnz, &colind, &val); CHKERR(ierr);
 					for (PetscInt j = 0; j<nnz; j++){
-						fprintf(fp, "%I64d\t%I64d\t%20.16le\n", gi, colind[j], val[j]);
+						fprintf(fp, "%d\t%d\t%20.16le\n", gi, colind[j], val[j]);
 					}
 
 					if (gi == nglobalrows() - 1){
@@ -1248,7 +1248,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 				//Always write a zero into last row/col if it is empty
 				if (p == mpisize() - 1 && writezeroatlowerright){
-					fprintf(fp, "%I64d\t%I64d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
+					fprintf(fp, "%d\t%d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
 				}
 
 				fclose(fp);
@@ -1531,7 +1531,7 @@ public:
 
 	bool set_multiply_function_vec(void* func){
 		PetscErrorCode ierr;
-	ierr = MatShellSetOperation(mat(), MATOP_MULT,(void(*)(void))func); CHKERR(ierr);		
+		ierr = MatShellSetOperation(mat(), MATOP_MULT,(void(*)(void))func); CHKERR(ierr);		
 		return true;
 	}
 
@@ -1627,12 +1627,12 @@ public:
 		double reltol, abstol, divtol;
 		PetscInt maxits;
 		ierr = KSPGetTolerances(ksp, &reltol, &abstol, &divtol, &maxits); CHKERR(ierr);
-		//reltol = 1e-10;
-		//abstol = 1e-50;
-		//divtol = 1e4;
+		reltol = 1e-10;
+		abstol = 1e-50;
+		divtol = 1e4;
 		maxits = nglobalcols();
-		//ierr = KSPSetTolerances(ksp, reltol, abstol, divtol, maxits); CHKERR(ierr);
-		ierr = KSPSetTolerances(ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, maxits); CHKERR(ierr);
+		ierr = KSPSetTolerances(ksp, reltol, abstol, divtol, maxits); CHKERR(ierr);
+		//ierr = KSPSetTolerances(ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, maxits); CHKERR(ierr);
 
 		//Point to function that monitors/outputs convergence progress at each CG iteration
 		ierr = KSPMonitorSet(ksp, kspmonitor, this, PETSC_NULL); CHKERR(ierr);
@@ -1667,7 +1667,7 @@ public:
 		std::string s;
 		if (_converged) s += strprint("CG Converged\n");
 		else  s += strprint("CG Diverged\n");		
-		s += strprint("\tIterations=%d\n", _niterations);
+		s += strprint("\tCG Iterations=%d\n", _niterations);
 		s += strprint("\tReason = %d (%s)\n", _conv_reason_code, _conv_reason_str.c_str());
 		s += strprint("\tResidual norm at start = %8.6le\n", _rnorm_start);
 		s += strprint("\tResidual norm at end = %8.6le\n", _rnorm_end);

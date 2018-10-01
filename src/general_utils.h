@@ -214,15 +214,21 @@ double covariance(const std::vector<T>& x, const std::vector<T>& y)
 template<typename T>
 double correlation(const std::vector<T>& x, const std::vector<T>& y)
 {
-	size_t n = x.size();
-	cStats<T> sx(x);
-	cStats<T> sy(y);
-	std::vector<double> v(n);
+	size_t n = x.size();	
+	double sx = 0.0;
+	double sy = 0.0;
+	double sxx = 0.0;
+	double syy = 0.0;
+	double sxy = 0.0;
 	for (size_t i = 0; i < x.size(); i++){
-		v[i] = (x[i] - sx.mean) / sx.std * (y[i] - sy.mean) / sy.std;
+		sx  += x[i];
+		sy  += y[i];
+		sxx += x[i] * x[i];
+		syy += y[i] * y[i];
+		sxy += x[i] * y[i];		
 	}	
-	cStats<T> sv(y);
-	return sv.mean;
+	double r = (n*sxy - sx*sy) / sqrt(n*sxx - sx*sx) / sqrt(n*syy - sy*sy);
+	return r;
 }
 
 double reportusage();

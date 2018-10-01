@@ -84,18 +84,25 @@ public:
 	inline friend cVec operator/(double s, cVec v){return cVec(v.x/s, v.y/s, v.z/s);}
 	
 
-	inline double length_squared(){
+	inline double length_squared() const
+	{
 		return x*x + y*y + z*z;
 	}
-	inline double length(){
+
+	inline double length() const
+	{
 		return sqrt(x*x + y*y + z*z);
 	}
+
 	inline double length2n(double power)
 	{
 		return pow(x*x + y*y + z*z,0.5*power);
 	}
+
 	void scale(double scalefactor);
-	cVec scaledcopy(double scalefactor);	
+
+	cVec scaledcopy(double scalefactor) const ;	
+
 	inline void unitise(){	
 		double len = sqrt(x*x + y*y + z*z);
 		x/=len; y/=len; z/=len;
@@ -112,6 +119,7 @@ public:
 	{
 		return v.x*x + v.y*y + v.z*z;
 	}
+
 	inline cVec cross(const cVec b) const 
 	{		
 		cVec c;//c = a x b (a is this cVec)
@@ -132,24 +140,33 @@ public:
 	cVec rotate(double angle, cVec axis);
 
 };
+
 class cPnt : public cVec{
 
 public:
-	
-	cPnt(double xo, double yo, double zo){x=xo; y=yo; z=zo;}	
-	cPnt(){x=0.0; y=0.0; z=0.0;}
-				
-	cPnt& operator=(const std::vector<double>& v){
-		x = v[0]; y = v[1]; z = v[2];
-		return *this;
-	}
+
+	cPnt() : cVec(0.0, 0.0, 0.0) {}
+
+	cPnt(const cVec& v) : cVec(v) {}		
+
+	cPnt(double xo, double yo, double zo) : cVec(xo,yo,zo){}
+		
 	cPnt(const std::vector<double>& v){
 		x = v[0]; y = v[1]; z = v[2];
 	}
 
-	inline cPnt operator=(cVec a){return cPnt(a.x, a.y, a.z);}
-	inline cPnt operator+(cVec a){return cPnt(x+a.x, y+a.y, z+a.z);}
-	inline cPnt operator-(cVec a){return cPnt(x-a.x, y-a.y, z-a.z);}
+	cPnt& operator=(const std::vector<double>& v){
+		x = v[0]; y = v[1]; z = v[2];
+		return *this;
+	}
+
+	cPnt& operator=(const cVec& v){
+		x = v.x; y = v.y; z = v.z;
+		return *this;	
+	}
+
+	inline cPnt operator+(const cVec& a){return cPnt(x+a.x, y+a.y, z+a.z);}
+	inline cPnt operator-(const cVec& a){return cPnt(x-a.x, y-a.y, z-a.z);}
 
 	inline cPnt operator+(const cPnt a){return cPnt(x+a.x, y+a.y, z+a.z);}	
 	inline cPnt operator-(const cPnt a){return cPnt(x-a.x, y-a.y, z-a.z);}

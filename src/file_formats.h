@@ -459,11 +459,11 @@ public:
 		return F.fields[fi];
 	}
 
-	const size_t nfields() const {
+	size_t nfields() const {
 		return F.fields.size();
 	}
 
-	const size_t ncolumns() const {
+	size_t ncolumns() const {
 		return F.ncolumns();
 	}
 

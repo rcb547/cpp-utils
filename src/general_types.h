@@ -127,10 +127,12 @@ public:
 		count.resize(nbins, 0);
 
 		for (size_t i = 0; i < v.size(); i++){
-			if (v[i] < hmin)count[0]++;
-			if (v[i] > hmax)count[nbins - 1]++;
-			size_t b = (size_t)floor((v[i] - hmin) / dx);
-			count[b]++;
+			if (v[i] <= hmin) count[0]++;
+			else if (v[i] >= hmax) count[nbins - 1]++;
+			else {
+				size_t b = (size_t)floor((v[i] - hmin) / dx);
+				count[b]++;
+			}
 		}		
 	}
 };
