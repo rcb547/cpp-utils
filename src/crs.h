@@ -10,34 +10,36 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _crs_H
 
 #include <sstream>
+#include "gdal_utils.h"
 
 class cCRS{
 
 public:
 	std::string name = "";
-	std::string epsg_code = "";
+	std::string epsg_string = "";
 	double semi_major_axis = 0;
 	double inverse_flattening = 0;
 	bool valid = false;
 
+
 	cCRS(const std::string& datum){
 		if (datum == "GDA94"){
 			name = datum;
-			epsg_code = "EPSG:4283";
+			epsg_string = "EPSG:4283";
 			semi_major_axis = 6378137.0;
 			inverse_flattening = 298.257222101;
 			valid = true;
 		}
 		else if (datum == "WGS84"){
 			name = datum;
-			epsg_code = "EPSG:4326";
+			epsg_string = "EPSG:4326";
 			semi_major_axis = 6378137.0;
 			inverse_flattening = 298.257223563;
 			valid = true;
 		}
 		else if (datum == "AGD66"){
 			name = datum;
-			epsg_code = "EPSG:4326";
+			epsg_string = "EPSG:4326";
 			semi_major_axis = 6378160.0;
 			inverse_flattening = 298.25;
 			valid = true;
@@ -66,6 +68,12 @@ public:
 		else if (datumprojection == "GDA94|MGA55") return 28355;
 		else if (datumprojection == "GDA94|MGA56") return 28356;		
 		else return -1;
+	}
+
+	std::string wellknowntext() const
+	{
+		std::string wkt = WellKnownText(epsgcode(epsg_string));
+		return wkt;
 	}
 
 };

@@ -11,11 +11,20 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <ogr_spatialref.h>
 
+int erm2epsgcode(const std::string& datum, const std::string& projection = "GEODETIC");
+
+int getepsgcode(const std::string& datum,
+	const std::string& projection = "GEODETIC",
+	const std::string& units = "METERS");
+
 OGRSpatialReference getsrs(
 	const std::string& datum,
 	const std::string& projection,
 	const std::string& units
 	);
+
+OGRSpatialReference getsrs(const int& epsgcode);
+	
 
 bool transform(
 	const int& epsgcodein,
@@ -25,6 +34,8 @@ bool transform(
 	std::vector<double>& xout,
 	std::vector<double>& yout
 	);
+
+std::string WellKnownText(const int epsgcode);
 
 #endif
 
