@@ -227,7 +227,9 @@ int copyfile(std::string src, std::string dest)
 }
 int deletefile(std::string src)
 {		
-	fixseparator(src);				
+	fixseparator(src);
+	if (exists(src) == false) return 0;
+
 	int status;
 	std::string cmd;
 	#if defined _WIN32
