@@ -9,9 +9,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _petsc_wrapper_H
 #define _petsc_wrapper_H
 
-#undef __SRCDIR__
-#define __SRCDIR__ "src\\"
-
 #include "petscvec.h"
 #include "petscmat.h"
 #include "petscksp.h"
@@ -24,9 +21,12 @@ class cPetscDistVector;//forward declaration only
 class cPetscDistMatrix;//forward declaration only
 class cPetscDistShellMatrix;//forward declaration only
 
+#if PETSC_VERSION_GE(3,5,0)
+#define __SDIR__ "src\\"
+#endif
+
 #define CHKERR(ierr) cPetscObject::chkerrabort(ierr, __LINE__, __FUNCTION__,__FILE__,__SDIR__)
 #define dbgprint cPetscObject::debugprint(__LINE__, __FUNCTION__,__FILE__,__SDIR__)
-//#define dbgprint ""
 
 class cSparseMatrixEntries{
 
@@ -181,7 +181,11 @@ public:
 		printf("sizeof(size_t) = %lu\n", sizeof(size_t));
 		printf("sizeof(PetscInt) = %lu\n", sizeof(PetscInt));
 		printf("sizeof(PetscScalar) = %lu\n", sizeof(PetscScalar));
+#if PETSC_VERSION_LT(3,8,0)
 		printf("sizeof(Petsc64bitInt) = %lu\n", sizeof(Petsc64bitInt));
+#else
+		printf("sizeof(PetscInt64) = %lu\n", sizeof(PetscInt64));
+#endif
 		printf("sizeof(PetscBLASInt) = %lu\n", sizeof(PetscBLASInt));
 		printf("sizeof(PetscMPIInt) = %lu\n", sizeof(PetscMPIInt));
 	};
@@ -189,7 +193,11 @@ public:
 	static void chkerrabort(PetscErrorCode ierr, const int linenumber, const char* functionname, const char* srcfile, const char* srcdirectory){
 		do {
 			if (PetscUnlikely(ierr)){
-				PetscError(PETSC_COMM_SELF, linenumber, functionname, srcfile, srcdirectory, ierr, PETSC_ERROR_REPEAT, " ");
+#if PETSC_VERSION_LT(3,5,0)
+				PetscError(PETSC_COMM_SELF,linenumber,functionname,srcfile,srcdirectory,ierr,PETSC_ERROR_REPEAT," ");
+#else
+				PetscError(PETSC_COMM_SELF,linenumber,functionname,srcfile,ierr,PETSC_ERROR_REPEAT," ");
+#endif
 				MPI_Abort(PETSC_COMM_SELF, ierr);
 			}
 		} while (0);		
@@ -1356,7 +1364,11 @@ return b;
 		PC  pc;
 		PetscErrorCode ierr;
 		ierr = KSPCreate(mpicomm(), &ksp); CHKERR(ierr);
-		ierr = KSPSetOperators(ksp, mat(), mat(), SAME_NONZERO_PATTERN); CHKERR(ierr);
+#if PETSC_VERSION_LT(3,5,0)
+		ierr = KSPSetOperators(ksp, mat(), mat(), SAME_NONZERO_PATTERN); CHKERR(ierr);		
+#else
+		ierr = KSPSetOperators(ksp, mat(), mat()); CHKERR(ierr);
+#endif
 		ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); CHKERR(ierr);
 		ierr = KSPGetPC(ksp, &pc); CHKERR(ierr);
 		ierr = KSPSetType(ksp, KSPCG); CHKERR(ierr);
@@ -1613,7 +1625,12 @@ public:
 		PC  pc;
 		PetscErrorCode ierr;
 		ierr = KSPCreate(mpicomm(), &ksp); CHKERR(ierr);
+#if PETSC_VERSION_LT(3,5,0)
 		ierr = KSPSetOperators(ksp, mat(), P.mat(), SAME_NONZERO_PATTERN); CHKERR(ierr);
+#else
+		ierr = KSPSetOperators(ksp, mat(), P.mat()); CHKERR(ierr);
+#endif
+
 		ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); CHKERR(ierr);
 		ierr = KSPGetPC(ksp, &pc); CHKERR(ierr);
 		ierr = KSPSetType(ksp, KSPCG); CHKERR(ierr);
