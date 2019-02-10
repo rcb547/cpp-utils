@@ -18,7 +18,7 @@ void writetofile(const MatrixDouble& A, std::string path)
 	FILE* fp = fileopen(path.c_str(),"w");
 	for(size_t i=0; i<A.num_rows(); i++){
 		for(size_t j=0; j<A.num_cols(); j++){
-			fprintf(fp,"%lu\t%lu\t%lg\n",i+1,j+1,A[i][j]);
+			fprintf(fp,"%zu\t%zu\t%lg\n",i+1,j+1,A[i][j]);
 		}
 	}
 	fclose(fp);	

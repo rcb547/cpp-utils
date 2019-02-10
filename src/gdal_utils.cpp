@@ -16,8 +16,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "gdal_utils.h"
 
 static int erm2epsgcode(const std::string& datum, const std::string& projection){
-
-	int code;
 	if (datum == "GDA94" && projection == "GEODETIC") return 4283;
 	else if (datum == "WGS84" && projection == "GEODETIC") return 4326;	
 	else if (datum == "AGD66" && projection == "GEODETIC") return 4202;
