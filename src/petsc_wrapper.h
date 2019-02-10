@@ -1256,7 +1256,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 				}
 				//Always write a zero into last row/col if it is empty
 				if (p == mpisize() - 1 && writezeroatlowerright){
-					fprintf(fp, "%lu\t%lu\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
+					fprintf(fp, "%d\t%d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
 				}
 
 				fclose(fp);
