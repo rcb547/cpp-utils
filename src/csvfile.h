@@ -44,8 +44,8 @@ class cCSVFile{
 				}
 
 				if (tokens.size() != nfields){
-					std::printf("Error: On line %lu of file %s\n", k, csvfile.c_str());
-					std::printf("Error: The number of header items (%lu) does not match the number of data items (%lu)\n", nfields, tokens.size());
+					std::printf("Error: On line %zu of file %s\n", k, csvfile.c_str());
+					std::printf("Error: The number of header items (%zu) does not match the number of data items (%zu)\n", nfields, tokens.size());
 				}
 
 				for (size_t i = 0; i < tokens.size(); i++){

@@ -136,12 +136,12 @@ public:
 	void print(){		
 		printf("\n");
 		printf(" name=%s", name.c_str());
-		printf(" order=%lu", order);
-		printf(" startcolumn=%lu", startcolumn);		
-		printf(" bands=%lu", nbands);
+		printf(" order=%zu", order);
+		printf(" startcolumn=%zu", startcolumn);		
+		printf(" bands=%zu", nbands);
 		printf(" type=%c", fmttype);
-		printf(" width=%lu", fmtwidth);
-		printf(" decimals=%lu", fmtdecimals);
+		printf(" width=%zu", fmtwidth);
+		printf(" decimals=%zu", fmtdecimals);
 		printf(" units=%s", units.c_str());
 		printf(" nullvalue=%s", nullvaluestr.c_str());
 		printf(" nullvalue=%lf", nullvalue);
@@ -260,7 +260,7 @@ class cOutputFileInfo{
 			std::string s = fields[i].aseggdf_header_record();
 			fprintf(fp, "%s", s.c_str());
 		}
-		fprintf(fp, "DEFN %lu ST=RECD,RT=;END DEFN\n", fields.size()+1);
+		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size()+1);
 		fclose(fp);
 	};
 
@@ -373,7 +373,7 @@ public:
 			std::string s = fields[i].aseggdf_header_record();
 			fprintf(fp, s.c_str());
 		}
-		fprintf(fp, "DEFN %lu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
+		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
 		fclose(fp);
 	};
 
