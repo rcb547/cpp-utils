@@ -9,6 +9,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _petsc_wrapper_H
 #define _petsc_wrapper_H
 
+#include <inttypes.h>
 #include "petscvec.h"
 #include "petscmat.h"
 #include "petscksp.h"
@@ -173,21 +174,21 @@ public:
 
 	static void printsizeofs()
 	{
-		printf("sizeof(MPI_Int) = %lu\n", sizeof(MPI_INT));
-		printf("sizeof(bool) = %lu\n", sizeof(bool));
-		printf("sizeof(int) = %lu\n", sizeof(int));
-		printf("sizeof(int32_t) = %lu\n", sizeof(int32_t));
-		printf("sizeof(int64_t) = %lu\n", sizeof(int64_t));
-		printf("sizeof(size_t) = %lu\n", sizeof(size_t));
-		printf("sizeof(PetscInt) = %lu\n", sizeof(PetscInt));
-		printf("sizeof(PetscScalar) = %lu\n", sizeof(PetscScalar));
+		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
+		printf("sizeof(bool) = %zu\n", sizeof(bool));
+		printf("sizeof(int) = %zu\n", sizeof(int));
+		printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
+		printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
+		printf("sizeof(size_t) = %zu\n", sizeof(size_t));
+		printf("sizeof(PetscInt) = %zu\n", sizeof(PetscInt));
+		printf("sizeof(PetscScalar) = %zu\n", sizeof(PetscScalar));
 #if PETSC_VERSION_LT(3,8,0)
-		printf("sizeof(Petsc64bitInt) = %lu\n", sizeof(Petsc64bitInt));
+		printf("sizeof(Petsc64bitInt) = %zu\n", sizeof(Petsc64bitInt));
 #else
-		printf("sizeof(PetscInt64) = %lu\n", sizeof(PetscInt64));
+		printf("sizeof(PetscInt64) = %zu\n", sizeof(PetscInt64));
 #endif
-		printf("sizeof(PetscBLASInt) = %lu\n", sizeof(PetscBLASInt));
-		printf("sizeof(PetscMPIInt) = %lu\n", sizeof(PetscMPIInt));
+		printf("sizeof(PetscBLASInt) = %zu\n", sizeof(PetscBLASInt));
+		printf("sizeof(PetscMPIInt) = %zu\n", sizeof(PetscMPIInt));
 	};
 
 	static void chkerrabort(PetscErrorCode ierr, const int linenumber, const char* functionname, const char* srcfile, const char* srcdirectory){
@@ -757,7 +758,7 @@ public:
 	Mat& ncmat() const { return *pMat; }
 	const Mat* matptr() const { return pMat; }
 	Mat* ncmatptr() const { return pMat; }
-
+	
 	PetscInt nglobalrows() const
 	{
 		PetscErrorCode ierr;
@@ -865,7 +866,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 
 	bool create_diagonal_local(const std::string& name, const MPI_Comm comm, const std::vector<double>& localdiagonal)
 	{				
-		create_diagonal_structure(name,comm,localdiagonal.size(),PETSC_DETERMINE);
+		create_diagonal_structure(name,comm,(PetscInt)localdiagonal.size(),PETSC_DETERMINE);
 		set_diagonal_local(localdiagonal);				
 		return true;
 	}
@@ -920,7 +921,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 		if (_nglobalrows <= 0) _nglobalrows = rmax + 1;
 		if (_nglobalcols <= 0) _nglobalcols = cmax + 1;
 
-		PetscInt nnz = rowind.size();
+		PetscInt nnz = (PetscInt)rowind.size();
 		if ((int)colind.size() != nnz || (int)values.size() != nnz){
 			printf("cPetscDistMatrix::create_globalindices(...) rowind, colind, and vals must be the same size\n");
 			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
@@ -1039,7 +1040,7 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 	PetscErrorCode setrow(const PetscInt globalrow,  const std::vector<PetscInt>& globalcols, const std::vector<double>& values)
 	{				
 		PetscErrorCode  ierr;
-		ierr = MatSetValues(mat(),1,&globalrow,globalcols.size(),globalcols.data(),values.data(),INSERT_VALUES); CHKERR(ierr);
+		ierr = MatSetValues(mat(),1,&globalrow, (PetscInt)globalcols.size(),globalcols.data(),values.data(),INSERT_VALUES); CHKERR(ierr);
 		return ierr;
 	}
 
@@ -1253,7 +1254,6 @@ ierr = MatGetLocalSize(mat(), &m, &n); CHKERR(ierr);
 					}
 					ierr = MatRestoreRow(mat(), gi, &nnz, &colind, &val); CHKERR(ierr);
 				}
-
 				//Always write a zero into last row/col if it is empty
 				if (p == mpisize() - 1 && writezeroatlowerright){
 					fprintf(fp, "%d\t%d\t%20.16le\n", nglobalrows() - 1, nglobalcols() - 1, 0.0);
