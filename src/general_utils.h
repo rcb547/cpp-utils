@@ -28,25 +28,30 @@ std::string srcloc(const char* filepath, const int& linenumber, const char* func
 std::string commandlinestring(int argc, char** argv);
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate);
 
-int my_size();
-int my_rank();
+const int my_size();
+const int my_rank();
+const int mpi_openmp_rank();
 
 std::string strprint_va(const char* fmt, va_list argptr);
 std::string strprint(const char* fmt, ...);
 
-void  open_global_log_file(const std::string& globallogfilename);
-void  close_global_log_file();
-FILE* global_log_file_pointer();
+//void  open_global_log_file(const std::string& globallogfilename); //Open the global log file if not already open
+//void  close_global_log_file(); //Closes the global log file if open
+//FILE* global_log_file_pointer(); //Pointer to the global log file
+//FILE* glfp();//Shorthand for the global_log_file_pointer()
+//void logmsg(const std::string& msg);
+//void logmsg(const char* fmt, ...);
+//void logmsg_no_print(const std::string& msg);
+//void logmsg_no_print(const char* fmt, ...);
 
-void logmsg(const std::string& msg);
-void logmsg(const char* fmt, ...);
+
 void message(const char* fmt, ...);
-void message(FILE* fp,const char* fmt, ... );
+void message_log(const char* fmt, ... );
 void rootmessage(const char* fmt, ...);
-void rootmessage(FILE* fp, const char* fmt, ...);
+void rootmessage_log(const char* fmt, ...);
 void warningmessage(const char* fmt, ...);
-void errormessage(const char* fmt, ... );
 void warningmessage(FILE* fp, const char* fmt, ...);
+void errormessage(const char* fmt, ... );
 void errormessage(FILE* fp, const char* fmt, ...);
 
 void prompttocontinue();

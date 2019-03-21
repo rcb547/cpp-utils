@@ -39,9 +39,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "general_utils.h"
 #include "file_utils.h"
-using namespace std;
+#include "logger.h"
 
-static FILE* global_log_file = (FILE*)NULL;
+class cLogger glog;//The instance of the global log file manager
 
 std::string srcloc(const char* filepath, const int& linenumber, const char* function){
 	std::string filename = extractfilename(filepath);
@@ -62,7 +62,7 @@ std::string versionstring(const std::string& version, const std::string& compile
 	return s;
 };
 
-int my_size(){
+const int my_size(){
 #if defined _MPI_ENABLED			
 	if (cMpiEnv::isinitialised()){		
 		return cMpiEnv::world_size();
@@ -73,7 +73,7 @@ int my_size(){
 #endif
 };
 
-int my_rank(){
+const int my_rank(){
 
 	int threadnum = 0;
 
@@ -89,6 +89,23 @@ int my_rank(){
 #else
 	return threadnum;
 #endif
+}
+
+const int mpi_openmp_rank(){
+	int rank = 0;
+
+	#if defined _OPENMP
+		rank = omp_get_thread_num();
+		if (rank > 0)return rank;
+	#endif
+
+	#if defined _MPI_ENABLED
+		if (cMpiEnv::isinitialised()) {
+			rank = cMpiEnv::world_rank();
+			return rank;
+		}
+	#endif
+	return rank;
 }
 
 void rb_sleep(double secs)
@@ -143,42 +160,6 @@ std::string strprint(const char* fmt, ...)
 	return s;
 }
 
-
-void open_global_log_file(const std::string& globallogfilename){
-	if (global_log_file == NULL){
-		global_log_file = fileopen(globallogfilename, "w");
-	}		
-};
-
-FILE* global_log_file_pointer(){
-	return global_log_file;		
-};
-
-void close_global_log_file(){
-	if (global_log_file != NULL){
-		fclose(global_log_file);
-	}
-	global_log_file = (FILE*)NULL;
-};
-
-void logmsg(const std::string& msg){
-	if (global_log_file){
-		fprintf(global_log_file, msg.c_str());
-	}
-	printf(msg.c_str());
-};
-
-void logmsg(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = strprint_va(fmt, vargs);
-	va_end(vargs);
-
-	logmsg(msg);
-}
-
-
 void messageoutput(const std::string& msg)
 {
 	#if defined MATLAB_MEX_FILE
@@ -206,14 +187,14 @@ void message(const char* fmt, ...)
 	messageoutput(msg);
 }
 
-void message(FILE* fp, const char* fmt, ...)
+void message_log(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
 	std::string msg = strprint_va(fmt, vargs);
 	va_end(vargs);	
 	messageoutput(msg);
-	messageoutput(msg,fp);	
+	messageoutput(msg, glog.getfilepointer());
 }
 
 void rootmessage(const char* fmt, ...){
@@ -224,15 +205,14 @@ void rootmessage(const char* fmt, ...){
 	if (my_rank() == 0) messageoutput(msg);
 }
 
-void rootmessage(FILE* fp, const char* fmt, ...)
+void rootmessage_log(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
 	std::string msg = strprint_va(fmt, vargs);
 	va_end(vargs);
-
 	if (my_rank() == 0) messageoutput(msg);
-	messageoutput(msg, fp);
+	messageoutput(msg, glog.getfilepointer());
 }
 
 void warningmessage(const char* fmt, ...)
@@ -289,8 +269,10 @@ void errormessage(FILE* fp, const char* fmt, ...){
 	std::string msg = "**Error: " + strprint_va(fmt, vargs);
 	va_end(vargs);
 	
-	fprintf(fp,msg.c_str());
-	fflush(fp);
+	if (fp) {
+		fprintf(fp, msg.c_str());
+		fflush(fp);
+	}
 
 #if defined MATLAB_MEX_FILE
 	mexErrMsgTxt(msg.c_str());				
@@ -1051,8 +1033,8 @@ std::string stripquotes(const std::string& s)
 std::vector<std::string> tokenize(const std::string& str)
 {
 	std::stringstream strstr(str);
-	istream_iterator<std::string> it(strstr);
-	istream_iterator<std::string> end;
+	std::istream_iterator<std::string> it(strstr);
+	std::istream_iterator<std::string> end;
 	std::vector<std::string> results(it, end);
 	return results;
 }
@@ -1212,7 +1194,7 @@ std::vector<double> linspace(const double x1, const double x2, const size_t n)
 
 std::vector<double> log10space(const double x1, const double x2, const size_t n)
 {
-	vector<double> v = linspace(std::log10(x1), std::log10(x2), n);
+	std::vector<double> v = linspace(std::log10(x1), std::log10(x2), n);
 	for (size_t i = 0; i < n; i++){
 		v[i] = std::pow(10.0,v[i]);
 	}
