@@ -37,17 +37,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "mex.h"
 #endif
 
+#include "logger.h"
 #include "general_utils.h"
 #include "file_utils.h"
-#include "logger.h"
-
-class cLogger glog;//The instance of the global log file manager
-
-std::string srcloc(const char* filepath, const int& linenumber, const char* function){
-	std::string filename = extractfilename(filepath);
-	std::string msg = strprint("%s (line %d) in %s()\n", filename.c_str(), linenumber, function);
-	return msg;
-}
 
 std::string commandlinestring(int argc, char** argv){
 	std::string str = "Executing:";
@@ -126,9 +118,10 @@ void debug(const char* msg)
 	fflush(stdout);
 }
 
-std::string strprint_va(const char* fmt, va_list vargs)
+std::string string_printf(const char* fmt, va_list vargs)
 {
-	size_t bufsize = 8192;
+	//This is not declared in the header as not wanting it to be part of the public interface
+	size_t bufsize = 128;
 	std::string str;
 	str.resize(bufsize);
 
@@ -151,11 +144,17 @@ std::string strprint_va(const char* fmt, va_list vargs)
 	return str;
 }
 
+std::string strprint(const char* fmt, va_list args)
+{
+	//This is not declared in the header as not wanting it to be part of the public interface
+	return string_printf(fmt, args);
+}
+
 std::string strprint(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string s = strprint_va(fmt, vargs);
+	std::string s = string_printf(fmt, vargs);
 	va_end(vargs);
 	return s;
 }
@@ -182,7 +181,7 @@ void message(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = strprint_va(fmt, vargs);
+	std::string msg = string_printf(fmt, vargs);
 	va_end(vargs);
 	messageoutput(msg);
 }
@@ -191,16 +190,17 @@ void message_log(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = strprint_va(fmt, vargs);
+	std::string msg = string_printf(fmt, vargs);
 	va_end(vargs);	
 	messageoutput(msg);
-	messageoutput(msg, glog.getfilepointer());
+	//messageoutput(msg, glog.getfilepointer());
+	glog.ostrm() << msg;
 }
 
 void rootmessage(const char* fmt, ...){
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = strprint_va(fmt, vargs);
+	std::string msg = string_printf(fmt, vargs);
 	va_end(vargs);
 	if (my_rank() == 0) messageoutput(msg);
 }
@@ -209,17 +209,18 @@ void rootmessage_log(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = strprint_va(fmt, vargs);
+	std::string msg = string_printf(fmt, vargs);
 	va_end(vargs);
 	if (my_rank() == 0) messageoutput(msg);
-	messageoutput(msg, glog.getfilepointer());
+	//messageoutput(msg, glog.getfilepointer());
+	glog.ostrm() << msg;
 }
 
 void warningmessage(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = "**Warning: " + strprint_va(fmt, vargs);
+	std::string msg = "**Warning: " + string_printf(fmt, vargs);
 	va_end(vargs);
 
 #if defined MATLAB_MEX_FILE
@@ -234,7 +235,7 @@ void warningmessage(FILE* fp, const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = "**Warning: " + strprint_va(fmt, vargs);
+	std::string msg = "**Warning: " + string_printf(fmt, vargs);
 	va_end(vargs);
 
 	fprintf(fp,msg.c_str());
@@ -252,7 +253,7 @@ void errormessage(const char* fmt, ...)
 {
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = "**Error: " + strprint_va(fmt, vargs);
+	std::string msg = "**Error: " + string_printf(fmt, vargs);
 	va_end(vargs);
 #if defined MATLAB_MEX_FILE
 	mexErrMsgTxt(msg.c_str());				
@@ -266,7 +267,7 @@ void errormessage(const char* fmt, ...)
 void errormessage(FILE* fp, const char* fmt, ...){
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string msg = "**Error: " + strprint_va(fmt, vargs);
+	std::string msg = "**Error: " + string_printf(fmt, vargs);
 	va_end(vargs);
 	
 	if (fp) {

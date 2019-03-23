@@ -21,10 +21,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <algorithm>
 #include "general_constants.h"
 #include "general_types.h"
+#include "logger.h"
+#include "stacktrace.h"
 
-#define _SRC_ srcloc(__FILE__, __LINE__, __FUNCTION__)
-
-std::string srcloc(const char* filepath, const int& linenumber, const char* function);
 std::string commandlinestring(int argc, char** argv);
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate);
 
@@ -32,19 +31,7 @@ const int my_size();
 const int my_rank();
 const int mpi_openmp_rank();
 
-std::string strprint_va(const char* fmt, va_list argptr);
 std::string strprint(const char* fmt, ...);
-
-//void  open_global_log_file(const std::string& globallogfilename); //Open the global log file if not already open
-//void  close_global_log_file(); //Closes the global log file if open
-//FILE* global_log_file_pointer(); //Pointer to the global log file
-//FILE* glfp();//Shorthand for the global_log_file_pointer()
-//void logmsg(const std::string& msg);
-//void logmsg(const char* fmt, ...);
-//void logmsg_no_print(const std::string& msg);
-//void logmsg_no_print(const char* fmt, ...);
-
-
 void message(const char* fmt, ...);
 void message_log(const char* fmt, ... );
 void rootmessage(const char* fmt, ...);

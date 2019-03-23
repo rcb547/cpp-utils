@@ -13,8 +13,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <fstream>
 
+#include "stacktrace.h"
 #include "general_utils.h"
 #include "file_utils.h"
+
 
 enum eFieldType {REAL,INTEGER};
 

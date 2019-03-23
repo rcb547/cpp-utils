@@ -10,29 +10,32 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _stacktrace_H
 
 #include <vector>
+#include "logger.h"
 
-//It is best to define USEGLOBALSTACKTRACE as a
-//compiler preprocessor definition so that it is defined
-//across all source units
+//Should define USEGLOBALSTACKTRACE as a compiler preprocessor definition
+//so that it is defined across all source units 
 //#define USEGLOBALSTACKTRACE
 
 #ifdef USEGLOBALSTACKTRACE
 	#define _GSTITEM_ cTraceItem trace(__FILE__, __FUNCTION__, __LINE__);	
-	#define _GSTPUSH_ globalstacktrace.push(__FILE__, __FUNCTION__, __LINE__);
-	#define _GSTPOP_ globalstacktrace.pop();
-	#define _GSTPRINT_ globalstacktrace.printf();
+	#define _GSTPUSH_ gtrace.push(__FILE__, __FUNCTION__, __LINE__);
+	#define _GSTPOP_ gtrace.pop();
+	#define _GSTPRINT_ gtrace.printf();
 #else
-	#define _GSTITEM_	
-	#define _GSTPUSH_
-	#define _GSTPOP_
-	#define _GSTPRINT_
+	#define _GSTITEM_ 
+	#define _GSTPUSH_ 
+	#define _GSTPOP_ 
+	#define _GSTPRINT_ 
 #endif
 
 class cTraceItem; //forward declaration only
 class cStackTrace; //forward declaration only
 
+
+#define _SRC_ cStackTrace::src_code_location(__FILE__, __FUNCTION__, __LINE__)
+
 //extern only here - declare the actual global instance of the object in the main program .cpp file
-extern class cStackTrace globalstacktrace; 
+extern class cStackTrace gtrace; 
 
 class cStackTrace {
 
@@ -43,10 +46,8 @@ public:
 
 	cStackTrace(){ };
 	
-	void push(const char* file, const char* function, const int& linenumber){
-		char buf[500];
-		std::sprintf(buf,"File: %s\t Function:%s\t Line:%d", file, function, linenumber);
-		stack.push_back(std::string(buf));
+	void push(const char* file, const char* function, const int& linenumber){				
+		stack.push_back(src_code_location(file, function, linenumber));
 	}
 
 	void pop(){
@@ -54,11 +55,17 @@ public:
 	}
 
 	void printf(){		
-		std::printf("---Stack Trace----------------------------\n");
+		glog.logmsg("---Stack Trace----------------------------\n");
 		for (size_t i = stack.size(); i > 0; i--){
-			std::printf("%s\n", stack[i-1].c_str());
+			glog.logmsg("%s\n", stack[i-1].c_str());
 		}
-		std::printf("------------------------------------------\n");
+		glog.logmsg("------------------------------------------\n");
+	}
+
+	static std::string src_code_location(const char* file, const char* function, const int& linenumber) {
+		char buf[1024];
+		std::sprintf(buf, "File: %s\t Function:%s\t Line:%d",extractfilename(file).c_str(), function, linenumber);
+		return std::string(buf);
 	}
 };
 
@@ -67,11 +74,14 @@ class cTraceItem {
 public:
 
 	cTraceItem(const char* file, const char* function, const int& linenumber){
-		globalstacktrace.push(file,function,linenumber);
+		gtrace.push(file,function,linenumber);
 	}
 
 	~cTraceItem(){
-		globalstacktrace.pop();
+		if (std::uncaught_exception() == false) {
+			//If an Exception has not occurred, pop it off the global stack
+			gtrace.pop();
+		}
 	}
 
 };

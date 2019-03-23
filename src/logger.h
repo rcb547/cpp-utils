@@ -14,51 +14,59 @@ Author: Ross C. Brodie, Geoscience Australia.
 #if defined _OPENMP
 	#include <omp.h>
 #endif
-#include <file_utils.h>
+
+#include <iostream>
+#include <fstream>
+
+extern std::string extractfilename(const std::string& filename);
+extern std::string timestamp();
+//extern std::string strprint_va(const char* fmt, va_list vargs);
+extern std::string strprint(const char* fmt, ...);
+extern const int mpi_openmp_rank();
+
+class cLogger; //forward declaration only
+extern class cLogger glog; //The global instance of the log file manager
 
 class cLogger  
 {
-	private:
-		std::vector<FILE*> fptr;
+	private:		
+		std::vector<std::ofstream> ofs;
+			
 		void closeindex(const int i)
-		{
-			if (fptr.size() > i) {
-				if (fptr[i]){
-					fprintf(fptr[i],"Logfile closed on %s\n", timestamp().c_str());
-					fflush(fptr[i]);
-					fclose(fptr[i]);
-					fptr[i] = (FILE*)NULL;
-				}				
+		{						
+			if (ofs.size() > i) {
+				if (ofs[i].is_open()) {
+					ofs[i] << "Logfile closed on " << timestamp() << std::endl;
+					ofs[i].close();										
+				}
 			}
 		}		
+
 		const int threadindex()
 		{			
 			#if defined _OPENMP
 				return omp_get_thread_num();
-			#elif
+			#else
 				return 0;
 			#endif
 		}
+
 		void flushindex(const int i)
 		{
-			if (fptr.size() > i) {
-				if (fptr[i]) std::fflush(fptr[i]);				
-			}
+			ostrm() << std::flush;			
 		}		
 
 public:    
 
 	cLogger() {};
 
-	FILE* open(const std::string& logfilename)
+	bool open(const std::string& logfilename)
 	{
-		const int i = threadindex();
-		if (fptr.size() < i+1)fptr.resize(i+1);
-		fptr[i] = fileopen(logfilename, "w");
-		if (fptr[i]){
-			fprintf(fptr[i],"Logfile opened on %s\n", timestamp().c_str());
-		}
-		return fptr[i];
+		const int i = threadindex();		
+		if (ofs.size() < i + 1) ofs.resize(i + 1);
+		ofs[i].open(logfilename,std::ios_base::out);
+		ofs[i] << "Logfile opened on " << timestamp() << std::endl << std::flush;
+		return true;
 	}
 
 	void flush()
@@ -71,44 +79,44 @@ public:
 		closeindex(threadindex());
 	}
 
-	FILE* getfilepointer()
+	std::ofstream& ostrm()
 	{
 		const int i = threadindex();
-		if(fptr.size()>i)return fptr[i];
-		else return (FILE*)NULL;
+		return ofs[i];	
 	}
 		
 	~cLogger()
-	{
-		for (size_t i = 0; i < fptr.size(); i++) {
-			closeindex(i);
+	{		
+		for (size_t i = 0; i < ofs.size(); i++) {
+			closeindex((int)i);
 		}
 	};
 
-	void logmsg(const std::string& msg) {
-		if (FILE* fp = getfilepointer()) {
-			fprintf(fp, msg.c_str());
-		}
-		printf(msg.c_str());
-		std::fflush(stdout);
+	void logmsg(const std::string& msg){
+		std::ofstream& fs = ostrm();
+		if (fs.is_open()) fs << msg << std::flush;
+		std::cout << msg << std::flush;		
+	};
+
+	void log(const std::string& msg) {
+		std::ofstream& fs = ostrm();
+		if (fs.is_open()) fs << msg << std::flush;		
 	};
 
 	void logmsg(const char* fmt, ...)
-	{
+	{		
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
+		//std::string msg = strprint_va(fmt, vargs);
+		std::string msg = strprint(fmt, vargs);
 		va_end(vargs);
 		logmsg(msg);
 	}
 
-	void logmsg(const int& rank, const std::string& msg) {
-		if (FILE* fp = getfilepointer()) {
-			fprintf(fp, msg.c_str());
-		}
+	void logmsg(const int& rank, const std::string& msg) {		
+		logmsg(msg);
 		if (mpi_openmp_rank() == rank) {
-			printf(msg.c_str());
-			std::fflush(stdout);
+			std::cout << msg << std::flush;			
 		}
 	};
 
@@ -116,7 +124,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
+		std::string msg = strprint(fmt, vargs);
 		va_end(vargs);
 		logmsg(rank, msg);
 	}		

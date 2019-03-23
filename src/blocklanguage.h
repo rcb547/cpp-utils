@@ -84,7 +84,7 @@ public:
 		}
 	}
 
-	std::string get_as_string(const size_t n = 0) const
+	const std::string get_as_string(const size_t n = 0) const
 	{
 		std::string s;
 
