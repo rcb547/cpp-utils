@@ -169,7 +169,7 @@ public:
 		else if (op == '-') val -= (T)opval;
 		else if (op == '*') val *= (T)opval;
 		else if (op == '/') val /= (T)opval;
-		else warningmessage("FieldDefinition::applyoperator() unknown operator %c\n", op);
+		else glog.warningmsg(_SRC_,"Unknown operator %c\n", op);
 		return;
 	}	
 };

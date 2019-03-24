@@ -32,14 +32,6 @@ const int my_rank();
 const int mpi_openmp_rank();
 
 std::string strprint(const char* fmt, ...);
-void message(const char* fmt, ...);
-void message_log(const char* fmt, ... );
-void rootmessage(const char* fmt, ...);
-void rootmessage_log(const char* fmt, ...);
-void warningmessage(const char* fmt, ...);
-void warningmessage(FILE* fp, const char* fmt, ...);
-void errormessage(const char* fmt, ... );
-void errormessage(FILE* fp, const char* fmt, ...);
 
 void prompttocontinue();
 void prompttoexit();
@@ -141,8 +133,8 @@ std::string stringvalue(const bool value);
 int strcasecmp(const std::string& A, const std::string& B);
 int strncasecmp(const std::string& A, const std::string& B, size_t n);
 
-std::string timestamp();
-std::string timestring(const std::string format, std::time_t t = 0);
+const std::string timestamp();
+const std::string timestring(const std::string format, std::time_t t = 0);
 
 int isinsidepolygon(int npol, double *xp, double *yp, double x, double y);
 
@@ -173,7 +165,8 @@ std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const
 std::vector<std::vector<double>> overlaps(const std::vector<double>& a, const std::vector<double>& b);
 std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a, const std::vector<double>& b);
 
-int findandreplace(std::string& source, const std::string& find, const std::string& replace);
+//int findandreplace(std::string& source, const std::string& find, const std::string& replace);
+
 double gettime();
 
 char* temppath(const char* s, int set);

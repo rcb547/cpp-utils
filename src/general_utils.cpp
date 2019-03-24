@@ -114,8 +114,7 @@ void rb_sleep(double secs)
 
 void debug(const char* msg)
 {
-	message("Debug: %s\n", msg);
-	fflush(stdout);
+	glog.logmsg("Debug: %s\n", msg);
 }
 
 std::string string_printf(const char* fmt, va_list vargs)
@@ -157,132 +156,6 @@ std::string strprint(const char* fmt, ...)
 	std::string s = string_printf(fmt, vargs);
 	va_end(vargs);
 	return s;
-}
-
-void messageoutput(const std::string& msg)
-{
-	#if defined MATLAB_MEX_FILE
-		mexPrintf("%s",msg.c_str());		
-	#else			
-		printf("%s", msg.c_str());
-		fflush(stdout);
-	#endif		
-}
-
-void messageoutput(const std::string& msg, FILE* fp)
-{
-	if (fp != NULL){
-		fprintf(fp, "%s", msg.c_str());
-		fflush(fp);
-	}
-}
-
-void message(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = string_printf(fmt, vargs);
-	va_end(vargs);
-	messageoutput(msg);
-}
-
-void message_log(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = string_printf(fmt, vargs);
-	va_end(vargs);	
-	messageoutput(msg);
-	//messageoutput(msg, glog.getfilepointer());
-	glog.ostrm() << msg;
-}
-
-void rootmessage(const char* fmt, ...){
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = string_printf(fmt, vargs);
-	va_end(vargs);
-	if (my_rank() == 0) messageoutput(msg);
-}
-
-void rootmessage_log(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = string_printf(fmt, vargs);
-	va_end(vargs);
-	if (my_rank() == 0) messageoutput(msg);
-	//messageoutput(msg, glog.getfilepointer());
-	glog.ostrm() << msg;
-}
-
-void warningmessage(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = "**Warning: " + string_printf(fmt, vargs);
-	va_end(vargs);
-
-#if defined MATLAB_MEX_FILE
-	mexWarnMsgTxt(msg.c_str());	
-#else
-	printf(msg.c_str());
-	fflush(stdout);
-#endif	
-}
-
-void warningmessage(FILE* fp, const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = "**Warning: " + string_printf(fmt, vargs);
-	va_end(vargs);
-
-	fprintf(fp,msg.c_str());
-	fflush(fp);
-
-#if defined MATLAB_MEX_FILE
-	mexWarnMsgTxt(msg.c_str());
-#else
-	printf(msg.c_str());
-	fflush(stdout);
-#endif	
-}
-
-void errormessage(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = "**Error: " + string_printf(fmt, vargs);
-	va_end(vargs);
-#if defined MATLAB_MEX_FILE
-	mexErrMsgTxt(msg.c_str());				
-#else
-	printf(msg.c_str());
-	fflush(stdout);
-	throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
-#endif		
-}
-
-void errormessage(FILE* fp, const char* fmt, ...){
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string msg = "**Error: " + string_printf(fmt, vargs);
-	va_end(vargs);
-	
-	if (fp) {
-		fprintf(fp, msg.c_str());
-		fflush(fp);
-	}
-
-#if defined MATLAB_MEX_FILE
-	mexErrMsgTxt(msg.c_str());				
-#else	
-	printf(msg.c_str());
-	fflush(stdout);
-	throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
-#endif	
-
 }
 
 void prompttocontinue()
@@ -506,7 +379,7 @@ int strncasecmp(const std::string& A, const std::string& B, const size_t n)
 #endif
 }
 
-std::string timestamp()
+const std::string timestamp()
 {	
 	time_t ltime;
 	time(&ltime);
@@ -515,7 +388,7 @@ std::string timestamp()
 	return str;
 }
 
-std::string timestring(const std::string format,  std::time_t t){
+const std::string timestring(const std::string format,  std::time_t t){
 	
 	if (t == 0) t = std::time(NULL);
 	//"%Y%m%d";
@@ -1096,13 +969,13 @@ std::vector<std::string> fieldparsestring_old(const char* str, const char delim)
 	}
 
 	if (numquotes % 2 != 0){
-		warningmessage("fieldparsestd::string(): Unmatched quotes\n");
+		glog.warningmsg(_SRC_,"Unmatched quotes\n");
 		std::vector<std::string> v;
 		return v;
 	}
 
 	if (len == 0){
-		warningmessage("fieldparsestd::string(): Zero length std::string\n");
+		glog.warningmsg(_SRC_,"Zero length std::string\n");
 		std::vector<std::string> v;
 		return v;
 	}

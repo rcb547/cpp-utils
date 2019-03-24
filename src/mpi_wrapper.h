@@ -45,12 +45,12 @@ public:
 
 	void start(int argc, char** argv){
 		MPI_Init(&argc, &argv);		
-		rootmessage("MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", world_size(), world_rank(), processor_name().c_str());
+		glog.logmsg(0,"MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", world_size(), world_rank(), processor_name().c_str());
 		return;
 	};
 
 	void stop(){
-		rootmessage("Finalizing MPI\n");
+		glog.logmsg(0,"Finalizing MPI\n");
 		MPI_Finalize();
 	}
 

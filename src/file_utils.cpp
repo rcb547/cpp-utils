@@ -138,7 +138,7 @@ FILE* fileopen(const std::string filepath, const std::string mode)
 		if(dirname.size()>0){
 			if(exists(dirname)==false){
 				if(makedirectorydeep(dirname) == false){
-					warningmessage("fileopen(): Unable to make directory for file %s \n",path.c_str());
+					glog.warningmsg("fileopen(): Unable to make directory for file %s \n",path.c_str());
 					return (FILE*)NULL;
 				}
 			}
@@ -147,7 +147,7 @@ FILE* fileopen(const std::string filepath, const std::string mode)
 
 	FILE* fp = fopen(path.c_str(),mode.c_str());
 	if(!fp){
-		warningmessage("fileopen(): Unable to open file %s \n", path.c_str());
+		glog.warningmsg("fileopen(): Unable to open file %s \n", path.c_str());
 	}
 	return fp;
 }
@@ -174,7 +174,7 @@ bool makedirectory(std::string dirname)
 				return true;
 			}
 			else{
-				warningmessage("makedirectory(): Problem creating directory because %s is an invalid path\n",dirname.c_str());
+				glog.warningmsg("makedirectory(): Problem creating directory because %s is an invalid path\n",dirname.c_str());
 				return false;
 			}
 		}
@@ -186,7 +186,7 @@ bool makedirectory(std::string dirname)
 				return true;
 			}
 			else{
-				warningmessage("makedirectory(): Problem creating directory because %s is an invalid path\n",dirname.c_str());				
+				glog.warningmsg("makedirectory(): Problem creating directory because %s is an invalid path\n",dirname.c_str());				
 				return false;
 			}
 		}
@@ -220,7 +220,7 @@ int copyfile(std::string src, std::string dest)
 		
 	status = system(cmd.c_str());
 	if(status != 0){            			
-		warningmessage("copyfile(): Error copying %s to %s\n",src.c_str(),dest.c_str());		
+		glog.warningmsg("copyfile(): Error copying %s to %s\n",src.c_str(),dest.c_str());		
 	}
 	
 	return status;
@@ -240,7 +240,7 @@ int deletefile(std::string src)
 		
 	status = system(cmd.c_str());
 	if(status != 0){            			
-		warningmessage("deletefile(): Error deleting %s\n",src.c_str());
+		glog.warningmsg("deletefile(): Error deleting %s\n",src.c_str());
 	}
 	
 	return status;
@@ -398,7 +398,6 @@ std::vector<std::string> directoryheirachy(std::string dirname)
 		}
 	}
 	return v;
-
 }
 
 cDirectoryAccess::cDirectoryAccess()
@@ -466,7 +465,7 @@ std::vector<std::string> cDirectoryAccess::getfilelist_single(const std::string&
 	std::string sp = fpp.prefix + fpp.extension;	
 
 	if ((dp=opendir(directorypath.c_str()))==NULL){
-		warningmessage("getfilelist_single(): Could not open directory: %s\n",directorypath.c_str());
+		glog.warningmsg(("getfilelist_single(): Could not open directory: %s\n",directorypath.c_str());
 		return flist;
 	}
 	

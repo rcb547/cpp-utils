@@ -163,7 +163,7 @@ public:
 			return eFieldType::INTEGER;
 		}
 		else{			
-			warningmessage("Unknown data type <%c>\n", fmttype);			
+			glog.warningmsg(_SRC_,"Unknown data type <%c>\n", fmttype);			
 		}
 		return eFieldType::REAL;
 	};

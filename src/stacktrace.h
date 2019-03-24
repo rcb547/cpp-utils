@@ -31,9 +31,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 class cTraceItem; //forward declaration only
 class cStackTrace; //forward declaration only
 
-
-#define _SRC_ cStackTrace::src_code_location(__FILE__, __FUNCTION__, __LINE__)
-
 //extern only here - declare the actual global instance of the object in the main program .cpp file
 extern class cStackTrace gtrace; 
 
@@ -47,7 +44,7 @@ public:
 	cStackTrace(){ };
 	
 	void push(const char* file, const char* function, const int& linenumber){				
-		stack.push_back(src_code_location(file, function, linenumber));
+		stack.push_back(_SRC_);
 	}
 
 	void pop(){
@@ -60,13 +57,7 @@ public:
 			glog.logmsg("%s\n", stack[i-1].c_str());
 		}
 		glog.logmsg("------------------------------------------\n");
-	}
-
-	static std::string src_code_location(const char* file, const char* function, const int& linenumber) {
-		char buf[1024];
-		std::sprintf(buf, "File: %s\t Function:%s\t Line:%d",extractfilename(file).c_str(), function, linenumber);
-		return std::string(buf);
-	}
+	}	
 };
 
 class cTraceItem {
