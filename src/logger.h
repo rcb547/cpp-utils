@@ -9,16 +9,20 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _logfile_H
 #define _logfile_H
 
-#include <cstdio>
-#include <vector>
-#if defined _OPENMP
-	#include <omp.h>
-#endif
-
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <cstdarg>
+#include <cstdio>
+#include <vector>
+
+#if defined _OPENMP
+	#include <omp.h>
+#endif
+
+#if defined MATLAB_MEX_FILE
+#include "mex.h"
+#endif
 
 extern bool makedirectorydeep(std::string dirname);
 extern std::string extractfiledirectory(const std::string& pathname);
@@ -119,8 +123,11 @@ public:
 	}
 
 	std::ofstream& ostrm()
-	{
-		if (ofs.size() == 0)return std::ofstream();
+	{		
+		if (ofs.size() == 0) {
+			ofs.resize(1);
+			return ofs[0];
+		}		
 		const int i = threadindex();
 		return ofs[i];	
 	}

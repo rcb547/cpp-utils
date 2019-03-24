@@ -110,7 +110,7 @@ public:
 		else if (deftype == COLUMNNUMBER) {						
 			std::istringstream(fields[column - coff]) >> v;
 			ifnullconvert2zero(v);
-			if (flip) v = -v;
+			if (flip) v = -1*v;
 			applyoperator(v);	
 			return true;
 		}		
@@ -119,7 +119,7 @@ public:
 			return false;
 		}
 		else {
-			//warningmessage("FieldDefinition::getvalue() unknown column definition\n");
+			//warningglog.logmsg("FieldDefinition::getvalue() unknown column definition\n");
 			v = undefinedvalue(v);
 			return false;
 		}

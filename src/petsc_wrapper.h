@@ -1419,7 +1419,7 @@ return b;
 			s += strprint("anorm = %3.1le ", anorm);
 			s += strprint("reduc = %3.1le ", anorm / inorm);
 			s += strprint("\n");
-			message(s.c_str());
+			glog.logmsg(s.c_str());
 		}
 
 		return x;

@@ -766,9 +766,9 @@ double reportusage()
 	sscanf(buf,"%lf %lf %lf",&pcpu,&vsize,&pmem);
 	fclose(fp);
 	deletefile(tmpfile);
-	message("Percent CPU used: %.2lf\n",pcpu);
-	message("Percent memory used: %.2lf\n",pmem);
-	message("Virtual memory used (Mb): %.2lf\n",vsize/1000.0);	
+	glog.logmsg("Percent CPU used: %.2lf\n",pcpu);
+	glog.logmsg("Percent memory used: %.2lf\n",pmem);
+	glog.logmsg("Virtual memory used (Mb): %.2lf\n",vsize/1000.0);	
 	return pmem;
 }
 #endif
