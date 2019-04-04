@@ -19,6 +19,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <climits>
 #include <vector>
 #include <algorithm>
+#include "string_utils.h"
 #include "general_constants.h"
 #include "general_types.h"
 #include "logger.h"
@@ -30,8 +31,6 @@ std::string versionstring(const std::string& version, const std::string& compile
 const int my_size();
 const int my_rank();
 const int mpi_openmp_rank();
-
-std::string strprint(const char* fmt, ...);
 
 void prompttocontinue();
 void prompttoexit();
@@ -83,7 +82,6 @@ T distance(const T& x, const T& y)
 	return std::sqrt(x*x + y*y);
 }
 
-//==========
 bool wildcmp(const char* wildpattern, const char* stringpattern);
 double correlation_coefficient(std::vector<double>x, std::vector<double>y);
 
@@ -164,8 +162,6 @@ std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const
 
 std::vector<std::vector<double>> overlaps(const std::vector<double>& a, const std::vector<double>& b);
 std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a, const std::vector<double>& b);
-
-//int findandreplace(std::string& source, const std::string& find, const std::string& replace);
 
 double gettime();
 

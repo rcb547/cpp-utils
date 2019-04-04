@@ -42,9 +42,9 @@ std::string extractfilename(const std::string& pathname);
 std::string extractfilename_noextension(const std::string& pathname);
 std::string extractfileextension(const std::string& pathname);
 
-std::string insert_before_filename(std::string input, std::string insertion);
-std::string insert_after_filename(std::string input, std::string insertion);
-std::string insert_after_extension(std::string input, std::string insertion);
+std::string insert_before_filename(const std::string& input, const std::string& insertion);
+std::string insert_after_filename(const std::string& input, const std::string& insertion);
+std::string insert_after_extension(const std::string& input, const std::string& insertion);
 
 int64_t filesize(const std::string& path);
 std::vector<std::string> getfilelist(const std::string& path, const std::string& extension);

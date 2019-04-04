@@ -44,7 +44,7 @@ public:
 	cStackTrace(){ };
 	
 	void push(const char* file, const char* function, const int& linenumber){				
-		stack.push_back(_SRC_);
+		stack.push_back(cLogger::src_code_location(file, function, linenumber));
 	}
 
 	void pop(){

@@ -117,47 +117,6 @@ void debug(const char* msg)
 	glog.logmsg("Debug: %s\n", msg);
 }
 
-std::string string_printf(const char* fmt, va_list vargs)
-{
-	//This is not declared in the header as not wanting it to be part of the public interface
-	size_t bufsize = 128;
-	std::string str;
-	str.resize(bufsize);
-
-	int status = std::vsnprintf(&(str[0]), bufsize, fmt, vargs);
-	if (status < 0){
-		str = std::string("");
-		return str;
-	}
-
-	size_t len = (size_t)status;
-	if (len < bufsize){
-		str.resize(len);
-	}
-	else{
-		bufsize = len + 1;
-		str.resize(bufsize);
-		status = vsnprintf(&(str[0]), bufsize, fmt, vargs);
-		str.resize((size_t)status);
-	}
-	return str;
-}
-
-std::string strprint(const char* fmt, va_list args)
-{
-	//This is not declared in the header as not wanting it to be part of the public interface
-	return string_printf(fmt, args);
-}
-
-std::string strprint(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string s = string_printf(fmt, vargs);
-	va_end(vargs);
-	return s;
-}
-
 void prompttocontinue()
 {
 #if defined MATLAB_MEX_FILE				
@@ -345,7 +304,7 @@ std::string stringvalue(const double value, const char* fmt)
 
 std::string stringvalue(const size_t value, const char* fmt)
 {	
-	if (fmt == NULL) return strprint("%lu", value);
+	if (fmt == NULL) return strprint("%zu", value);
 	return strprint(fmt, value);
 }
 

@@ -10,7 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _logfile_H
 
 #include <iostream>
-#include <string>
+#include <cstring>
 #include <fstream>
 #include <cstdarg>
 #include <cstdio>
@@ -24,11 +24,12 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "mex.h"
 #endif
 
+#include "string_utils.h"
+
 extern bool makedirectorydeep(std::string dirname);
 extern std::string extractfiledirectory(const std::string& pathname);
 extern std::string extractfilename(const std::string& filename);
 extern const std::string timestamp();
-extern std::string strprint(const char* fmt, ...);
 extern const int mpi_openmp_rank();
 
 class cLogger; //forward declaration only
@@ -62,32 +63,8 @@ class cLogger
 		void flushindex(const int i)
 		{
 			ostrm() << std::flush;			
-		}		
-		
-		static std::string string_printf(const char* fmt, va_list vargs)
-		{			
-			size_t bufsize = 128;
-			std::string str;
-			str.resize(bufsize);
-
-			int status = std::vsnprintf(&(str[0]), bufsize, fmt, vargs);
-			if (status < 0) {
-				str = std::string("");
-				return str;
-			}
-
-			size_t len = (size_t)status;
-			if (len < bufsize) {
-				str.resize(len);
-			}
-			else {
-				bufsize = len + 1;
-				str.resize(bufsize);
-				status = vsnprintf(&(str[0]), bufsize, fmt, vargs);
-				str.resize((size_t)status);
-			}
-			return str;
 		}
+		
 public:    
 
 	cLogger() {};
@@ -151,10 +128,10 @@ public:
 	};
 
 	void logmsg(const char* fmt, ...)
-	{		
+	{				
 		va_list vargs;
 		va_start(vargs, fmt);		
-		std::string msg = string_printf(fmt, vargs);
+		std::string msg = strprint(fmt, vargs);
 		va_end(vargs);
 		logmsg(msg);
 	}
@@ -163,7 +140,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = string_printf(fmt, vargs);
+		std::string msg = strprint(fmt, vargs);
 		va_end(vargs);
 		log(msg);
 	}
@@ -179,7 +156,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = string_printf(fmt, vargs);
+		std::string msg = strprint(fmt, vargs);
 		va_end(vargs);
 		logmsg(rank, msg);
 	}	
@@ -188,7 +165,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Warning: " + string_printf(fmt, vargs);
+		std::string msg = "**Warning: " + strprint(fmt, vargs);
 		va_end(vargs);
 
 		#if defined MATLAB_MEX_FILE
@@ -203,7 +180,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Error: " + string_printf(fmt, vargs);
+		std::string msg = "**Error: " + strprint(fmt, vargs);
 		va_end(vargs);
 				
 		#if defined MATLAB_MEX_FILE
@@ -215,10 +192,9 @@ public:
 	}
 
 	static std::string src_code_location(const char* file, const char* function, const int& linenumber)
-	{
-		char buf[1024];
-		std::sprintf(buf,"File: %s\t Function:%s\t Line:%d", extractfilename(file).c_str(), function, linenumber);
-		return std::string(buf);
+	{		
+		std::string s = strprint("File: %s\t Function:%s\t Line:%d", extractfilename(file).c_str(), function, linenumber);
+		return s;
 	}
 
 };

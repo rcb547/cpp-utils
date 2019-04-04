@@ -31,7 +31,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "general_utils.h"
 #include "file_utils.h"
-using namespace std;
 
 char pathseparator()
 {
@@ -163,6 +162,7 @@ std::string getcurrentdirectory()
 }
 bool makedirectory(std::string dirname)
 {
+	if (dirname.size() == 0)return true;
 	fixseparator(dirname);
 	removetrailingseparator(dirname);
 	if(exists(dirname))return true;
@@ -196,6 +196,7 @@ bool makedirectory(std::string dirname)
 
 bool makedirectorydeep(std::string dirname)
 {
+	if (dirname.size() == 0)return true;
 	bool status = false;
 	std::vector<std::string> h = directoryheirachy(dirname);
 	std::string p;
@@ -225,6 +226,7 @@ int copyfile(std::string src, std::string dest)
 	
 	return status;
 }
+
 int deletefile(std::string src)
 {		
 	fixseparator(src);
@@ -245,6 +247,7 @@ int deletefile(std::string src)
 	
 	return status;
 }
+
 sFilePathParts getfilepathparts(const std::string& path)
 {
 	sFilePathParts fpp;	
@@ -287,17 +290,20 @@ std::string extractfileextension(const std::string& pathname)
 	sFilePathParts fpp = getfilepathparts(pathname);
 	return fpp.extension;
 }
-std::string insert_before_filename(std::string pathname, std::string insertion)
+std::string insert_before_filename(const std::string& pathname, const std::string& insertion)
 {
 	sFilePathParts fpp = getfilepathparts(pathname);	
 	return fpp.directory + insertion + fpp.prefix + fpp.extension;
 }
-std::string insert_after_filename(std::string pathname, std::string insertion)
+
+std::string insert_after_filename(const std::string& pathname, const std::string& insertion)
 {	
-	sFilePathParts fpp = getfilepathparts(pathname);	
-	return fpp.directory + fpp.prefix + insertion + fpp.extension;
+	sFilePathParts fpp = getfilepathparts(pathname);		
+	std::string s = fpp.directory + fpp.prefix + insertion + fpp.extension;	
+	return s;
 }
-std::string insert_after_extension(std::string pathname, std::string insertion)
+
+std::string insert_after_extension(const std::string& pathname, const std::string& insertion)
 {
 	sFilePathParts fpp = getfilepathparts(pathname);	
 	return fpp.directory + fpp.prefix + fpp.extension + insertion;
@@ -523,7 +529,7 @@ size_t countlines(const std::string filename)
 {
 	FILE* fp = fileopen(filename, "rb");	
 	size_t buffersize = 4194304;
-	vector<char> buffer(buffersize);
+	std::vector<char> buffer(buffersize);
 	size_t n = 0;
 	size_t nread;
 	do{

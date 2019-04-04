@@ -106,8 +106,8 @@ public:
 		std::string fmtstr;
 		if (nbands > 1) fmtstr += strprint("%lu", nbands);
 		fmtstr += strprint("%c", fmttype);
-		fmtstr += strprint("%lu", fmtwidth);
-		if (fmttype != 'I')fmtstr += strprint(".%lu", fmtdecimals);
+		fmtstr += strprint("%zu", fmtwidth);
+		if (fmttype != 'I')fmtstr += strprint(".%zu", fmtdecimals);
 
 		std::string s;
 		s += strprint("DEFN %lu ST=RECD,RT=; %s : %s", order + 1, name.c_str(), fmtstr.c_str());
