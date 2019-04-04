@@ -40,6 +40,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "logger.h"
 #include "general_utils.h"
 #include "file_utils.h"
+#include "string_utils.h"
 
 std::string commandlinestring(int argc, char** argv){
 	std::string str = "Executing:";

@@ -11,6 +11,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <iostream>
 #include <cstring>
+#include <string>
 #include <fstream>
 #include <cstdarg>
 #include <cstdio>
@@ -131,7 +132,7 @@ public:
 	{				
 		va_list vargs;
 		va_start(vargs, fmt);		
-		std::string msg = strprint(fmt, vargs);
+		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		logmsg(msg);
 	}
@@ -140,7 +141,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = strprint(fmt, vargs);
+		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		log(msg);
 	}
@@ -156,7 +157,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = strprint(fmt, vargs);
+		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		logmsg(rank, msg);
 	}	
@@ -165,7 +166,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Warning: " + strprint(fmt, vargs);
+		std::string msg = "**Warning: " + strprint_va(fmt, vargs);
 		va_end(vargs);
 
 		#if defined MATLAB_MEX_FILE
@@ -180,7 +181,7 @@ public:
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Error: " + strprint(fmt, vargs);
+		std::string msg = "**Error: " + strprint_va(fmt, vargs);
 		va_end(vargs);
 				
 		#if defined MATLAB_MEX_FILE

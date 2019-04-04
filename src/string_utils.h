@@ -12,7 +12,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <cstdarg>
 
-inline std::string strprint(const char* fmt, va_list vargs)
+inline std::string strprint_va(const char* fmt, va_list vargs)
 {
 	va_list vargscopy;	
 	va_copy(vargscopy, vargs);
@@ -28,7 +28,7 @@ inline std::string strprint(const char* fmt, ...)
 {		
 	va_list vargs;
 	va_start(vargs, fmt);
-	std::string s = strprint(fmt, vargs);
+	std::string s = strprint_va(fmt, vargs);
 	va_end(vargs);
 	return s;
 }
