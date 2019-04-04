@@ -20,6 +20,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 #include "geometry3d.h"
 #include "stacktrace.h"
+#include "logger.h"
 
 class IHeader;
 class ILDataset;
@@ -95,7 +96,7 @@ public:
 		else if (type == dtFLOAT) return 4;
 		else if (type == dtDOUBLE) return 8;
 		else {
-			message("IDatatype::size() Unknown dadatype\n");
+			glog.logmsg("IDatatype::size() Unknown dadatype\n");
 			return 0;
 		}
 	}
@@ -704,7 +705,7 @@ public:
 	{
 		if (pFile != (FILE*)NULL)return true;
 		if ((pFile = fileopen(datafilepath(), "rb")) == NULL) {
-			message("ILField::open() cannot open file: %s\n\n", datafilepath().c_str());
+			glog.logmsg("ILField::open() cannot open file: %s\n\n", datafilepath().c_str());
 			return false;
 		}
 
@@ -767,7 +768,7 @@ public:
 	void printinfo()
 	{
 		std::string s = infostring();
-		printf(s.c_str());
+		std::printf(s.c_str());
 	}
 	
 	std::string datasetpath();
@@ -804,7 +805,7 @@ private:
 		_GSTITEM_
 		FILE* fsurveyinfo;
 		if ((fsurveyinfo = fileopen(surveyinfopath, "r")) == NULL) {
-			message("Cannot open file: %s\n\n", surveyinfopath.c_str());
+			glog.logmsg("Cannot open file: %s\n\n", surveyinfopath.c_str());
 			return false;
 		}
 
@@ -871,7 +872,7 @@ public:
 
 		datasetpath = strippath(_datasetpath);		
 		if (datasetpath.size() <= 0){
-			message("ILDataset::ILDataset() Invalid Dataset Path: %s\n\n", datasetpath.c_str());
+			glog.logmsg("ILDataset::ILDataset() Invalid Dataset Path: %s\n\n", datasetpath.c_str());
 			valid = false;
 			return;
 		}
@@ -879,7 +880,7 @@ public:
 		indexpath = datasetpath + "INDEX.PD";
 		FILE* findex = fileopen(indexpath, "rb");
 		if (findex == NULL) {
-			message("ILDataset::ILDataset() Cannot open file: %s\n\n", indexpath.c_str());
+			glog.logmsg("ILDataset::ILDataset() Cannot open file: %s\n\n", indexpath.c_str());
 			valid = false;
 			return;
 		}
@@ -894,12 +895,12 @@ public:
 		fread(buffer.data(), IHeader::nbytes(), 1, findex);		
 		Header = IHeader(buffer.data());		
 		if (Header.valid==false){
-			message("ILDataset::ILDataset() could not read INDEX file: %s\n\n", indexpath.c_str());
+			glog.logmsg("ILDataset::ILDataset() could not read INDEX file: %s\n\n", indexpath.c_str());
 			valid = false;
 			return;
 		}
 		else if (Header.filetype != ftINDEX){		
-			message("ILDataset::ILDataset() File %s is not an INDEX file\n\n", indexpath.c_str());
+			glog.logmsg("ILDataset::ILDataset() File %s is not an INDEX file\n\n", indexpath.c_str());
 			valid = false;
 			return;
 		}
@@ -907,7 +908,7 @@ public:
 		indextable.resize(nlines());		
 		std::vector<int> indexdata(nlines() * 4);		
 		if (fread((void*)indexdata.data(), 16, nlines(), findex) != (size_t)nlines()){
-			message("ILDataset::ILDataset() Error reading INDEX file: %s\n\n", indexpath.c_str());
+			glog.logmsg("ILDataset::ILDataset() Error reading INDEX file: %s\n\n", indexpath.c_str());
 			valid = false;
 			return;
 		}
@@ -1050,7 +1051,7 @@ public:
 	{
 		_GSTITEM_
 		std::string s = infostring();
-		printf(s.c_str());		
+		std::printf(s.c_str());		
 	}
 
 	bool fieldexists(const std::string& fieldname)
@@ -1396,7 +1397,7 @@ public:
 	cStats<double> fieldstats(const std::string& fieldname){
 		_GSTITEM_
 		ILField& F = *getfield(fieldname);
-		vector<double> v;
+		std::vector<double> v;
 		v.reserve(nsamples());		
 		for (size_t li = 0; li < nlines(); li++){
 			ILSegment& S = F.Segments[li];			
@@ -1652,12 +1653,12 @@ bool ILField::createnew(ILDataset *_pDataset, const std::string& _fieldname, IDa
 	hdata[186] = 251;
 
 	if ((pFile = fileopen(datafilepath(), "w+b")) == NULL) {
-		message("Cannot open file: %s\n\n", datafilepath().c_str());
+		glog.logmsg("Cannot open file: %s\n\n", datafilepath().c_str());
 		return false;
 	}
 
 	if (fwrite((char*)hdata, IHeader::nbytes(), 1, pFile) != 1){
-		message("Cannot write header: %s\n\n", datafilepath().c_str());
+		glog.logmsg("Cannot write header: %s\n\n", datafilepath().c_str());
 		return false;
 	}
 
@@ -1675,7 +1676,7 @@ bool ILField::createnew(ILDataset *_pDataset, const std::string& _fieldname, IDa
 	
 	FILE* lfile;
 	if ((lfile = fileopen(dotdotlinefilepath(), "w+b")) == NULL) {
-		message("Cannot open file: %s\n\n", dotdotlinefilepath().c_str());
+		glog.logmsg("Cannot open file: %s\n\n", dotdotlinefilepath().c_str());
 		return false;
 	}
 	fclose(lfile);
