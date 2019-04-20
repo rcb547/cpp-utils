@@ -85,6 +85,12 @@ T distance(const T& x, const T& y)
 bool wildcmp(const char* wildpattern, const char* stringpattern);
 double correlation_coefficient(std::vector<double>x, std::vector<double>y);
 
+inline bool isbigendian()
+{	
+	const int i = 1;
+	return (bool)(!*((char *)&i));
+}
+
 template <typename T>
 T swap_endian(const T u)
 {
@@ -278,8 +284,7 @@ template<typename T>
 bool bwrite(FILE* fp, const T& v){
 	size_t status = fwrite(&v, sizeof(T), 1, fp);
 	if (status != 1){
-		printf("Error in bwrite() writing to binary file\n");
-		throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
+		glog.errormsg(_SRC_,"Error writing to binary file\n");		
 	}
 	return true;
 }
@@ -288,8 +293,7 @@ template<typename T>
 bool bwrite(FILE* fp, const std::vector<T>& v){
 	size_t status = fwrite(&(v[0]), sizeof(T), v.size(), fp);
 	if (status != v.size()){
-		printf("Error in bwrite() writing to binary file\n");
-		throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
+		glog.errormsg(_SRC_,"Error in writing to binary file\n");
 	}
 	return true;
 }

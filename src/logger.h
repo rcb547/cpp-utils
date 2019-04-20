@@ -187,7 +187,7 @@ public:
 		#if defined MATLAB_MEX_FILE
 			mexErrMsgTxt(msg.c_str());
 		#else
-			logmsg(msg);		
+			logmsg(msg);	
 			throw(strprint("Exception throw from %s\n", srccodeloc.c_str()));
 		#endif		
 	}

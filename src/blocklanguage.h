@@ -44,8 +44,7 @@ public:
 		Filename = filename;
 		FILE* fp = fileopen(filename, "r");
 		if (fp == NULL){
-			printf("cBlock::loadfromfile - Could not open file: %s\n", filename.c_str());
-			throw(strprint("Error: exception throw from %s (%d) %s\n", __FILE__, __LINE__, __FUNCTION__));
+			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());			
 		}
 		loadfromfilepointer(fp, true);
 		fclose(fp);
