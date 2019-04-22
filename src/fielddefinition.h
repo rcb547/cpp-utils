@@ -29,8 +29,8 @@ private:
 		if (tokens.size() == 0)return false;
 
 		char* str_end;
-		double converted = std::strtod(tokens[0].c_str(), &str_end);
-		if (*str_end)return false;
+		std::strtod(tokens[0].c_str(), &str_end);
+		if (*str_end) return false;
 		return true;
 	};
 
@@ -49,7 +49,7 @@ public:
 	
 	cFieldDefinition() { }
 
-	const eFieldDefinitionType definitiontype() const {
+	eFieldDefinitionType definitiontype() const {
 		return deftype;
 	}
 	
@@ -159,7 +159,7 @@ public:
 	template<typename T>
 	void ifnullconvert2zero(T& val) const {
 		//temporary hack to handle Nulls
-		if (val == -999 || val == -9999) val = 0;
+		if (val == (T)-999 || val == (T)-9999) val = 0;
 	}
 	
 	template<typename T>

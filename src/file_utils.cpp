@@ -471,7 +471,7 @@ std::vector<std::string> cDirectoryAccess::getfilelist_single(const std::string&
 	std::string sp = fpp.prefix + fpp.extension;	
 
 	if ((dp=opendir(directorypath.c_str()))==NULL){
-		glog.warningmsg(("getfilelist_single(): Could not open directory: %s\n",directorypath.c_str());
+		glog.warningmsg("getfilelist_single(): Could not open directory: %s\n",directorypath.c_str());
 		return flist;
 	}
 	

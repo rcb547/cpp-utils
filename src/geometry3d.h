@@ -10,6 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _geomety3d_H
 #include <cmath>
 #include <vector>
+#include <cfloat>
 #include "general_constants.h"
 
 class cVec;//forward declarations
@@ -116,19 +117,19 @@ public:
 	
 	friend cVec operator/(const double& s, const cVec& v){return cVec(v.x/s, v.y/s, v.z/s);}
 	
-	int cVec::operator==(const cVec& a) const
+	int operator==(const cVec& a) const
 	{
 		if (fabs(x - a.x) < DBL_EPSILON && fabs(y - a.y) < DBL_EPSILON && fabs(z - a.z) < DBL_EPSILON)return 1;
 		else return 0;
 	}
 	
-	int cVec::operator!=(const cVec& a) const 
+	int operator!=(const cVec& a) const 
 	{
 		if (*this == a) return 0;
 		else return 1;
 	}
 	
-	cVec cVec::rotate(const double& angle, const cVec& axis)
+	cVec rotate(const double& angle, const cVec& axis)
 	{
 		cVec a = axis.unit();
 		double cosangle = cos(angle*D2R);
@@ -246,8 +247,8 @@ class cPnt : public cVec{
 	cPnt operator-(const cVec& a){
 		return cPnt(x-a.x, y-a.y, z-a.z);
 	}
-			
-	double cPnt::distance(const cPnt& p) const 
+
+	double distance(const cPnt& p) const 
 	{				
 		const double dx = p.x - x;
 		const double dy = p.y - y;
@@ -295,7 +296,7 @@ public:
 	void setpnt(const cPnt& p){PNT=p;}
 	void set(const cVec& v, const cPnt& p){PLL=v.unit(); PNT=p;}
 		
-	int cLine::operator==(const cLine& m) const 
+	int operator==(const cLine& m) const 
 	{
 		if (PLL == m.PLL) {
 			cVec v = PNT - m.PNT;
@@ -305,13 +306,13 @@ public:
 		return 0;
 	}
 
-	int cLine::operator!=(const cLine& m)
+	int operator!=(const cLine& m)
 	{
 		if (*this == m) return 0;
 		else return 1;
 	}
 
-	inline cLine cLine::operator=(const cLine& m)
+	inline cLine operator=(const cLine& m)
 	{
 		PLL = m.PLL;
 		PNT = m.PNT;

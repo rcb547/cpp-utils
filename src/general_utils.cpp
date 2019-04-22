@@ -55,7 +55,7 @@ std::string versionstring(const std::string& version, const std::string& compile
 	return s;
 };
 
-const int my_size(){
+int my_size(){
 #if defined _MPI_ENABLED			
 	if (cMpiEnv::isinitialised()){		
 		return cMpiEnv::world_size();
@@ -66,7 +66,7 @@ const int my_size(){
 #endif
 };
 
-const int my_rank(){
+int my_rank(){
 
 	int threadnum = 0;
 
@@ -84,7 +84,7 @@ const int my_rank(){
 #endif
 }
 
-const int mpi_openmp_rank(){
+int mpi_openmp_rank(){
 	int rank = 0;
 
 	#if defined _OPENMP

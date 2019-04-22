@@ -31,7 +31,7 @@ extern bool makedirectorydeep(std::string dirname);
 extern std::string extractfiledirectory(const std::string& pathname);
 extern std::string extractfilename(const std::string& filename);
 extern const std::string timestamp();
-extern const int mpi_openmp_rank();
+extern int mpi_openmp_rank();
 
 class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager
@@ -44,7 +44,7 @@ class cLogger
 			
 		void closeindex(const int i)
 		{						
-			if (ofs.size() > i) {
+			if ((int)ofs.size() > i) {
 				if (ofs[i].is_open()) {
 					ofs[i] << "Logfile closed on " << timestamp() << std::endl;
 					ofs[i].close();										
@@ -52,7 +52,7 @@ class cLogger
 			}
 		}		
 
-		const int threadindex()
+		int threadindex()
 		{			
 			#if defined _OPENMP
 				return omp_get_thread_num();
@@ -77,7 +77,7 @@ public:
 	bool open(const std::string& logfilename)
 	{				
 		const int i = threadindex();		
-		if (ofs.size() < i + 1) {			
+		if ((int)ofs.size() < i + 1) {			
 			ofs.resize(i + 1);
 		}
 		makedirectorydeep(extractfiledirectory(logfilename));
@@ -102,7 +102,7 @@ public:
 
 	std::ofstream& ostrm()
 	{		
-		if (ofs.size() == 0) {
+		if ((int)ofs.size() == 0) {
 			ofs.resize(1);
 			return ofs[0];
 		}		
@@ -119,7 +119,7 @@ public:
 
 	void logmsg(const std::string& msg){
 		std::ofstream& fs = ostrm();
-		if (ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
+		if ((int)ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
 		std::cout << msg << std::flush;		
 	};
 

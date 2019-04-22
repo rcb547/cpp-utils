@@ -28,9 +28,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 std::string commandlinestring(int argc, char** argv);
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate);
 
-const int my_size();
-const int my_rank();
-const int mpi_openmp_rank();
+int my_size();
+int my_rank();
+int mpi_openmp_rank();
 
 void prompttocontinue();
 void prompttoexit();

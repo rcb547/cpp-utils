@@ -20,7 +20,7 @@ inline std::string strprint_va(const char* fmt, va_list vargs)
 	va_end(vargscopy);
 
 	std::string s(len, '\0');
-	int status = std::vsnprintf(&(s.front()), len, fmt, vargs);	
+	std::vsnprintf(&(s.front()), len, fmt, vargs);	
 	return std::string(s.c_str());
 }
 
