@@ -1291,7 +1291,7 @@ public:
 	{
 		_GSTITEM_
 		bestfitlines();
-		cPnt c = closestpoint(bestfitlinesegs[i], p);
+		cPnt c = bestfitlinesegs[i].closestpoint(p);
 		double d = c.distance(p);
 		return d;
 	}
