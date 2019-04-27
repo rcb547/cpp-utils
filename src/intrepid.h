@@ -9,7 +9,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _intrepid_H
 #define _intrepid_H
 
-#include <math.h>
 #include <cmath>
 #include <cfloat>
 #include <climits>
@@ -130,7 +129,7 @@ public:
 	{
 		_GSTITEM_
 		if (number == floatnull()) return true;
-		else if (isfinite<float>(number) == false){
+		else if (std::isfinite(number) == false){
 			return true;
 		}
 		return false;
@@ -140,7 +139,7 @@ public:
 	{
 		_GSTITEM_
 		if (number == doublenull()) return true;
-		else if (isfinite<double>(number) == false){
+		else if (std::isfinite(number) == false){
 			return true;
 		}
 		return false;
