@@ -19,8 +19,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 class cAsciiColumnFile {
 
-private:
-	FILE*  filepointer;
+private:	
+	std::ifstream ifs;
 	std::string currentrecord;
 	std::vector<std::string> currentcolumns;
 	size_t recordsreadsuccessfully;
@@ -36,30 +36,23 @@ public:
 		initialise();
 		openfile(filename);		
 	};
-
-	~cAsciiColumnFile(){
-		closefile();
-	};
-
-	void initialise(){
-		filepointer = (FILE*)NULL;
+	
+	void initialise(){		
 		recordsreadsuccessfully = 0;
 	};
-
-	const char* currentrecordstring(){ return currentrecord.c_str(); };
+	
+	const std::string& currentrecord_string() const { return currentrecord; };
+	
+	const std::vector<std::string>& currentrecord_columns() const { return currentcolumns; };
 
 	bool openfile(const std::string& datafilename){
 		std::string name = datafilename;
 		fixseparator(name);
-		filepointer = fileopen(name, "r");
-		return true;
-	};
-
-	void closefile(){
-		if (filepointer){
-			fclose(filepointer);
+		ifs.open(datafilename, std::ifstream::in);
+		if (!ifs) {
+			glog.errormsg(_SRC_, "Could not open file %s\n",datafilename.c_str());
 		}
-		filepointer = (FILE*)NULL;
+		return true;
 	};
 
 	std::vector<std::string> tokenise(const std::string& str, const char delim){
@@ -181,10 +174,20 @@ public:
 		return false;
 	}
 	
-	bool readnextrecord(){
-		bool status = filegetline(filepointer, currentrecord);
-		if (status)recordsreadsuccessfully++;
-		return status;
+	bool skiprecords(const size_t& nskip) {		
+		for (size_t i = 0; i < nskip; i++) {
+			//status = filegetline(filepointer, currentrecord);
+			if (ifs.eof()) return false;
+			std::getline(ifs, currentrecord);			
+			recordsreadsuccessfully++;			
+		}
+		return true;
+	}
+	   	  
+	bool readnextrecord(){				
+		if (ifs.eof()) return false;
+		std::getline(ifs, currentrecord);		
+		return true;		
 	}
 
 	size_t parserecord(){						
@@ -263,7 +266,7 @@ public:
 		
 		size_t nfields = fields.size();
 		size_t numcolumns = ncolumns();
-		if (feof(filepointer) != 0)return 0;
+		if (ifs.eof()) return 0;
 
 		intfields.clear();
 		doublefields.clear();
