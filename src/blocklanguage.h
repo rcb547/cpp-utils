@@ -44,7 +44,7 @@ public:
 		Filename = filename;
 		FILE* fp = fileopen(filename, "r");
 		if (fp == NULL){
-			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());			
+			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());
 		}
 		loadfromfilepointer(fp, true);
 		fclose(fp);
@@ -124,6 +124,7 @@ public:
 		std::string id = entry.substr(0, index - 1);
 		return trim(id);
 	}
+	
 	void printidentifiers() const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
@@ -135,6 +136,7 @@ public:
 		}
 
 	}
+	
 	std::string value(const std::string entry) const
 	{
 		size_t index = entry.find("=");
@@ -143,6 +145,7 @@ public:
 		std::string s = entry.substr(index + 1, len);
 		return trim(s);
 	}
+	
 	void printvalues()  const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
@@ -153,6 +156,7 @@ public:
 			Blocks.at(i).printvalues();
 		}
 	}
+	
 	std::string getentry(const std::string id) const
 	{
 		size_t index = id.find(".");
@@ -250,6 +254,7 @@ public:
 		if (status == 1) return v;
 		else return ud_short();
 	}
+	
 	int getintvalue(const std::string id) const
 	{
 		int v;
@@ -265,6 +270,7 @@ public:
 		if (status == 1) return v;
 		else return ud_int();
 	}
+	
 	size_t getsizetvalue(const std::string id) const
 	{
 		size_t v;
@@ -282,6 +288,7 @@ public:
 		if (status == 1) return v;
 		else return ud_size_t();
 	}
+	
 	float getfloatvalue(const std::string id) const
 	{
 		float v;
@@ -297,6 +304,7 @@ public:
 		if (status == 1) return v;
 		else return ud_float();
 	}
+	
 	double getdoublevalue(const std::string id) const
 	{
 		double v;

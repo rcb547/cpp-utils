@@ -20,27 +20,22 @@ Author: Ross C. Brodie, Geoscience Australia.
 class cAsciiColumnFile {
 
 private:	
+
 	std::ifstream ifs;
 	std::string currentrecord;
 	std::vector<std::string> currentcolumns;
-	size_t recordsreadsuccessfully;
+	size_t recordsreadsuccessfully = 0;
 
 public:
+
 	std::vector<cAsciiColumnField> fields;
 
-	cAsciiColumnFile(){
-		initialise();
-	};
+	cAsciiColumnFile() { };
 
-	cAsciiColumnFile(const std::string& filename){
-		initialise();
+	cAsciiColumnFile(const std::string& filename){		
 		openfile(filename);		
 	};
-	
-	void initialise(){		
-		recordsreadsuccessfully = 0;
-	};
-	
+		
 	const std::string& currentrecord_string() const { return currentrecord; };
 	
 	const std::vector<std::string>& currentrecord_columns() const { return currentcolumns; };
@@ -50,7 +45,7 @@ public:
 		fixseparator(name);
 		ifs.open(datafilename, std::ifstream::in);
 		if (!ifs) {
-			glog.errormsg(_SRC_, "Could not open file %s\n",datafilename.c_str());
+			glog.errormsg(_SRC_,"Could not open file %s\n",datafilename.c_str());
 		}
 		return true;
 	};
