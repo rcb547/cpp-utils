@@ -285,6 +285,11 @@ std::string extractfilename_noextension(const std::string& pathname)
 	sFilePathParts fpp = getfilepathparts(pathname);
 	return fpp.prefix;
 }
+std::string extractfilepath_noextension(const std::string& pathname)
+{
+	sFilePathParts fpp = getfilepathparts(pathname);
+	return fpp.directory + fpp.prefix;
+}
 std::string extractfileextension(const std::string& pathname)
 {
 	sFilePathParts fpp = getfilepathparts(pathname);

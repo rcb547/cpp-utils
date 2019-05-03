@@ -13,6 +13,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <limits>
 #include <string>
 
+template<typename T>
+T undefinedvalue(const T& v) {
+	return (std::numeric_limits<T>::max)();
+}
 
 inline size_t ud_size_t(){
 	return (std::numeric_limits<size_t>::max)();	

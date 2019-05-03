@@ -39,8 +39,9 @@ int deletefile(std::string src);
 sFilePathParts getfilepathparts(const std::string& path);
 std::string extractfiledirectory(const std::string& pathname);
 std::string extractfilename(const std::string& pathname);
-std::string extractfilename_noextension(const std::string& pathname);
 std::string extractfileextension(const std::string& pathname);
+std::string extractfilename_noextension(const std::string& pathname);
+std::string extractfilepath_noextension(const std::string& pathname);
 
 std::string insert_before_filename(const std::string& input, const std::string& insertion);
 std::string insert_after_filename(const std::string& input, const std::string& insertion);
