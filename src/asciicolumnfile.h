@@ -179,9 +179,12 @@ public:
 		return true;
 	}
 	   	  
-	bool readnextrecord(){				
+	bool readnextrecord() {
 		if (ifs.eof()) return false;
-		std::getline(ifs, currentrecord);		
+		std::getline(ifs, currentrecord);
+		if (ifs.eof() && currentrecord.size() == 0){
+			return false;			
+		}	
 		return true;		
 	}
 

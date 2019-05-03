@@ -16,6 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "general_utils.h"
 #include "blocklanguage.h"
+#include "asciicolumnfile.h"
 
 enum eFieldDefinitionType {VARIABLENAME,COLUMNNUMBER,NUMERIC,UNAVAILABLE};
 
@@ -97,7 +98,6 @@ public:
 		}		
 	}
 		
-	/*
 	template<typename T>
 	bool getvalue(const std::vector<std::string>& fields, T& v) const
 	{				
@@ -163,8 +163,7 @@ public:
 		}		
 		return true;
 	}
-	*/
-
+	
 	template<typename T>
 	bool getvalue(const cAsciiColumnFile& A, std::vector<T>& vec, const size_t& n) const
 	{
@@ -180,7 +179,7 @@ public:
 		else if (deftype == COLUMNNUMBER) {
 			for (size_t i = 0; i < n; i++) {
 				A.getcolumn(i + column - coff, vec[i]);				
-				if (flip) vec[i] = -vec[i];
+				if (flip) vec[i] = -1 * vec[i];
 			}
 			return true;
 		}
@@ -192,7 +191,7 @@ public:
 			}
 			A.getfield(findex, vec);
 			for (size_t i = 0; i < n; i++) {				
-				if (flip) vec[i] = -vec[i];
+				if (flip) vec[i] = -1 * vec[i];
 			}
 			return true;
 		}
