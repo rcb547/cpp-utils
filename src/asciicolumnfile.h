@@ -238,7 +238,7 @@ public:
 		for (size_t bi = 0; bi < nb; bi++) {
 			getcolumn(base,vec[bi]);
 			if (fields[findex].isnull(vec[bi]) == false) {
-				vec[bi] = log10(v[bi]);
+				vec[bi] = log10(vec[bi]);
 			}
 			base++;
 		}
