@@ -16,6 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "general_utils.h"
 #include "blocklanguage.h"
+#include "asciicolumnfile.h"
 
 enum eFieldDefinitionType {VARIABLENAME,COLUMNNUMBER,NUMERIC,UNAVAILABLE};
 
@@ -99,7 +100,7 @@ public:
 		
 	template<typename T>
 	bool getvalue(const std::vector<std::string>& fields, T& v) const
-	{		
+	{				
 		if (deftype == NUMERIC) {
 			if (numericvalue.size() == 0) {
 				v = undefinedvalue(v);
@@ -114,6 +115,13 @@ public:
 			applyoperator(v);	
 			return true;
 		}		
+		else if (deftype == VARIABLENAME) {			
+			std::istringstream(fields[column - coff]) >> v;
+			ifnullconvert2zero(v);
+			if (flip) v = -1 * v;
+			applyoperator(v);
+			return true;
+		}
 		else if (deftype == UNAVAILABLE) {
 			v = undefinedvalue(v);
 			return false;
@@ -129,7 +137,7 @@ public:
 	template<typename T>
 	bool getvalue(const std::vector<std::string>& fields, std::vector<T>& vec, const size_t& n) const
 	{		
-		vec.resize(n);
+		vec.resize(n);		
 		if(deftype == NUMERIC) {
 			size_t deflen = numericvalue.size();
 			for (size_t i = 0; i < n; i++) {
@@ -138,7 +146,7 @@ public:
 			}
 			return true;
 		}
-		if (deftype == COLUMNNUMBER) {	
+		else if (deftype == COLUMNNUMBER) {	
 			for (size_t i = 0; i < n; i++) {				
 				std::istringstream(fields[i + column - coff]) >> vec[i];
 				if (flip) vec[i] = -vec[i];				
@@ -155,11 +163,54 @@ public:
 		}		
 		return true;
 	}
-		
+	
+	template<typename T>
+	bool getvalue(const cAsciiColumnFile& A, std::vector<T>& vec, const size_t& n) const
+	{
+		vec.resize(n);
+		if (deftype == NUMERIC) {
+			size_t deflen = numericvalue.size();
+			for (size_t i = 0; i < n; i++) {
+				if (deflen == 1) vec[i] = (T) numericvalue[0];
+				else vec[i] = (T) numericvalue[i];
+			}
+			return true;
+		}
+		else if (deftype == COLUMNNUMBER) {
+			for (size_t i = 0; i < n; i++) {
+				A.getcolumn(i + column - coff, vec[i]);				
+				if (flip) vec[i] = -1 * vec[i];
+			}
+			return true;
+		}
+		else if (deftype == VARIABLENAME) {
+			size_t findex;
+			bool status = A.fieldindexbyname(varname,findex);
+			if (status == false) {
+				glog.errormsg(_SRC_, "Could not find a field named %s\n", varname.c_str());
+			}
+			A.getfield(findex, vec);
+			for (size_t i = 0; i < n; i++) {				
+				if (flip) vec[i] = -1 * vec[i];
+			}
+			return true;
+		}
+		else if (deftype == UNAVAILABLE) {
+			vec = std::vector<T>(n, undefinedvalue((T)0));
+			return false;
+		}
+		else {
+			vec = std::vector<T>(n, undefinedvalue((T)0));
+			return false;
+		}
+		return true;
+	}
+
+
 	template<typename T>
 	void ifnullconvert2zero(T& val) const {
 		//temporary hack to handle Nulls
-		if (val == (T)-999 || val == (T)-9999) val = 0;
+		if (val == (T)-999 || val == (T)-9999) val = (T)0;
 	}
 	
 	template<typename T>

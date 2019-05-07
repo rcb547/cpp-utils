@@ -137,7 +137,7 @@ FILE* fileopen(const std::string filepath, const std::string mode)
 		if(dirname.size()>0){
 			if(exists(dirname)==false){
 				if(makedirectorydeep(dirname) == false){
-					glog.warningmsg("fileopen(): Unable to make directory for file %s \n",path.c_str());
+					glog.warningmsg(_SRC_,"Unable to make directory for file %s\n",path.c_str());
 					return (FILE*)NULL;
 				}
 			}
@@ -146,7 +146,7 @@ FILE* fileopen(const std::string filepath, const std::string mode)
 
 	FILE* fp = fopen(path.c_str(),mode.c_str());
 	if(!fp){
-		glog.warningmsg("fileopen(): Unable to open file %s \n", path.c_str());
+		glog.warningmsg(_SRC_,"Unable to open file %s\n", path.c_str());
 	}
 	return fp;
 }
@@ -284,6 +284,11 @@ std::string extractfilename_noextension(const std::string& pathname)
 {
 	sFilePathParts fpp = getfilepathparts(pathname);
 	return fpp.prefix;
+}
+std::string extractfilepath_noextension(const std::string& pathname)
+{
+	sFilePathParts fpp = getfilepathparts(pathname);
+	return fpp.directory + fpp.prefix;
 }
 std::string extractfileextension(const std::string& pathname)
 {

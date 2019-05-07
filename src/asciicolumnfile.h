@@ -20,27 +20,22 @@ Author: Ross C. Brodie, Geoscience Australia.
 class cAsciiColumnFile {
 
 private:	
+
 	std::ifstream ifs;
 	std::string currentrecord;
 	std::vector<std::string> currentcolumns;
-	size_t recordsreadsuccessfully;
+	size_t recordsreadsuccessfully = 0;
 
 public:
+
 	std::vector<cAsciiColumnField> fields;
 
-	cAsciiColumnFile(){
-		initialise();
-	};
+	cAsciiColumnFile() { };
 
-	cAsciiColumnFile(const std::string& filename){
-		initialise();
+	cAsciiColumnFile(const std::string& filename){		
 		openfile(filename);		
 	};
-	
-	void initialise(){		
-		recordsreadsuccessfully = 0;
-	};
-	
+		
 	const std::string& currentrecord_string() const { return currentrecord; };
 	
 	const std::vector<std::string>& currentrecord_columns() const { return currentcolumns; };
@@ -50,7 +45,7 @@ public:
 		fixseparator(name);
 		ifs.open(datafilename, std::ifstream::in);
 		if (!ifs) {
-			glog.errormsg(_SRC_, "Could not open file %s\n",datafilename.c_str());
+			glog.errormsg(_SRC_,"Could not open file %s\n",datafilename.c_str());
 		}
 		return true;
 	};
@@ -184,9 +179,12 @@ public:
 		return true;
 	}
 	   	  
-	bool readnextrecord(){				
+	bool readnextrecord() {
 		if (ifs.eof()) return false;
-		std::getline(ifs, currentrecord);		
+		std::getline(ifs, currentrecord);
+		if (ifs.eof() && currentrecord.size() == 0){
+			return false;			
+		}	
 		return true;		
 	}
 
@@ -202,67 +200,52 @@ public:
 		}
 		return n;
 	}
-
-	bool getcolumn(const size_t columnnumber, int& v){		
-		v = atoi(currentcolumns[columnnumber].c_str());
-		return true;
-	}
-
-	bool getcolumn(const size_t columnnumber, double& v){
-		v = atof(currentcolumns[columnnumber].c_str());
-		return true;
-	}
-
-	bool getfield(const size_t findex, int& v){
-		size_t base = fields[findex].startcolumn-1;
-		v = atoi(currentcolumns[base].c_str());
-		return true;
-	}
-
-	bool getfield(const size_t findex, double& v){
-		size_t base = fields[findex].startcolumn - 1;
-		v = atof(currentcolumns[base].c_str());
-		return true;
-	}
 	
-	bool getfield(const size_t findex, std::vector<int>& v){
-		size_t base = fields[findex].startcolumn - 1;
-		size_t nb = fields[findex].nbands;
-		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){
-			v[bi] = atoi(currentcolumns[base].c_str());
-			base++;
-		}
+	template<typename T>
+	bool getcolumn(const size_t& columnnumber, T& v) const
+	{			
+		std::istringstream(currentcolumns[columnnumber]) >> v;
 		return true;
 	}
-
-	bool getfield(const size_t findex, std::vector<double>& v){
-		size_t base = fields[findex].startcolumn - 1;
-		size_t nb   = fields[findex].nbands;
-		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){			
-			v[bi] = atof(currentcolumns[base].c_str());
-			base++;
-		}
-		return true;
-	}
-
-	bool getfieldlog10(const size_t findex, std::vector<double>& v){
-		size_t base = fields[findex].startcolumn - 1;
-		size_t nb = fields[findex].nbands;
 		
-		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){
-			v[bi] = atof(currentcolumns[base].c_str());
-			if (fields[findex].isnull(v[bi]) == false){
-				v[bi] = log10(v[bi]);
+	template<typename T>
+	bool getfield(const size_t& findex, T& v) const 
+	{
+		size_t base = fields[findex].startcolumn-1;
+		getcolumn(base,v);		
+		return true;
+	}
+
+	template<typename T>
+	bool getfield(const size_t& findex, std::vector<T>& vec) const 
+	{
+		size_t base = fields[findex].startcolumn - 1;
+		size_t nb = fields[findex].nbands;
+		vec.resize(nb);
+		for (size_t bi = 0; bi < nb; bi++) {			
+			getcolumn(base,vec[bi]);
+			base++;
+		}
+		return true;
+	}
+
+	template<typename T>
+	bool getfieldlog10(const size_t& findex, std::vector<T>& vec) const
+	{
+		size_t base = fields[findex].startcolumn - 1;
+		size_t nb = fields[findex].nbands;
+		vec.resize(nb);
+		for (size_t bi = 0; bi < nb; bi++) {
+			getcolumn(base,vec[bi]);
+			if (fields[findex].isnull(vec[bi]) == false) {
+				vec[bi] = log10(vec[bi]);
 			}
 			base++;
 		}
 		return true;
 	}
 
-	size_t readnextgroup(const size_t fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields){
+	size_t readnextgroup(const size_t& fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields){
 		
 		size_t nfields = fields.size();
 		size_t numcolumns = ncolumns();
