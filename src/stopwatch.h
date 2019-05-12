@@ -41,9 +41,10 @@ public:
 		return time_span.count();
 	}
 
-	void reportnow(){
+	double reportnow(){
 		double e = etimenow();
 		printf("Elapsed time = %lf\n", e);
+		return e;
 	}
 
 };
