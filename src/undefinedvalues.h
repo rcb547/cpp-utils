@@ -32,7 +32,6 @@ inline std::string ud_string(){
 	return std::string("Undefined std::string");	
 }
 
-/*
 inline short undefinedvalue(const short&){
 	return ud_short();
 }
@@ -52,16 +51,15 @@ inline float undefinedvalue(const float&){
 inline double undefinedvalue(const double&){
 	return ud_double();
 }
-*/
 
 inline std::string undefinedvalue(const std::string&){
 	return ud_string();
 }
 
-template<typename T>
-T undefinedvalue(const T& v) {
-	return (std::numeric_limits<T>::max)();
-}
+//template<typename T>
+//T undefinedvalue(const T& v) {
+//	return (std::numeric_limits<T>::max)();
+//}
 
 template <class T>
 bool isdefined(const T& v){	
