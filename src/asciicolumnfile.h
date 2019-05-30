@@ -173,8 +173,7 @@ public:
 	bool skiprecords(const size_t& nskip) {		
 		for (size_t i = 0; i < nskip; i++) {			
 			if (ifs.eof()) return false;
-			std::getline(ifs, currentrecord);			
-			//recordsreadsuccessfully++;
+			std::getline(ifs, currentrecord);						
 		}
 		return true;
 	}
