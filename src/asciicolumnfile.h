@@ -22,13 +22,14 @@ class cAsciiColumnFile {
 private:	
 
 	std::ifstream ifs;
-	std::string currentrecord;
-	std::vector<std::string> currentcolumns;
 	size_t recordsreadsuccessfully = 0;
+	std::string currentrecord;		
+	std::vector<std::string> currentcolumns;
 
 public:
 
 	std::vector<cAsciiColumnField> fields;
+
 
 	cAsciiColumnFile() { };
 
@@ -170,8 +171,7 @@ public:
 	}
 	
 	bool skiprecords(const size_t& nskip) {		
-		for (size_t i = 0; i < nskip; i++) {
-			//status = filegetline(filepointer, currentrecord);
+		for (size_t i = 0; i < nskip; i++) {			
 			if (ifs.eof()) return false;
 			std::getline(ifs, currentrecord);			
 			recordsreadsuccessfully++;			
@@ -188,8 +188,30 @@ public:
 		return true;		
 	}
 
-	size_t parserecord(){						
-		currentcolumns = fieldparsestring(currentrecord.c_str(), " ,\t\r\n");		
+	std::vector<std::string> delimited_parse(){
+		std::vector<std::string> cs;
+		cs = fieldparsestring(currentrecord.c_str(), " ,\t\r\n");		
+		return cs;
+	}
+
+	std::vector<std::string> fixed_width_parse() {
+		std::vector<std::string> cs;
+		for (size_t i = 0; i < fields.size(); i++) {
+			cAsciiColumnField& f = fields[i];
+			for (size_t j = 0; j < f.nbands; j++) {
+				cs.push_back(currentrecord.substr(f.startchar + j * f.fmtwidth, f.fmtwidth));				
+			}
+		}
+		return cs;
+	}
+
+	size_t parserecord(){
+		if (fields.size() > 0) {
+			currentcolumns = fixed_width_parse();
+		}
+		else {
+			currentcolumns = delimited_parse();			
+		}
 		return currentcolumns.size();
 	}
 
@@ -204,7 +226,13 @@ public:
 	template<typename T>
 	bool getcolumn(const size_t& columnnumber, T& v) const
 	{			
-		std::istringstream(currentcolumns[columnnumber]) >> v;
+		if (columnnumber >= currentcolumns.size()) {
+			glog.errormsg(_SRC_,"Error trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n%s\n", columnnumber+1, currentcolumns.size(),currentrecord.c_str());
+			return false;
+		}
+		else {
+			std::istringstream(currentcolumns[columnnumber]) >> v;
+		}
 		return true;
 	}
 		
