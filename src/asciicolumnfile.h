@@ -174,7 +174,7 @@ public:
 		for (size_t i = 0; i < nskip; i++) {			
 			if (ifs.eof()) return false;
 			std::getline(ifs, currentrecord);			
-			recordsreadsuccessfully++;			
+			//recordsreadsuccessfully++;
 		}
 		return true;
 	}
@@ -185,6 +185,7 @@ public:
 		if (ifs.eof() && currentrecord.size() == 0){
 			return false;			
 		}	
+		recordsreadsuccessfully++;
 		return true;		
 	}
 
@@ -287,7 +288,10 @@ public:
 		int lastline;
 		size_t count = 0;
 		do{
-			if(recordsreadsuccessfully == 0)readnextrecord();
+			if (recordsreadsuccessfully == 0) {
+				readnextrecord();
+			}
+			
 			if (parserecord() != numcolumns){
 				continue;
 			}
@@ -316,7 +320,7 @@ public:
 				}
 			}
 			count++;
-		} while (readnextrecord());
+		}while(readnextrecord());
 		return count;
 	};
 };
