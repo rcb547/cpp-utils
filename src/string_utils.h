@@ -11,6 +11,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cstring>
 #include <cstdarg>
+#include <string>
 
 inline std::string strprint_va(const char* fmt, va_list vargs)
 {
