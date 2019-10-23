@@ -14,6 +14,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <iostream> 
+#include <iomanip> 
 
 //Vector scalar unary op
 template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a,  const S& s)
@@ -279,6 +281,28 @@ std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 	for (size_t i = 1; i<n; i++) v[i] = v[i - 1] + inc;
 	return v;
 };
+
+template<typename T>
+void write(std::string filename, const std::vector<T>& x)
+{
+	std::ofstream of(filename);
+	of << std::scientific;	
+	//of.width(width);
+	//of.precision(precision);	
+	for (size_t i = 0; i < x.size(); i++) {				
+		of << x[i] << std::endl;		
+	}	
+}
+
+template<typename T>
+void write(std::string filename, const T& x)
+{
+	std::ofstream of(filename);
+	of << std::scientific;
+	//of.width(width);
+	//of.precision(precision);		
+	of << x << std::endl;	
+}
 
 #endif
 

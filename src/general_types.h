@@ -14,12 +14,12 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include "undefinedvalues.h"
 
-typedef std::vector<double>  dvector;
-typedef std::vector<dvector> dmatrix;
+//typedef std::vector<double>  dvector;
+//typedef std::vector<dvector> dmatrix;
 
-typedef std::complex<double> cdouble;
-typedef std::vector<cdouble> cvector;
-typedef std::vector<cvector> cmatrix;
+//typedef std::complex<double> cdouble;
+//typedef std::vector<cdouble> cvector;
+//typedef std::vector<cvector> cmatrix;
 
 template<typename T>
 class cHistogramStats{
