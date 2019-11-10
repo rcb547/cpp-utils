@@ -77,7 +77,8 @@ template<typename T, typename S> std::vector<T> operator-(const S& s, const std:
 	return b -= a;
 }
 
-template<typename T, typename S> std::vector<T> operator*(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator*(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b = a;
 	return b *= s;
