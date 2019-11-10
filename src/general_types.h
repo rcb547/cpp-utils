@@ -250,9 +250,12 @@ struct sBoundingBox{
 class cPoint{
 
 public:
-	double x;
-	double y;
+
+	double x=0;
+	double y=0;
+
 	cPoint(){};
+
 	cPoint(const double& px, const double& py){
 		x = px;
 		y = py;

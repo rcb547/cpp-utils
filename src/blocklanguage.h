@@ -44,10 +44,12 @@ public:
 		Filename = filename;
 		FILE* fp = fileopen(filename, "r");
 		if (fp == NULL){
-			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());
+			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());		
 		}
-		loadfromfilepointer(fp, true);
-		fclose(fp);
+		else {
+			loadfromfilepointer(fp, true);
+			fclose(fp);
+		}
 	}
 
 	void loadfromfilepointer(FILE* fp, bool rootlevel)
