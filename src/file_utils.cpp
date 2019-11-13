@@ -48,6 +48,7 @@ std::string pathseparatorstring()
 		return "/";		
 	#endif
 }
+
 void fixseparator(std::string& path)
 {	
 	#if defined _WIN32
@@ -56,6 +57,14 @@ void fixseparator(std::string& path)
 		for(size_t i=0; i<path.length(); i++)if(path[i]=='\\') path[i]='/';
 	#endif		
 }
+
+std::string fixseparator(const std::string& path)
+{
+	std::string result = path;
+	fixseparator(result);
+	return result;
+}
+
 void removetrailingseparator(std::string& path)
 {
 	if(path.size()<=0)return;

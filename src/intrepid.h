@@ -1078,12 +1078,13 @@ public:
 	ILField* getsurveyinfofield(const std::string& identifer)
 	{
 		_GSTITEM_
-		std::string name = surveyinfofieldname(identifer);
-		if (name.size() == 0){
+		std::string fieldname;
+		bool status = surveyinfofieldname(identifer,fieldname);
+		if (status){
 			printf("Cannot find field %s from SurveyInfo:\n\n", identifer.c_str());
 			return (ILField*)NULL;
 		}
-		return getfield(name);
+		return getfield(fieldname);
 	}	
 
 	ILField& getsurveyinfofield_ref(const std::string& identifer)
@@ -1156,22 +1157,24 @@ public:
 	{
 		_GSTITEM_
 		if(hassurveyinfoid(identifer)){
-			std::string fname = surveyinfofieldname(identifer);
-			return fieldexists(fname);
+			std::string fname;
+			bool status = surveyinfofieldname(identifer,fname);
+			if(status) return fieldexists(fname);
 		}			
 		return false;
 	}
 
-	std::string surveyinfofieldname(const std::string& identifer)
+	bool surveyinfofieldname(const std::string& identifer, std::string& fieldname)
 	{
 		_GSTITEM_
+		fieldname = std::string();
 		for (size_t i = 0; i < SurveyInfo.size(); i++){
 			if (strcasecmp(SurveyInfo[i].identifer.c_str(), identifer.c_str()) == 0){
-				return SurveyInfo[i].fieldname;
+				fieldname = SurveyInfo[i].fieldname;
+				return true;
 			}
-		}
-		//printf("Cannot find identifer %s in SurveyInfo:\n\n", identifer.c_str());
-		return "";
+		}		
+		return false;
 	}
 
 	void bestfitlines()
@@ -1257,20 +1260,25 @@ public:
 		fY.close();
 	}
 	
+	
+	bool getlinenumberfieldname(std::string& fieldname){		
+		if(surveyinfofieldname("LineNumber",fieldname)){
+			return true;			
+		}		
+		fieldname = "LINE";
+		return false;
+	}
+
 	template <typename T>
-	bool getlinenumbers(std::vector<T>& v){
-		
-		if (hassurveyinfoid_fieldexists("LineNumber")){
-			ILField& f = *getsurveyinfofield("LineNumber");
-			bool status = getgroupbydata(f, v);
-			return status;
-		}
-		else if (fieldexists("LINE")){
-			ILField& f = *getfield("LINE");
-			bool status = getgroupbydata(f, v);
+	bool getlinenumbers(std::vector<T>& v){		
+		std::string fieldname;
+		bool status = getlinenumberfieldname(fieldname);
+		if (fieldexists(fieldname)){
+			ILField& f  = *getfield(fieldname);
+			bool status =  getgroupbydata(f, v);
 			return status;
 		}		
-		else return false;
+		return false;
 	}
 
 	template <typename T> 

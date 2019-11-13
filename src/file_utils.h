@@ -23,6 +23,7 @@ struct sFilePathParts{
 char pathseparator();
 std::string pathseparatorstring();
 void fixseparator(std::string& path);
+std::string fixseparator(const std::string& path);
 void removetrailingseparator(std::string& path);
 void addtrailingseparator(std::string& path);
 bool exists(std::string path);
