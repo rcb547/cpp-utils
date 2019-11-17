@@ -242,16 +242,16 @@ enum ebptype { bptBSQ, bptBIL, bptBIP };
 class IHeader{
 	
 public:
-	bool valid;
+	bool valid=false;
 	eftype filetype;
 	eatype accesstype;
 	ebptype bandpackingtype;
-	size_t nlines;
-	size_t maxspl;
-	size_t nbands;
+	size_t nlines=0;
+	size_t maxspl=0;
+	size_t nbands=0;
 	IDatatype datatype;
-	size_t headeroffset;
-	bool endianswap;
+	size_t headeroffset=0;
+	bool endianswap=false;
 	std::string indexname;
 	
 	IHeader(){
@@ -830,6 +830,7 @@ private:
 		fclose(fsurveyinfo);
 		return true;
 	}
+
 	bool getfields()
 	{
 		_GSTITEM_
@@ -904,6 +905,12 @@ public:
 			return;
 		}
 
+		if (ispointdataset()) {
+			//Currently not supporting point databases
+			valid = false;
+			return;
+		}
+
 		indextable.resize(nlines());		
 		std::vector<int> indexdata(nlines() * 4);		
 		if (fread((void*)indexdata.data(), 16, nlines(), findex) != (size_t)nlines()){
@@ -954,6 +961,11 @@ public:
 		std::string dp = dbdirpath(path);
 		std::string dn = extractfilename(dp);
 		return dn;
+	}
+
+	bool ispointdataset() {
+		if (maxspl() == 1 && nlines() == 1) return true;
+		return false; 
 	}
 
 	size_t nlines() { return Header.nlines; }
