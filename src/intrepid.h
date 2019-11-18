@@ -95,7 +95,7 @@ public:
 		else if (type == dtFLOAT) return 4;
 		else if (type == dtDOUBLE) return 8;
 		else {
-			glog.logmsg("IDatatype::size() Unknown dadatype\n");
+			glog.logmsg("IDatatype::size() Unknown datatype\n");
 			return 0;
 		}
 	}
@@ -302,7 +302,10 @@ public:
 		else if (dt == 2 && ds == 32) datatype = IDatatype(dtINT);
 		else if (dt == 3 && ds == 32) datatype = IDatatype(dtFLOAT);
 		else if (dt == 3 && ds == 64) datatype = IDatatype(dtDOUBLE);
-		else return false;
+		else {
+			glog.logmsg("Could not determine datatype from header: dt=%d and ds=%d\n\n", dt,ds);
+			return false;
+		}
 		
 		if (filetype==ftINDEX){
 			nlines = (size_t)*((int32_t*)&(s[217]));
@@ -699,7 +702,9 @@ public:
 	}
 
 	bool initialise(ILDataset *_pDataset, const std::string& fieldname);	
+	
 	bool createnew(ILDataset *_pDataset, const std::string& fieldname, IDatatype _datatype, size_t _nbands, bool indexed=true);	
+	
 	bool open()
 	{
 		if (pFile != (FILE*)NULL)return true;
@@ -712,13 +717,14 @@ public:
 		fread(buffer.data(), IHeader::nbytes(), 1, pFile);
 		Header = IHeader(buffer.data());
 		if (Header.valid==false){
-			printf("Could not read header in file: %s\n\n", datafilepath().c_str());
+			glog.logmsg("Could not read header in file: %s\n\n", datafilepath().c_str());
 			fclose(pFile);
 			pFile = (FILE*)NULL;
 			return false;
 		}		
 		return true;
 	}	
+	
 	bool initialisesegments()
 	{		
 		if (Segments.size() > 0) return true;
@@ -728,6 +734,7 @@ public:
 		}
 		return true;
 	}	
+	
 	void close()
 	{
 		if (pFile){
@@ -735,6 +742,7 @@ public:
 		}
 		pFile = (FILE*)NULL;
 	}
+	
 	bool erase()
 	{
 		bool status = true;
@@ -1298,10 +1306,14 @@ public:
 		v.resize(nlines());
 		for (size_t li = 0; li < nlines(); li++){
 			ILSegment S = f.Segments[li];
-			S.readbuffer();
 			std::vector<T> b;
-			S.getband(b,band);
-			v[li] = b[0];
+			if (S.readbuffer()) {			
+				S.getband(b, band);
+				v[li] = b[0];
+			}
+			else {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -1506,9 +1518,13 @@ bool ILSegment::isindexed()
 }
 
 bool ILSegment::readbuffer()
-{	
+{
 	size_t n;
-	pField->open();
+	bool status = pField->open();
+	if (status == false){
+		return false;
+	}
+
 	long move = fileposition() - std::ftell(filepointer());
 	std::fseek(filepointer(), move, SEEK_CUR);
 
