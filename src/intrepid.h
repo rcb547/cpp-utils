@@ -318,13 +318,7 @@ public:
 			nbands = (size_t)*((int32_t*)&(s[221]));
 		}
 		
-		//printf("nlines = %lu\n",nlines);
-		//printf("maxspl = %lu\n",maxspl);
-		//printf("nbands = %lu\n",nbands);
-		//prompttocontinue();
-
-		headeroffset = 512 * (size_t)s[81];
-		
+		headeroffset = 512 * (size_t)s[81];		
 		switch (s[91]) {
 			case 1: accesstype = atDIRECT; break;
 			case 2: accesstype = atINDEXED; break;
@@ -354,7 +348,9 @@ public:
 		strncpy(tmp,(char*)&s[171],25);
 		tmp[25] = 0;
 		indexname = std::string(tmp);
-		
+				
+		//printf("proj = %d\n",(int)s[92]);
+		//printf("???? = %d\n", (int)s[93]);
 		return true;
 	};
 
@@ -608,29 +604,17 @@ public:
 		}
 	}
 	
-	void change_nullvalue(const float& newnullvalue){
+	template<typename T>
+	void change_nullvalue(const T& newnullvalue) {
 		_GSTITEM_
-		if (datatype().isfloat()){
-			float* fp = (float*)pvoid();
-			for (size_t k = 0; k < nstored(); k++){
-				if (datatype().isnull(fp[k])){
-					fp[k] = newnullvalue;
-				}
+		const IDatatype dt = datatype();
+		if(dt.isnull(newnullvalue)) return;
+		T* fp = (T*)pvoid();
+		for (size_t k = 0; k < nstored(); k++) {
+			if (dt.isnull(fp[k])) {
+				fp[k] = newnullvalue;
 			}
-		}
-	}
-
-	void change_nullvalue(const double& newnullvalue){
-
-		if (datatype().isdouble()){
-			double* fp = (double*)pvoid();
-			for (size_t k = 0; k < nstored(); k++){
-				if (datatype().isnull(fp[k])){
-					fp[k] = newnullvalue;
-				}
-			}
-		}
-
+		}		
 	}
 
 	/*
@@ -1073,11 +1057,22 @@ public:
 		std::printf(s.c_str());		
 	}
 
-	bool fieldexists(const std::string& fieldname)
+	bool fieldexists_ignorecase(const std::string& fieldname)
 	{
 		_GSTITEM_
 		for (auto it = Fields.begin(); it != Fields.end(); ++it){
 			if (strcasecmp(it->Name.c_str(),fieldname.c_str())==0){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool fieldexists(const std::string& fieldname)
+	{
+		_GSTITEM_
+		for (auto it = Fields.begin(); it != Fields.end(); ++it) {
+			if (strcmp(it->Name.c_str(), fieldname.c_str()) == 0) {
 				return true;
 			}
 		}
@@ -1132,7 +1127,7 @@ public:
 	bool addfield(const std::string& fieldname, IDatatype datatype, size_t nbands=1, bool isindexed=true)
 	{
 		_GSTITEM_
-		if (fieldexists(fieldname)){
+		if (fieldexists_ignorecase(fieldname)){
 			printf("ILDataset::addfield() %s already exists\n\n", fieldname.c_str());
 			return false;
 		}
@@ -1179,7 +1174,7 @@ public:
 		if(hassurveyinfoid(identifer)){
 			std::string fname;
 			bool status = surveyinfofieldname(identifer,fname);
-			if(status) return fieldexists(fname);
+			if(status) return fieldexists_ignorecase(fname);
 		}			
 		return false;
 	}
@@ -1281,12 +1276,12 @@ public:
 	}
 	
 	
-	bool getlinenumberfieldname(std::string& fieldname){		
-		if(surveyinfofieldname("LineNumber",fieldname)){
-			return true;			
-		}		
-		fieldname = "LINE";
-		return false;
+	bool getlinenumberfieldname(std::string& fieldname) {
+		if (surveyinfofieldname("LineNumber", fieldname)){ return true; }
+		else if (fieldexists("LINE")){ fieldname = "LINE"; return true; }
+		else if (fieldexists("Line")) { fieldname = "Line"; return true; }
+		else if (fieldexists("line")) { fieldname = "line"; return true; }
+		else return false;
 	}
 
 	template <typename T>
