@@ -18,6 +18,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 #include "general_utils.h"
 #include "geometry3d.h"
+#include "blocklanguage.h"
 #include "stacktrace.h"
 #include "logger.h"
 
@@ -414,8 +415,7 @@ public:
 	IDatatype datatype();
 	FILE* filepointer();
 
-	ILSegment()
-	{
+	ILSegment() {
 		pField = (ILField*)NULL;	
 		lineindex = 0;		
 	}
@@ -639,12 +639,16 @@ class ILField{
 
 private:		
 	IHeader Header;
-	FILE* pFile;			
+	FILE* pFile;
+	
 
 public:	
 	ILDataset*  pDataset;
 	std::string Name;
-		
+	std::string Datum;
+	std::string Projection;
+	std::string CoordinateType;
+
 	std::vector<ILSegment> Segments;
 	IDatatype datatype() const { return Header.datatype; }
 	size_t nbands(){ return Header.nbands; };
@@ -781,8 +785,20 @@ public:
 
 	size_t groupbyindex(int value);
 
-	size_t get_data();
-
+	bool parse_datum_projection() {
+		cBlock b(dotvecfilepath());				
+		if (b.Entries.size() > 0) {
+			cBlock c = b.findblock("CoordinateSpace");
+			if (c.Entries.size() > 0) {
+				std::string str;								
+				if (c.getvalue("Datum", str)) Datum = stripquotes(str);				
+				if (c.getvalue("Projection", str)) Projection = stripquotes(str);
+				if (c.getvalue("CoordinateType", str)) CoordinateType = stripquotes(str);
+			}
+		}
+		return false;
+	}
+	
 };
 
 class ILDataset{
@@ -1614,6 +1630,7 @@ bool ILField::initialise(ILDataset *_pDataset, const std::string& _fieldname)
 	initialisesegments();
 	pFile = (FILE*)NULL;
 	open();
+	parse_datum_projection();
 	close();
 	return true;
 }
