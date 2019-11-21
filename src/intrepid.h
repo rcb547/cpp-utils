@@ -394,7 +394,7 @@ public:
 class ILSegment{
 
 private:
-	ILField*  pField;	
+	ILField&  Field;
 	size_t lineindex;
 
 public:
@@ -408,24 +408,16 @@ public:
 	bool readbuffer();
 	bool writebuffer();
 
-	ILDataset* pDataset();	
-	size_t startindex();
-	size_t nsamples();
-	size_t nbands();
+	const ILDataset* pDataset() const;	
+	const size_t& startindex() const;
+	const size_t& nlines() const;
+	const size_t& nsamples() const;
+	const size_t& nbands() const;
 	IDatatype datatype();
 	FILE* filepointer();
 
-	ILSegment() {
-		pField = (ILField*)NULL;	
-		lineindex = 0;		
-	}
+	ILSegment(ILField& _field, size_t _lineindex) : Field(_field), lineindex(_lineindex) {};
 
-	void initialise(ILField*  _pField, size_t _lineindex)
-	{
-		pField     = _pField;	
-		lineindex  = _lineindex;		
-	}
-	
 	void createbuffer()
 	{
 		size_t ns = nsamples();
@@ -574,16 +566,19 @@ public:
 		}
 	}
 
-	size_t nbands() const;
-	size_t nsamples() const;
-	size_t startindex() const;
+	//size_t nbands() const;
+	//size_t nsamples() const;
+	//size_t startindex() const;
+	
 	size_t nstored(){
 		if (isindexed())return nsamples();
 		else return 1;
 	}
+	
 	size_t nelements(){
 		return nstored()*nbands();
 	}
+	
 	size_t nbytes(){
 		return nelements() * datatype().size();
 	}
@@ -638,6 +633,7 @@ public:
 class ILField{
 
 private:		
+
 	IHeader Header;
 	FILE* pFile;
 	
@@ -648,20 +644,19 @@ public:
 	std::string Datum;
 	std::string Projection;
 	std::string CoordinateType;
-
-	std::vector<ILSegment> Segments;
-	IDatatype datatype() const { return Header.datatype; }
-	size_t nbands(){ return Header.nbands; };
-	size_t nlines() const;			
-	FILE* filepointer() { return pFile; }	
-	bool endianswap() const { return Header.endianswap; }
 	
-	bool isgroupbyline() const
+	const IDatatype datatype() const { return Header.datatype; }
+	const size_t& nbands() const { return Header.nbands; };	
+	const size_t& nlines() const;
+	FILE* filepointer() { return pFile; }	
+	const bool& endianswap() const { return Header.endianswap; }
+	
+	const bool& isgroupbyline() const
 	{
 		if (Header.accesstype == atDIRECT) return true; 			
 		else return false;
 	}
-	bool isindexed() const
+	const bool& isindexed() const
 	{
 		if (Header.accesstype == atINDEXED) return true;
 		else return false;
@@ -713,16 +708,6 @@ public:
 		return true;
 	}	
 	
-	bool initialisesegments()
-	{		
-		if (Segments.size() > 0) return true;
-		Segments.resize(nlines());
-		for (size_t li = 0; li < nlines(); li++){
-			Segments[li].initialise(this,li);
-		}
-		return true;
-	}	
-	
 	void close()
 	{
 		if (pFile){
@@ -766,24 +751,24 @@ public:
 		std::printf(s.c_str());
 	}
 	
-	std::string datasetpath();
+	const std::string& datasetpath() const ;
 	
-	std::string datafilepath()
+	const std::string datafilepath() const 
 	{
 		return datasetpath() + Name + ".PD";		
 	}
 
-	std::string dotvecfilepath()
+	const std::string dotvecfilepath() const 
 	{
 		return datasetpath() + Name + ".PD.vec";		
 	}
 
-	std::string dotdotlinefilepath()
+	const std::string dotdotlinefilepath() const 
 	{
 		return datasetpath() + Name + "..LINE";		
 	}
 
-	size_t groupbyindex(int value);
+	const size_t groupbyindex(int value);
 
 	bool parse_datum_projection() {
 		cBlock b(dotvecfilepath());				
@@ -976,12 +961,14 @@ public:
 		return false; 
 	}
 
-	size_t nlines() { return Header.nlines; }
-	size_t maxspl() {return Header.maxspl;	}
+	const size_t& nlines() const { return Header.nlines; }
+	const size_t& maxspl() const {return Header.maxspl;	}
 
-	size_t nfields(){ return Fields.size(); }			
-	size_t nsamplesinline(const size_t segindex){ return indextable[segindex].ns; }
-	size_t nsamples(){
+	const size_t& nfields() const { return Fields.size(); }			
+	const size_t& nsamplesinline(const size_t segindex) const {
+		return indextable[segindex].ns;
+	}
+	const size_t& nsamples() const {
 		_GSTITEM_
 		size_t n = 0;
 		for (size_t li = 0; li < nlines(); li++){
@@ -989,7 +976,10 @@ public:
 		}
 		return n;
 	}
-	size_t startindex(const size_t segindex){ return indextable[segindex].start; }
+
+	const size_t& startindex(const size_t segindex) const {
+		return indextable[segindex].start;
+	}
 	
 	std::vector<size_t> linesamplecount(){
 		std::vector<size_t> count(nlines());
@@ -1153,7 +1143,7 @@ public:
 
 		ILField* F = getfield(fieldname);
 		for (size_t li = 0; li < nlines(); li++){
-			ILSegment S = F->Segments[li];			
+			ILSegment S(*F,li);
 			S.createbuffer();
 			S.writebuffer();
 		}
@@ -1217,8 +1207,8 @@ public:
 		ILField& fY = *getsurveyinfofield("Y");
 
 		for (size_t li = 0; li<nlines(); li++){
-			ILSegment& sX = fX.Segments[li];
-			ILSegment& sY = fY.Segments[li];
+			ILSegment sX(fX,li);
+			ILSegment sY(fY,li);
 			size_t numsamples = sX.nsamples();
 
 			////Find first and last non nulls
@@ -1313,10 +1303,10 @@ public:
 	}
 
 	template <typename T> 
-	bool getgroupbydata(const ILField& f, std::vector<T>& v, const size_t band=0){
+	bool getgroupbydata(ILField& f, std::vector<T>& v, const size_t band=0){
 		v.resize(nlines());
 		for (size_t li = 0; li < nlines(); li++){
-			ILSegment S = f.Segments[li];
+			ILSegment S(f,li);
 			std::vector<T> b;
 			if (S.readbuffer()) {			
 				S.getband(b, band);
@@ -1366,8 +1356,8 @@ public:
 		ILField& fX = *getsurveyinfofield("X");
 		ILField& fY = *getsurveyinfofield("Y");
 
-		ILSegment& sX = fX.Segments[lineindex];
-		ILSegment& sY = fY.Segments[lineindex];
+		ILSegment sX(fX,lineindex);
+		ILSegment sY(fY,lineindex);
 
 		for (size_t si = 0; si<sX.nsamples(); si++){
 			double dx = p.x - sX.d(si);
@@ -1396,8 +1386,8 @@ public:
 		for (size_t li = 0; li<nlines(); li++){
 			double d = distancetobestfitline(p, li);
 			if (d<distance*2.0){
-				ILSegment& sX = fX.Segments[li];
-				ILSegment& sY = fY.Segments[li];
+				ILSegment sX(fX,li);
+				ILSegment sY(fY,li);
 				size_t nsam = sX.nsamples();
 				for (size_t si = 0; si<nsam; si++){
 					cPnt p1(sX.d(si), sY.d(si), 0.0);
@@ -1425,7 +1415,7 @@ public:
 		sindex.lineindex = fLine.groupbyindex(linenumber);
 		if (sindex.lineindex == nullindex())return sindex;
 		
-		ILSegment& sFid  = fFid.Segments[sindex.lineindex];
+		ILSegment sFid(fFid,sindex.lineindex);
 		sindex.sampleindex = nullindex();
 		for (size_t si = 0; si<sFid.nsamples(); si++){
 			if (sFid.i(si) == fidnumber){
@@ -1442,7 +1432,7 @@ public:
 		std::vector<double> v;
 		v.reserve(nsamples());		
 		for (size_t li = 0; li < nlines(); li++){
-			ILSegment& S = F.Segments[li];			
+			ILSegment S(F,li);			
 			S.readbuffer();	
 			size_t nsamples = S.nsamples();			
 			for (size_t si = 0; si < nsamples; si++){				
@@ -1490,8 +1480,8 @@ public:
 		y2.resize(nl);
 		
 		for (size_t li = 0; li < nl; li++){
-			ILSegment& sx = fx.Segments[li];
-			ILSegment& sy = fy.Segments[li];
+			ILSegment sx(fx,li);
+			ILSegment sy(fy,li);
 			sx.readbuffer();
 			sy.readbuffer();
 			size_t ns = sx.nsamples();
@@ -1513,25 +1503,34 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////
-ILDataset* ILSegment::pDataset() { return pField->pDataset; }
-size_t ILSegment::nbands() { return pField->nbands(); }
-size_t ILSegment::nsamples() { return pDataset()->nsamplesinline(lineindex); }
-size_t ILSegment::startindex() { return pDataset()->startindex(lineindex); }
-IDatatype ILSegment::datatype() { return pField->datatype(); }
-FILE* ILSegment::filepointer() { return pField->filepointer(); }
+const ILDataset* ILSegment::pDataset() const { return Field.pDataset; }
+
+const size_t& ILSegment::startindex() const { return pDataset()->startindex(lineindex); }
+
+const size_t& ILSegment::nlines() const { return pDataset()->nlines(); }
+
+const size_t& ILSegment::nsamples() const { return pDataset()->nsamplesinline(lineindex); }
+
+const size_t& ILSegment::nbands() const { return Field.nbands(); }
+
+IDatatype ILSegment::datatype() { return Field.datatype(); }
+
+FILE* ILSegment::filepointer() { return Field.filepointer(); }
+
 bool ILSegment::isgroupbyline()
 {
-	return pField->isgroupbyline();
+	return Field.isgroupbyline();
 }
+
 bool ILSegment::isindexed()
 {
-	return pField->isindexed(); 
+	return Field.isindexed(); 
 }
 
 bool ILSegment::readbuffer()
 {
 	size_t n;
-	bool status = pField->open();
+	bool status = Field.open();
 	if (status == false){
 		return false;
 	}
@@ -1543,35 +1542,35 @@ bool ILSegment::readbuffer()
 	case dtFLOAT:
 		fdata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(fdata.pvoid(), nbytes(), 1, filepointer());
-		if(pField->endianswap()) fdata.swap_endian();
+		if(Field.endianswap()) fdata.swap_endian();
 		break;
 	case dtDOUBLE:
 		ddata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(ddata.pvoid(), nbytes(), 1, filepointer());
-		if (pField->endianswap()) ddata.swap_endian();
+		if (Field.endianswap()) ddata.swap_endian();
 		break;
 	case dtSHORT:
 		sdata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(sdata.pvoid(), nbytes(), 1, filepointer());
-		if (pField->endianswap()) sdata.swap_endian();
+		if (Field.endianswap()) sdata.swap_endian();
 		break;
 	case dtINT:
 		idata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(idata.pvoid(), nbytes(), 1, filepointer());
-		if (pField->endianswap()){
+		if (Field.endianswap()){
 			idata.swap_endian();
 		}
 		break;
 	case dtBYTE:
 		cdata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(cdata.pvoid(), nbytes(), 1, filepointer());
-		if (pField->endianswap()) cdata.swap_endian();
+		if (Field.endianswap()) cdata.swap_endian();
 		break;
 	default: std::printf("ILSegment::read() Unknown type"); return false;
 	}
 		
 	if (n != 1){
-		std::printf("ILSegment::readbuffer Error reading file %s\n", pField->datafilepath().c_str());
+		std::printf("ILSegment::readbuffer Error reading file %s\n", Field.datafilepath().c_str());
 		return false;
 	}	
 	return true;
@@ -1580,54 +1579,52 @@ bool ILSegment::readbuffer()
 bool ILSegment::writebuffer()
 {
 	size_t n;
-	pField->open();
+	Field.open();
 	long move = fileposition() - ftell(filepointer());
 	fseek(filepointer(), move, SEEK_CUR);
 
 	switch (datatype().etype()){
 	case dtFLOAT:
-		if (pField->endianswap()) fdata.swap_endian();				
+		if (Field.endianswap()) fdata.swap_endian();				
 		n = fwrite(fdata.pvoid(), nbytes(), 1, filepointer());
 		break;
 	case dtDOUBLE:
-		if (pField->endianswap()) ddata.swap_endian();		
+		if (Field.endianswap()) ddata.swap_endian();		
 		n = fwrite(ddata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	case dtSHORT:
-		if (pField->endianswap()) sdata.swap_endian();
+		if (Field.endianswap()) sdata.swap_endian();
 		n = fwrite(sdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	case dtINT:
-		if (pField->endianswap()) idata.swap_endian();
+		if (Field.endianswap()) idata.swap_endian();
 		n = fwrite(idata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	case dtBYTE:
-		if (pField->endianswap()) cdata.swap_endian();
+		if (Field.endianswap()) cdata.swap_endian();
 		n = fwrite(cdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	default: printf("ILSegment::read() Unknown type"); return false;
 	}
 
 	if (n != 1){
-		printf("ILSegment::writebuffer Error writing to file %s\n", pField->datafilepath().c_str());
+		printf("ILSegment::writebuffer Error writing to file %s\n", Field.datafilepath().c_str());
 		return false;
 	}
 	return true;
 }
 
-///////////////////////////////////////////////////////////////////
-std::string ILField::datasetpath()
+const size_t& ILField::nlines() const { return pDataset->nlines(); }
+
+const std::string& ILField::datasetpath() const 
 {
 	return pDataset->datasetpath;
 }
 
-size_t ILField::nlines() const { return pDataset->nlines(); }
-
 bool ILField::initialise(ILDataset *_pDataset, const std::string& _fieldname)
 {	
 	pDataset = _pDataset;
-	Name     = _fieldname;	
-	initialisesegments();
+	Name     = _fieldname;		
 	pFile = (FILE*)NULL;
 	open();
 	parse_datum_projection();
@@ -1708,10 +1705,10 @@ bool ILField::createnew(ILDataset *_pDataset, const std::string& _fieldname, IDa
 		glog.logmsg("Cannot write header: %s\n\n", datafilepath().c_str());
 		return false;
 	}
+	
 
-	initialisesegments();
-	for (size_t si = 0; si < Segments.size(); si++){
-		size_t ns = Segments[si].nsamples();
+	for (size_t li = 0; li < nlines(); li++){
+		size_t ns = pDataset->nsamplesinline(li);
 		std::vector<std::vector<float>> array;
 		array.resize(nbands());
 		for (size_t bi = 0; bi < nbands(); bi++){
@@ -1734,10 +1731,11 @@ bool ILField::createnew(ILDataset *_pDataset, const std::string& _fieldname, IDa
 	return true;
 }
 
-size_t ILField::groupbyindex(int value)
+const size_t ILField::groupbyindex(int value)
 {
 	for (size_t li = 0; li < nlines(); li++){		
-		int v = Segments[li].i(0,0);
+		ILSegment s(*this, li);
+		int v = s.i(0, 0);
 		if (v == value) return li;
 	}
 	return nullindex();
