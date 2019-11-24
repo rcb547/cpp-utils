@@ -51,43 +51,44 @@ struct SurveyInfoEntry{
 	std::string value;
 };
 
-enum IDataTypeID { dtBYTE, dtSHORT, dtINT, dtFLOAT, dtDOUBLE, dtSTRING, dtUNKNOWN };
+class IDataType {
 
-class IDatatype {
+public: 
+	enum class ID{ BYTE, SHORT, INT, FLOAT, DOUBLE, STRING, UNKNOWN };
 
-private:
+private:	
 	
-	IDataTypeID  itypeid;
-	size_t      bytesize;	
+	ID  itypeid;
+	size_t bytesize;
 
 public:
 
-	IDatatype(){
+	IDataType(){
 		_GSTITEM_
-		itypeid  = dtUNKNOWN;
+		itypeid  = IDataType::ID::UNKNOWN;
 		bytesize = 0;
 	}
 
-	IDatatype(const IDataTypeID tid, const size_t _bytesize = 0){
+	IDataType(const ID tid, const size_t _bytesize = 0){
 		_GSTITEM_
 		itypeid = tid;
-		if (itypeid == dtSTRING) {
+		if (itypeid == ID::STRING) {
 			bytesize = _bytesize;
 		}
 		else bytesize = size();		
 	}
 
-	const IDataTypeID getTypeId() const { return  itypeid; }
+	const ID& getTypeId() const { return  itypeid; }
 
 	const std::string getName() const
 	{
 		_GSTITEM_
-			if (itypeid == dtBYTE) return "UnSigned8BitInteger";
-			else if (itypeid == dtSHORT) return "Signed16BitInteger";
-			else if (itypeid == dtINT) return "Signed32BitInteger";
-			else if (itypeid == dtFLOAT) return "IEEE4ByteReal";
-			else if (itypeid == dtDOUBLE) return "IEEE8ByteReal";
-			else if (itypeid == dtSTRING) return "String";
+			if (itypeid == ID::BYTE) return "UnSigned8BitInteger";
+			else if (itypeid == ID::SHORT) return "Signed16BitInteger";
+			else if (itypeid == ID::INT) return "Signed32BitInteger";
+			else if (itypeid == ID::FLOAT) return "IEEE4ByteReal";
+			else if (itypeid == ID::DOUBLE) return "IEEE8ByteReal";
+			else if (itypeid == ID::STRING) return "String";
 			else return "UNKNOWN";
 	}
 
@@ -101,31 +102,31 @@ public:
 	{
 		_GSTITEM_
 		switch (itypeid) {
-		if (itypeid == dtBYTE) return 1;
-			case dtSHORT: return 2;
-			case dtINT: return 4;
-			case dtFLOAT: return 4;
-			case dtDOUBLE: return 8;
-			case dtSTRING: return bytesize;
+		if (itypeid == ID::BYTE) return 1;
+			case ID::SHORT: return 2;
+			case ID::INT: return 4;
+			case ID::FLOAT: return 4;
+			case ID::DOUBLE: return 8;
+			case ID::STRING: return bytesize;
 			default: glog.logmsg("IDatatype::size() Unknown datatype\n"); return 0;
 		}
 	}
 
-	bool isbyte() const { if (itypeid == dtBYTE) return true; else return false; }
-	bool isshort() const { if (itypeid == dtSHORT) return true; else return false; }
-	bool isint() const { if (itypeid == dtINT) return true; else return false; }
-	bool isfloat() const { if (itypeid == dtFLOAT) return true; else return false; }
-	bool isdouble() const { if (itypeid == dtDOUBLE) return true; else return false;}
-	bool isstring() const { if (itypeid == dtSTRING) return true; else return false; }
+	bool isbyte() const { if (itypeid == ID::BYTE) return true; else return false; }
+	bool isshort() const { if (itypeid == ID::SHORT) return true; else return false; }
+	bool isint() const { if (itypeid == ID::INT) return true; else return false; }
+	bool isfloat() const { if (itypeid == ID::FLOAT) return true; else return false; }
+	bool isdouble() const { if (itypeid == ID::DOUBLE) return true; else return false;}
+	bool isstring() const { if (itypeid == ID::STRING) return true; else return false; }
 
 	double nullasdouble() const {
 		_GSTITEM_
 		switch (itypeid) {
-			case dtBYTE: return (double) bytenull(); break;
-			case dtSHORT: return (double) shortnull(); break;
-			case dtINT: return (double)intnull(); break;
-			case dtFLOAT: return (double)floatnull(); break;
-			case dtDOUBLE: return (double)doublenull(); break;
+			case ID::BYTE: return (double) bytenull(); break;
+			case ID::SHORT: return (double) shortnull(); break;
+			case ID::INT: return (double)intnull(); break;
+			case ID::FLOAT: return (double)floatnull(); break;
+			case ID::DOUBLE: return (double)doublenull(); break;
 			default: return doublenull();
 		}
 	}
@@ -241,21 +242,24 @@ size_t nullindex(){
 	return SIZE_MAX;
 }
 
-enum eatype  { atDIRECT, atINDEXED };
-enum eftype  { ftLINE, ftINDEX, ftPOINT, ftPOLYGON, ftIMAGE};
-enum ebptype { bptBSQ, bptBIL, bptBIP };
 
 class IHeader{
 	
 public:
+	
+	enum class AccessType { DIRECT, INDEXED, UNKNOWN };
+	enum class FileType { LINE, INDEX, POINT, POLYGON, IMAGE, UNKNOWN };
+	enum class PackingType { BSQ, BIL, BIP, UNKNOWN };
+
+
 	bool valid=false;
-	eftype filetype;
-	eatype accesstype;
-	ebptype bandpackingtype;
+	FileType filetype = IHeader::FileType::UNKNOWN;
+	AccessType accesstype = IHeader::AccessType::UNKNOWN;
+	PackingType packingtype = IHeader::PackingType::UNKNOWN;
 	size_t nlines=0;
 	size_t maxspl=0;
 	size_t nbands=0;
-	IDatatype datatype;
+	IDataType datatype;
 	size_t headeroffset=0;
 	bool endianswap=false;
 	std::string indexname;
@@ -282,35 +286,35 @@ public:
 		else endianswap = false;
 
 		switch (s[72]) {
-			case 1000: filetype = ftLINE; break;
-			case 1001: filetype = ftIMAGE; printf("filetype ftIMAGE is not supported"); return false;
-			case 1002: filetype = ftINDEX; break;
-			case 1004: filetype = ftPOLYGON; printf("filetype ftPOLYGON is not supported"); return false;
-			case 1006: filetype = ftPOINT; printf("filetype ftPOINT is not supported"); return false;
+			case 1000: filetype = FileType::LINE; break;
+			case 1001: filetype = FileType::IMAGE; printf("filetype ftIMAGE is not supported"); return false;
+			case 1002: filetype = FileType::INDEX; break;
+			case 1004: filetype = FileType::POLYGON; printf("filetype ftPOLYGON is not supported"); return false;
+			case 1006: filetype = FileType::POINT; printf("filetype ftPOINT is not supported"); return false;
 			default: printf("Bad file type"); return false;
 		}
 
 		int16_t dt = s[73];
 		int16_t ds = s[90];
-		if (dt == 1 && ds == 8)	datatype = IDatatype(dtBYTE);		
-		else if (dt == 2 && ds == 16) datatype = IDatatype(dtSHORT);
-		else if (dt == 2 && ds == 32) datatype = IDatatype(dtINT);
-		else if (dt == 3 && ds == 32) datatype = IDatatype(dtFLOAT);
-		else if (dt == 3 && ds == 64) datatype = IDatatype(dtDOUBLE);
+		if (dt == 1 && ds == 8)	datatype = IDataType(IDataType::ID::BYTE);
+		else if (dt == 2 && ds == 16) datatype = IDataType(IDataType::ID::SHORT);
+		else if (dt == 2 && ds == 32) datatype = IDataType(IDataType::ID::INT);
+		else if (dt == 3 && ds == 32) datatype = IDataType(IDataType::ID::FLOAT);
+		else if (dt == 3 && ds == 64) datatype = IDataType(IDataType::ID::DOUBLE);
 		else if (dt == 6) {
-			datatype = IDatatype(dtSTRING,ds/8);
+			datatype = IDataType(IDataType::ID::STRING,ds/8);
 		}
 		else {
 			glog.logmsg("Could not determine datatype from header(dt=%d and ds=%d) in %s\n\n",dt,ds,filepath.c_str());
 			return false;
 		}
 		
-		if (filetype==ftINDEX){
+		if (filetype== FileType::INDEX){
 			nlines = (size_t)*((int32_t*)&(s[217]));
 			maxspl = (size_t)*((int32_t*)&(s[219]));
 			nbands = (size_t)*((int32_t*)&(s[221]));
 		}
-		else if (filetype == ftLINE){
+		else if (filetype == FileType::LINE){
 			maxspl = (size_t)*((int32_t*)&(s[217]));
 			nlines = (size_t)*((int32_t*)&(s[219]));
 			nbands = (size_t)*((int32_t*)&(s[221]));
@@ -318,22 +322,22 @@ public:
 		
 		headeroffset = 512 * (size_t)s[81];		
 		switch (s[91]) {
-			case 1: accesstype = atDIRECT; break;
-			case 2: accesstype = atINDEXED; break;
+			case 1: accesstype = AccessType::DIRECT; break;
+			case 2: accesstype = AccessType::INDEXED; break;
 			default:
 				printf("Bad access type");
 				return false;
 		}
 
-		bandpackingtype = bptBIL;
+		packingtype = PackingType::BIL;
 		if (nbands > 1){
 			switch (s[78]) {
-				case 0: bandpackingtype = bptBSQ; break;
-				case 1: bandpackingtype = bptBIL; break;
-				case 2: bandpackingtype = bptBIP; break;
+				case 0: packingtype = PackingType::BSQ; break;
+				case 1: packingtype = PackingType::BIL; break;
+				case 2: packingtype = PackingType::BIP; break;
 				default:
 					if (nbands == 1){
-						bandpackingtype = bptBSQ;
+						packingtype = PackingType::BSQ;
 					}
 					else{
 						printf("Bad band packing type");
@@ -412,8 +416,8 @@ public:
 	const size_t& nlines() const;
 	const size_t& nsamples() const;
 	const size_t& nbands() const;
-	const IDatatype& getType();
-	const IDataTypeID& getTypeId();
+	const IDataType& getType();
+	const IDataType::ID& getTypeId();
 	FILE* filepointer();
 
 	ILSegment(ILField& _field, size_t _lineindex) : Field(_field), lineindex(_lineindex) {};
@@ -425,12 +429,12 @@ public:
 		bool groupby = isgroupbyline();
 		
 		switch (getTypeId()){
-			case dtFLOAT: fdata.resize(ns,nb,groupby); return;
-			case dtDOUBLE: ddata.resize(ns, nb, groupby); return;
-			case dtSHORT: sdata.resize(ns, nb, groupby); return;
-			case dtINT: idata.resize(ns, nb, groupby); return;
-			case dtBYTE: cdata.resize(ns, nb, groupby); return;
-			case dtSTRING: strdata.resize(ns, nb, groupby); return;
+			case IDataType::ID::FLOAT: fdata.resize(ns,nb,groupby); return;
+			case IDataType::ID::DOUBLE: ddata.resize(ns, nb, groupby); return;
+			case IDataType::ID::SHORT: sdata.resize(ns, nb, groupby); return;
+			case IDataType::ID::INT: idata.resize(ns, nb, groupby); return;
+			case IDataType::ID::BYTE: cdata.resize(ns, nb, groupby); return;
+			case IDataType::ID::STRING: strdata.resize(ns, nb, groupby); return;
 			default: printf("ILSegment::createbuffer() Unknown type");
 		}
 	}
@@ -438,12 +442,12 @@ public:
 	void* pvoid()
 	{
 		switch (getTypeId()){
-			case dtFLOAT: return fdata.pvoid();
-			case dtDOUBLE: return ddata.pvoid();
-			case dtSHORT: return sdata.pvoid();
-			case dtINT: return idata.pvoid();
-			case dtBYTE: return cdata.pvoid();
-			case dtSTRING: return sdata.pvoid();
+			case IDataType::ID::FLOAT: return fdata.pvoid();
+			case IDataType::ID::DOUBLE: return ddata.pvoid();
+			case IDataType::ID::SHORT: return sdata.pvoid();
+			case IDataType::ID::INT: return idata.pvoid();
+			case IDataType::ID::BYTE: return cdata.pvoid();
+			case IDataType::ID::STRING: return sdata.pvoid();
 			default: printf("ILSegment::pvoid() Unknown type"); return (void*)NULL;
 		}
 	}
@@ -451,12 +455,12 @@ public:
 	void* pvoid_groupby()
 	{		
 		switch (getTypeId()){
-			case dtFLOAT: return fdata.pvoid_groupby();
-			case dtDOUBLE: return ddata.pvoid_groupby();
-			case dtSHORT: return sdata.pvoid_groupby();
-			case dtINT: return idata.pvoid_groupby();
-			case dtBYTE: return cdata.pvoid_groupby();
-			case dtSTRING: return strdata.pvoid_groupby();
+			case IDataType::ID::FLOAT: return fdata.pvoid_groupby();
+			case IDataType::ID::DOUBLE: return ddata.pvoid_groupby();
+			case IDataType::ID::SHORT: return sdata.pvoid_groupby();
+			case IDataType::ID::INT: return idata.pvoid_groupby();
+			case IDataType::ID::BYTE: return cdata.pvoid_groupby();
+			case IDataType::ID::STRING: return strdata.pvoid_groupby();
 			default: printf("ILSegment::pvoid_groupby() Unknown type"); return (void*)NULL;
 		}
 	}
@@ -464,25 +468,25 @@ public:
 	double d(size_t s, size_t b = 0){		
 		
 		switch (getTypeId()){
-			case dtFLOAT:{
-				if (IDatatype::isnull(fdata(s, b))) return IDatatype::doublenull();
+			case IDataType::ID::FLOAT:{
+				if (IDataType::isnull(fdata(s, b))) return IDataType::doublenull();
 				else return (double)fdata(s, b);
 			}
-			case dtDOUBLE: return ddata(s, b);
-			case dtSHORT:{
-				if (IDatatype::isnull(sdata(s, b))) return IDatatype::doublenull();
+			case IDataType::ID::DOUBLE: return ddata(s, b);
+			case IDataType::ID::SHORT:{
+				if (IDataType::isnull(sdata(s, b))) return IDataType::doublenull();
 				else return (double)sdata(s, b);
 			}
-			case dtINT:{
-				if (IDatatype::isnull(idata(s, b))) return IDatatype::doublenull();
+			case IDataType::ID::INT:{
+				if (IDataType::isnull(idata(s, b))) return IDataType::doublenull();
 				else return (double)idata(s, b);
 			}
-			case dtBYTE:{
-				if (IDatatype::isnull(cdata(s, b))) return IDatatype::doublenull();
+			case IDataType::ID::BYTE:{
+				if (IDataType::isnull(cdata(s, b))) return IDataType::doublenull();
 				else return (double)cdata(s, b);
 			}
 			default:{
-				printf("ILSegment::d() Unknown type"); return IDatatype::doublenull();
+				printf("ILSegment::d() Unknown type"); return IDataType::doublenull();
 			}
 		}
 	}
@@ -490,36 +494,36 @@ public:
 	float f(size_t s, size_t b = 0)
 	{
 		switch (getTypeId()){
-			case dtFLOAT: return fdata(s, b); break;
-			case dtDOUBLE: return (float)ddata(s, b); break;
-			case dtSHORT: return (float)sdata(s, b); break;
-			case dtINT: return (float)idata(s, b); break;
-			case dtBYTE: return (float)cdata(s, b); break;
-			default: printf("ILSegment::f() Unknown type"); return IDatatype::floatnull();
+			case IDataType::ID::FLOAT: return fdata(s, b); break;
+			case IDataType::ID::DOUBLE: return (float)ddata(s, b); break;
+			case IDataType::ID::SHORT: return (float)sdata(s, b); break;
+			case IDataType::ID::INT: return (float)idata(s, b); break;
+			case IDataType::ID::BYTE: return (float)cdata(s, b); break;
+			default: printf("ILSegment::f() Unknown type"); return IDataType::floatnull();
 		}
 	}
 
 	int32_t i(size_t s, size_t b = 0)
 	{
 		switch (getTypeId()){
-			case dtFLOAT: return (int32_t)fdata(s, b);
-			case dtDOUBLE: return (int32_t)ddata(s, b);
-			case dtSHORT: return (int32_t)sdata(s, b);
-			case dtINT: return idata(s, b);
-			case dtBYTE: return (int32_t)cdata(s, b);
-			default: printf("ILSegment::i() Unknown type"); return IDatatype::intnull();
+			case IDataType::ID::FLOAT: return (int32_t)fdata(s, b);
+			case IDataType::ID::DOUBLE: return (int32_t)ddata(s, b);
+			case IDataType::ID::SHORT: return (int32_t)sdata(s, b);
+			case IDataType::ID::INT: return idata(s, b);
+			case IDataType::ID::BYTE: return (int32_t)cdata(s, b);
+			default: printf("ILSegment::i() Unknown type"); return IDataType::intnull();
 		}
 	}
 
 	int16_t s(size_t s, size_t b = 0)
 	{
 		switch (getTypeId()){
-			case dtFLOAT: return (int16_t)fdata(s, b);
-			case dtDOUBLE: return (int16_t)ddata(s, b);
-			case dtSHORT: return sdata(s, b);
-			case dtINT: return (int16_t)idata(s, b);
-			case dtBYTE: return (int16_t)cdata(s, b);
-			default: printf("ILSegment::s() Unknown type"); return IDatatype::shortnull();
+			case IDataType::ID::FLOAT: return (int16_t)fdata(s, b);
+			case IDataType::ID::DOUBLE: return (int16_t)ddata(s, b);
+			case IDataType::ID::SHORT: return sdata(s, b);
+			case IDataType::ID::INT: return (int16_t)idata(s, b);
+			case IDataType::ID::BYTE: return (int16_t)cdata(s, b);
+			default: printf("ILSegment::s() Unknown type"); return IDataType::shortnull();
 		}
 	}
 
@@ -531,7 +535,7 @@ public:
 		if (isgroupbyline()) ns = 1;		
 		v.resize(ns);
 
-		if (getTypeId() == dtSTRING) {
+		if (getTypeId() == IDataType::ID::STRING) {
 			size_t len = getType().size();
 			char* p = strdata.pchar();						
 			for (size_t i = 0; i < ns; i++) {				
@@ -545,27 +549,27 @@ public:
 		}
 				
 		switch (getTypeId()){
-			case dtFLOAT: 			
+			case IDataType::ID::FLOAT:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)fdata(i, band);
 				}		
 				return true;
-			case dtDOUBLE: 
+			case IDataType::ID::DOUBLE:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)ddata(i, band);
 				}
 				return true;
-			case dtSHORT:
+			case IDataType::ID::SHORT:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)sdata(i, band);					
 				}
 				return true;
-			case dtINT:
+			case IDataType::ID::INT:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)idata(i, band);
 				}
 				return true;
-			case dtBYTE:
+			case IDataType::ID::BYTE:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)cdata(i, band);
 				}			
@@ -607,7 +611,7 @@ public:
 	template<typename T>
 	void change_nullvalue(const T& newnullvalue) {
 		_GSTITEM_
-		const IDatatype& dt = getType();
+		const IDataType& dt = getType();
 		if(dt.isnull(newnullvalue)) return;
 		T* fp = (T*)pvoid();
 		for (size_t k = 0; k < nstored(); k++) {
@@ -641,7 +645,7 @@ private:
 
 	ILDataset& Dataset;
 	IHeader Header;	
-	FILE* pFile;
+	FILE* pFile = (FILE*)NULL;
 	std::string Name;
 
 public:	
@@ -652,21 +656,23 @@ public:
 	
 	const ILDataset& getDataset() const { return Dataset; }
 	const std::string& getName() const { return Name; }
-	const IDatatype& getType() const { return Header.datatype; }
-	const IDataTypeID&  getTypeId() const { return Header.datatype.getTypeId(); }
+	const IDataType& getType() const { return Header.datatype; }
+	const IDataType::ID&  getTypeId() const { return Header.datatype.getTypeId(); }
 	const size_t& nbands() const { return Header.nbands; };	
 	const size_t& nlines() const;
 	FILE* filepointer() { return pFile; }	
+	
 	const bool& endianswap() const { return Header.endianswap; }
 	
-	const bool& isgroupbyline() const
+	bool isgroupbyline() const
 	{
-		if (Header.accesstype == atDIRECT) return true; 			
+		if (Header.accesstype == IHeader::AccessType::DIRECT) return true; 			
 		else return false;
 	}
-	const bool& isindexed() const
+
+	bool isindexed() const
 	{
-		if (Header.accesstype == atINDEXED) return true;
+		if (Header.accesstype == IHeader::AccessType::INDEXED) return true;
 		else return false;
 	}
 	
@@ -678,7 +684,7 @@ public:
 		initialise_existing(fieldname);
 	}
 
-	ILField(ILDataset& dataset, const std::string& _fieldname, IDatatype _datatype, size_t _nbands, bool _indexed) 
+	ILField(ILDataset& dataset, const std::string& _fieldname, IDataType _datatype, size_t _nbands, bool _indexed) 
 		: Dataset(dataset)
 	{
 		create_new(_fieldname,_datatype,_nbands,_indexed);
@@ -696,7 +702,7 @@ public:
 
 	bool initialise_existing(const std::string& fieldname);
 	
-	bool create_new(const std::string& fieldname, const IDatatype& datatype, const size_t& nbands, const bool& indexed);
+	bool create_new(const std::string& fieldname, const IDataType& datatype, const size_t& nbands, const bool& indexed);
 
 	bool open()
 	{
@@ -870,9 +876,14 @@ private:
 		}		
 		return true;
 	}
+	
+	ILField NullField;
 
 public:
-	bool valid;
+	
+	ILField& getNullField() { return NullField; }
+
+	bool valid=false;
 	std::string datasetpath;
 	std::string surveyinfopath;
 	std::string indexpath;
@@ -929,7 +940,7 @@ public:
 			valid = false;
 			return;
 		}
-		else if (Header.filetype != ftINDEX){		
+		else if (Header.filetype != IHeader::FileType::INDEX){
 			glog.logmsg("ILDataset: file %s is not an INDEX file\n\n", indexpath.c_str());
 			valid = false;
 			return;
@@ -1001,11 +1012,13 @@ public:
 	const size_t& nlines() const { return Header.nlines; }
 	const size_t& maxspl() const {return Header.maxspl;	}
 
-	const size_t& nfields() const { return Fields.size(); }			
+	size_t nfields() const { return Fields.size(); }
+	
 	const size_t& nsamplesinline(const size_t segindex) const {
 		return indextable[segindex].ns;
 	}
-	const size_t& nsamples() const {
+
+	size_t nsamples() const {
 		_GSTITEM_
 		size_t n = 0;
 		for (size_t li = 0; li < nlines(); li++){
@@ -1130,7 +1143,7 @@ public:
 				return *it;
 			}
 		}	
-		return ILField();
+		return getNullField();
 	}
 
 	ILField& getsurveyinfofield(const std::string& key)
@@ -1140,7 +1153,7 @@ public:
 		bool status = surveyinfofieldname(key,fieldname);
 		if (status){
 			printf("Cannot find field %s from SurveyInfo:\n\n", key.c_str());
-			return ILField();
+			return getNullField();
 		}
 		return getfield(fieldname);
 	}	
@@ -1160,7 +1173,7 @@ public:
 		return false;			
 	}
 	
-	bool addfield(const std::string& fieldname, IDatatype datatype, size_t nbands=1, bool isindexed=true)
+	bool addfield(const std::string& fieldname, IDataType datatype, size_t nbands=1, bool isindexed=true)
 	{
 		_GSTITEM_
 		if (fieldexists_ignorecase(fieldname)){
@@ -1254,12 +1267,12 @@ public:
 
 			////Find first and last non nulls
 			size_t s = 0;
-			size_t firstnonnull, lastnonnull;
+			size_t firstnonnull = 0, lastnonnull = numsamples - 1 - 1;;
 			double xv, yv;
 			do{
 				xv = sX.d(s);
 				yv = sY.d(s);
-				if (IDatatype::isnull(xv) || IDatatype::isnull(yv)){
+				if (IDataType::isnull(xv) || IDataType::isnull(yv)){
 					s++;
 				}
 				else{
@@ -1272,7 +1285,7 @@ public:
 			do{
 				xv = sX.d(s);
 				yv = sY.d(s);
-				if (IDatatype::isnull(xv) || IDatatype::isnull(yv)){
+				if (IDataType::isnull(xv) || IDataType::isnull(yv)){
 					s--;
 				}
 				else{
@@ -1478,7 +1491,7 @@ public:
 			size_t nsamples = S.nsamples();			
 			for (size_t si = 0; si < nsamples; si++){				
 				double val = S.d(si);
-				if (IDatatype::isnull(val)==false){
+				if (IDataType::isnull(val)==false){
 					v.push_back(val);					
 				}				
 			}
@@ -1513,7 +1526,7 @@ public:
 
 		size_t nl = nlines();
 
-		IDatatype dt = fx.getType();
+		IDataType dt = fx.getType();
 		
 		x1.resize(nl);
 		y1.resize(nl);
@@ -1544,8 +1557,9 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////
+static ILDataset NullDataset;
 
-ILField::ILField() : Dataset(ILDataset()) {	};
+ILField::ILField() : Dataset(NullDataset) {	};
 
 const ILField& ILSegment::getField() const { return Field; }
 
@@ -1559,9 +1573,9 @@ const size_t& ILSegment::nsamples() const { return getDataset().nsamplesinline(l
 
 const size_t& ILSegment::nbands() const { return Field.nbands(); }
 
-const IDatatype& ILSegment::getType() { return Field.getType(); }
+const IDataType& ILSegment::getType() { return Field.getType(); }
 
-const IDataTypeID& ILSegment::getTypeId() { return Field.getTypeId(); }
+const IDataType::ID& ILSegment::getTypeId() { return Field.getTypeId(); }
 
 FILE* ILSegment::filepointer() { return Field.filepointer(); }
 
@@ -1588,34 +1602,34 @@ bool ILSegment::readbuffer()
 	const size_t len = getType().size();
 
 	switch (getTypeId()){
-	case dtFLOAT:
+	case IDataType::ID::FLOAT:
 		fdata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(fdata.pvoid(), nbytes(), 1, filepointer());
 		if(Field.endianswap()) fdata.swap_endian();
 		break;
-	case dtDOUBLE:
+	case IDataType::ID::DOUBLE:
 		ddata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(ddata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()) ddata.swap_endian();
 		break;
-	case dtSHORT:
+	case IDataType::ID::SHORT:
 		sdata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(sdata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()) sdata.swap_endian();
 		break;
-	case dtINT:
+	case IDataType::ID::INT:
 		idata.resize(nsamples(), nbands(), isgroupbyline());
 		n = std::fread(idata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()){
 			idata.swap_endian();
 		}
 		break;
-	case dtBYTE:
+	case IDataType::ID::BYTE:
 		cdata.resize(nsamples(), nbands(), isgroupbyline() );
 		n = std::fread(cdata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()) cdata.swap_endian();
 		break;
-	case dtSTRING:		
+	case IDataType::ID::STRING:
 		strdata.resize(nsamples(), nbands(), isgroupbyline(), len);
 		n = std::fread(strdata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()) strdata.swap_endian();
@@ -1638,23 +1652,23 @@ bool ILSegment::writebuffer()
 	fseek(filepointer(), move, SEEK_CUR);
 
 	switch (getTypeId()){
-	case dtFLOAT:
+	case IDataType::ID::FLOAT:
 		if (Field.endianswap()) fdata.swap_endian();				
 		n = fwrite(fdata.pvoid(), nbytes(), 1, filepointer());
 		break;
-	case dtDOUBLE:
+	case IDataType::ID::DOUBLE:
 		if (Field.endianswap()) ddata.swap_endian();		
 		n = fwrite(ddata.pvoid(), nbytes(), 1, filepointer());		
 		break;
-	case dtSHORT:
+	case IDataType::ID::SHORT:
 		if (Field.endianswap()) sdata.swap_endian();
 		n = fwrite(sdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
-	case dtINT:
+	case IDataType::ID::INT:
 		if (Field.endianswap()) idata.swap_endian();
 		n = fwrite(idata.pvoid(), nbytes(), 1, filepointer());		
 		break;
-	case dtBYTE:
+	case IDataType::ID::BYTE:
 		if (Field.endianswap()) cdata.swap_endian();
 		n = fwrite(cdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
@@ -1685,7 +1699,7 @@ bool ILField::initialise_existing(const std::string& fieldname)
 	return true;
 }
 
-bool ILField::create_new(const std::string& fieldname, const IDatatype& _datatype, const size_t& _nbands, const bool& _indexed)
+bool ILField::create_new(const std::string& fieldname, const IDataType& _datatype, const size_t& _nbands, const bool& _indexed)
 {
 	Name  = fieldname;
 	pFile = (FILE*)NULL;
@@ -1710,17 +1724,17 @@ bool ILField::create_new(const std::string& fieldname, const IDatatype& _datatyp
 	hdata[221] = (int16_t)_nbands;
 
 	if (_indexed) {
-		Header.accesstype = atINDEXED;
+		Header.accesstype = IHeader::AccessType::INDEXED;
 		Header.maxspl = Dataset.maxspl();
 		hdata[91] = 2; //INDEXED		
 	}
 	else {
-		Header.accesstype = atDIRECT;
+		Header.accesstype = IHeader::AccessType::DIRECT;
 		Header.maxspl = 1;
 		hdata[91] = 1; //Group By		
 	}
 
-	Header.filetype = ftLINE;
+	Header.filetype = IHeader::FileType::LINE;
 	hdata[72] = 1000; //LINE
 
 	Header.datatype = _datatype;
@@ -1733,11 +1747,11 @@ bool ILField::create_new(const std::string& fieldname, const IDatatype& _datatyp
 	hdata[93] = -1; //PROJECTION
 
 	if (_nbands > 1) {
-		Header.bandpackingtype = bptBIP;
+		Header.packingtype = IHeader::PackingType::BIP;
 		hdata[78] = 2; //BIP
 	}
 	else {
-		Header.bandpackingtype = bptBIL;
+		Header.packingtype = IHeader::PackingType::BIL;
 		hdata[78] = 1; //BIL
 	}
 
@@ -1777,6 +1791,7 @@ bool ILField::create_new(const std::string& fieldname, const IDatatype& _datatyp
 	fclose(lfile);
 	open();
 	close();
+	return true;
 }
 
 #endif

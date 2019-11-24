@@ -12,7 +12,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <cstdarg>
 #include <string>
-#include <strstream>
+#include <sstream>
 
 template<typename T>
 void str2num(const std::string str, T& v)
