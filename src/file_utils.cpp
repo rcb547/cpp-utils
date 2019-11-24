@@ -365,7 +365,8 @@ std::vector<std::string> getfilelist(const std::string& path, const std::string&
 	if(p[p.size()-1] != pathseparator()){
 		p.push_back(pathseparator());
 	}		
-	std::string searchpattern = p + "*." + extension;	    
+	std::string searchpattern = p + "*";
+	if(extension.size()>0) searchpattern += "." + extension;
 	std::vector<std::string> list = d.getfilelist(searchpattern);    
 	for(size_t i=0; i<list.size(); i++){
 		//std::string fullpath = p + list[i];
@@ -375,6 +376,7 @@ std::vector<std::string> getfilelist(const std::string& path, const std::string&
 	std::sort(filelist.begin(),filelist.end());
 	return filelist;
 }
+
 void recursivefilelist(const std::string& path, const std::string& extension, FILE* outfile)
 {
 	std::vector<std::string> files = getfilelist(path,extension);
@@ -391,6 +393,7 @@ void recursivefilelist(const std::string& path, const std::string& extension, FI
 	}
 
 }
+
 void recursivefilelist(const std::string& path, const std::string& extension, std::vector<std::string>& list)
 {
 	std::vector<std::string> files = getfilelist(path,extension);
