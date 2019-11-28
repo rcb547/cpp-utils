@@ -796,11 +796,17 @@ public:
 
 	bool parse_datum_projection()
 	{
-		cBlock b(dotvecfilepath());				
+		std::string vpath = dotvecfilepath();
+		if(exists(vpath) == false){
+			glog.logmsg("Warning expected .PD.vec file path %s does not exist\n\n", vpath.c_str());
+			return false;
+		}
+
+		cBlock b(dotvecfilepath());
 		if (b.Entries.size() > 0) {
 			cBlock c = b.findblock("CoordinateSpace");
 			if (c.Entries.size() > 0) {
-				std::string str;								
+				std::string str;
 				if (c.getvalue("Datum", str)) Datum = stripquotes(str);				
 				if (c.getvalue("Projection", str)) Projection = stripquotes(str);
 				if (c.getvalue("CoordinateType", str)) CoordinateType = stripquotes(str);
