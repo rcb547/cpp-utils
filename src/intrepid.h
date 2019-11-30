@@ -102,7 +102,7 @@ public:
 	{
 		_GSTITEM_
 		switch (itypeid) {
-		if (itypeid == ID::BYTE) return 1;
+		    case ID::BYTE: return 1;
 			case ID::SHORT: return 2;
 			case ID::INT: return 4;
 			case ID::FLOAT: return 4;
@@ -784,7 +784,7 @@ public:
 		return datasetpath() + Name + "..LINE";		
 	}
 	
-	const size_t groupbyindex(const int value)
+	size_t groupbyindex(const int value)
 	{
 		for (size_t li = 0; li < nlines(); li++) {
 			ILSegment s(*this, li);
@@ -1354,7 +1354,7 @@ public:
 	bool getlinenumbers(std::vector<T>& v){		
 		std::string fieldname;
 		bool status = getlinenumberfieldname(fieldname);
-		if (fieldexists(fieldname)){
+		if (status && fieldexists(fieldname)){
 			ILField& F  = getfield(fieldname);
 			bool status = getgroupbydata(F, v);
 			return status;
@@ -1510,10 +1510,10 @@ public:
 	void getdata(const std::string& fieldname, std::vector<T> v){
 		_GSTITEM_
 
-		ILField& F = *getfield(fieldname);		
+		ILField& F = getfield(fieldname);		
 		v.reserve(nsamples());
 		for (size_t li = 0; li < nlines(); li++){
-			ILSegment& S = F.Segments[li];
+			ILSegment S(F, li);
 			S.readbuffer();
 			F.getType();
 			size_t nsamples = S.nsamples();
@@ -1761,10 +1761,12 @@ bool ILField::create_new(const std::string& fieldname, const IDataType& _datatyp
 		hdata[78] = 1; //BIL
 	}
 
+	std::string OK = "OK";
+	std::string P1 = "P1";
 	Header.indexname = "INDEX                    ";//INDEX FILE - need spaces
-	strncpy((char*)&hdata[87], "OK", 2);  //???
-	strncpy((char*)&hdata[89], "P1", 2);  //???
-	strncpy((char*)&hdata[171], Header.indexname.c_str(), 25);//INDEX FILE - need spaces
+	std::strncpy((char*)&hdata[87], OK.c_str(), 2);//???
+	std::strncpy((char*)&hdata[89], P1.c_str(), 2);//???
+	std::strncpy((char*)&hdata[171], Header.indexname.c_str(), 25);//INDEX FILE - need spaces
 	hdata[185] = 1;
 	hdata[186] = 251;
 
