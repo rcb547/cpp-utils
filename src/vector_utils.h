@@ -16,6 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <iterator>
 #include <iostream> 
 #include <iomanip> 
+#include <fstream> 
 
 //Vector scalar unary op
 template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a,  const S& s)
@@ -287,7 +288,7 @@ template<typename T>
 void write(std::string filename, const std::vector<T>& x)
 {
 	std::ofstream of(filename);
-	of << std::scientific;	
+	of.setf(std::ios_base::scientific);
 	//of.width(width);
 	//of.precision(precision);	
 	for (size_t i = 0; i < x.size(); i++) {				
@@ -299,7 +300,8 @@ template<typename T>
 void write(std::string filename, const T& x)
 {
 	std::ofstream of(filename);
-	of << std::scientific;
+	of.setf(std::ios_base::scientific);
+	//of.setf(std::scientific);
 	//of.width(width);
 	//of.precision(precision);		
 	of << x << std::endl;	

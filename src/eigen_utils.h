@@ -10,12 +10,11 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _eigen_utils_H
 
 #include <vector>
-#include <Eigen/dense>
-#include <random_utils.h>
-
+#include <Eigen/Dense>
 typedef Eigen::VectorXd VectorDouble;
 typedef Eigen::MatrixXd MatrixDouble;
 
+#include "random_utils.h"
 
 template<typename T>
 void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name)
