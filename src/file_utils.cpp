@@ -40,6 +40,7 @@ char pathseparator()
 		return '/';		
 	#endif
 }
+
 std::string pathseparatorstring()
 {
 	#if defined _WIN32
@@ -159,16 +160,19 @@ FILE* fileopen(const std::string filepath, const std::string mode)
 	}
 	return fp;
 }
+
 std::string getcurrentdirectory()
 {	
-	char buf[500];
+	char buf[1024];
 	#if defined _WIN32
-		_getcwd(buf,500);
+		char* ret = _getcwd(buf, sizeof(buf));
 	#else
-		getcwd(buf,500);		
-	#endif			
-	return std::string(buf);
+		char* ret = getcwd(buf, sizeof(buf));
+	#endif
+	if (ret) return std::string(buf);
+	else return std::string();	
 }
+
 bool makedirectory(std::string dirname)
 {
 	if (dirname.size() == 0)return true;
@@ -263,20 +267,20 @@ sFilePathParts getfilepathparts(const std::string& path)
 	std::string p = path;
 	
 	fixseparator(p);
-	size_t len = p.size();
+	int len  = (int)p.size();
 	int isep = -1;	
-	for (size_t i=0; i<len; i++){
-		if (p[i] == pathseparator())isep = (int)i;					
+	for (auto i=0; i<len; i++){
+		if (p[i] == pathseparator()) isep = i;
 	}
 
-	int iext = (int)len;	
-	for(size_t i=(size_t)(isep+1); i<len; i++){
-		if (p[i] == '.')iext = (int)i;					
+	int iext = len;	
+	for(auto i=isep+1; i<len; i++){
+		if (p[i] == '.') iext = i;
 	}	
 		
-	fpp.directory = p.substr(0, (size_t)(isep + 1));
-	fpp.prefix    = p.substr((size_t)(isep+1), (size_t)(iext - isep - 1));
-	fpp.extension = p.substr((size_t)iext, (size_t)(len-iext));	
+	fpp.directory = p.substr(0, (size_t)isep + 1);
+	fpp.prefix    = p.substr((size_t)isep+1,(size_t)iext - isep - 1);
+	fpp.extension = p.substr(iext, (size_t)len-iext);
 	return fpp;
 }
 std::string extractfiledirectory(const std::string& pathname)
@@ -423,14 +427,7 @@ std::vector<std::string> directoryheirachy(std::string dirname)
 	return v;
 }
 
-cDirectoryAccess::cDirectoryAccess()
-{   
 
-}
-cDirectoryAccess::~cDirectoryAccess()
-{
-
-}
 
 std::vector<std::string> cDirectoryAccess::getfilelist(const std::string& searchpattern)
 {	

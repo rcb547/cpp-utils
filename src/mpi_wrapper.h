@@ -284,7 +284,7 @@ public:
 		int flag;
 		MPI_Request request;
 		int tag = 0;
-		int count;
+		int count = 1;
 		int ierr;
 		ierr = MPI_Iprobe(source, tag, comm, &flag, &status);
 		if (flag == 0){

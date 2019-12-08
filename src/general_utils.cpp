@@ -120,18 +120,13 @@ void debug(const char* msg)
 
 void prompttocontinue()
 {
+
 #if defined MATLAB_MEX_FILE				
 	return;
-#endif
-
+#endif	
 	printf("Press any key to continue...\n");
-#if defined _WIN32
-	_getch();
-#else
-	char c;
-	scanf("%c",&c);
-#endif
-
+	int i = std::getchar();
+	return;
 }
 
 void prompttoexit()
@@ -141,13 +136,8 @@ void prompttoexit()
 	return;
 #endif
 
-#if defined _WIN32
 	printf("Press any key to exit...\n");
-	_getch();
-	//#else
-	//char c;
-	//scanf("%c",&c);
-#endif
+	int i = std::getchar();
 	exit(0);
 }
 
@@ -707,8 +697,8 @@ void sort(int* x, const size_t n)
 #if defined _WIN32
 double reportusage()
 {
-	MEMORYSTATUS memstatus;
-	GlobalMemoryStatus(&memstatus);
+	MEMORYSTATUSEX memstatus;
+	GlobalMemoryStatusEx(&memstatus);
 	return memstatus.dwMemoryLoad;
 }
 #else
@@ -736,8 +726,8 @@ double reportusage()
 #if defined _WIN32
 double percentmemoryused()
 {
-	MEMORYSTATUS memstatus;
-	GlobalMemoryStatus(&memstatus);
+	MEMORYSTATUSEX memstatus;
+	GlobalMemoryStatusEx(&memstatus);
 	return memstatus.dwMemoryLoad;
 }
 #else
@@ -885,7 +875,7 @@ std::vector<std::string> parsestrings(const std::string& str, const std::string&
 		list.push_back(std::string(token));
 		token = strtok(NULL, delims.c_str());
 	}
-	delete workstr;
+	delete[] workstr;
 	return list;
 }
 
@@ -975,8 +965,8 @@ std::vector<std::string> fieldparsestring_old(const char* str, const char delim)
 	size_t nfields = delimpos.size() - 1;
 	std::vector<std::string> v(nfields);
 	for (size_t i = 0; i < nfields; i++){
-		size_t a = (size_t)(delimpos[i] + 1);
-		size_t b = (size_t)(delimpos[i + 1] - 1);
+		size_t a = (size_t)delimpos[i] + 1;
+		size_t b = (size_t)delimpos[i + 1] - 1;
 		v[i] = std::string(&(str[a]), b - a + 1);
 	}
 	return v;
@@ -1002,7 +992,7 @@ std::vector<double> getdoublevector(const char* str, const char* delims)
 	std::vector<double> vec;
 	std::vector<std::string> fields = fieldparsestring(str, delims);
 	for (size_t i = 0; i < fields.size(); i++){
-		sscanf(fields[i].c_str(), "%lf", &v);
+		int n = sscanf(fields[i].c_str(), "%lf", &v);
 		vec.push_back(v);
 	}
 	return vec;

@@ -324,8 +324,7 @@ public:
 	}
 
 	std::vector<int> getintvector(const std::string id) const
-	{
-		int v;
+	{		
 		std::vector<int> vec;
 		std::string s = getstringvalue(id);
 
@@ -334,29 +333,28 @@ public:
 		}
 
 		std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
-		for (size_t i = 0; i < fields.size(); i++){
-			sscanf(fields[i].c_str(), "%d", &v);
+		for (size_t i = 0; i < fields.size(); i++){			
+			int v = std::atoi(fields[i].c_str());
 			vec.push_back(v);
 		}
 		return vec;
 	}
 	std::vector<double> getdoublevector(const std::string id) const
-	{
-		double v;
+	{		
 		std::vector<double> vec;
 		std::string s = getstringvalue(id);
-
 		if (strcasecmp(s, ud_string()) == 0){
 			return vec;
 		}
 
 		std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
-		for (size_t i = 0; i < fields.size(); i++){
-			sscanf(fields[i].c_str(), "%lf", &v);
+		for (size_t i = 0; i < fields.size(); i++){			
+			double v = std::atof(fields[i].c_str());
 			vec.push_back(v);
 		}
 		return vec;
 	}
+
 	std::vector<std::string> getstringvector(const std::string id) const
 	{
 		std::vector<std::string> fields;
@@ -372,24 +370,24 @@ public:
 		}
 		return fields;
 	}
+
 	std::vector<std::vector<double>> getdoublematrix(const std::string id) const
 	{
 		std::vector<std::vector<double>> matrix;
 		cBlock b = findblock(id);
-		for (size_t i = 0; i < b.Entries.size(); i++){
-			double v;
+		for (size_t i = 0; i < b.Entries.size(); i++){			
 			std::vector<double> vec;
-
 			std::string s = b.Entries[i];
 			std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
 			for (size_t j = 0; j < fields.size(); j++){
-				sscanf(fields[j].c_str(), "%lf", &v);
+				double v = std::atof(fields[j].c_str());
 				vec.push_back(v);
 			}
 			matrix.push_back(vec);
 		}
 		return matrix;
 	}
+
 	bool getboolvalue(const std::string id) const
 	{
 		std::string s = getstringvalue(id);
@@ -474,10 +472,9 @@ public:
 	{
 		std::vector<std::string> str = getmultiplestrings(id);
 		std::vector<int> result;
-
-		int val;
+		
 		for (size_t i = 0; i < str.size(); i++){
-			sscanf(str[i].c_str(), "%d", &val);
+			int val = std::atoi(str[i].c_str());
 			result.push_back(val);
 		}
 		return result;
@@ -486,10 +483,9 @@ public:
 	{
 		std::vector<std::string> str = getmultiplestrings(id);
 		std::vector<double> result;
-
-		double val;
+		
 		for (size_t i = 0; i < str.size(); i++){
-			sscanf(str[i].c_str(), "%lf", &val);
+			double val = std::atof(str[i].c_str());
 			result.push_back(val);
 		}
 		return result;

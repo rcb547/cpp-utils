@@ -60,13 +60,23 @@ size_t countlines1(const std::string filename);
 
 class cDirectoryAccess  
 {
-	private:
-		static std::vector<std::string> getfilelist_single(const std::string& searchpattern);
+
+private:
+	static std::vector<std::string> getfilelist_single(const std::string& searchpattern);
+	char pathsepchar;
+
 public:
-    char pathseperator;	
+
+	cDirectoryAccess::cDirectoryAccess()
+	{
+		pathsepchar = pathseparator();
+	}
+
+	cDirectoryAccess::~cDirectoryAccess()
+	{
+
+	}
 	
-	cDirectoryAccess();
-	~cDirectoryAccess();
 
 	static std::vector<std::string> getfilelist(const std::string& searchpattern);
 	static bool wildcmp(std::string& wildpattern, std::string& stringpattern);

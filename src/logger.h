@@ -86,8 +86,8 @@ public:
 	
 	bool open(const std::string& logfilename)
 	{				
-		const int i = threadindex();		
-		if ((int)ofs.size() < i + 1) {			
+		const size_t i = (size_t)threadindex();		
+		if (ofs.size() < i + 1) {			
 			ofs.resize(i + 1);
 		}
 		makedirectorydeep(extractfiledirectory(logfilename));
