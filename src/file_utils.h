@@ -67,12 +67,12 @@ private:
 
 public:
 
-	cDirectoryAccess::cDirectoryAccess()
+	cDirectoryAccess()
 	{
 		pathsepchar = pathseparator();
 	}
 
-	cDirectoryAccess::~cDirectoryAccess()
+	~cDirectoryAccess()
 	{
 
 	}
