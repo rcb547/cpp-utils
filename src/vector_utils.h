@@ -11,6 +11,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cmath>
 #include <numeric>
+#include <complex>
 #include <vector>
 #include <algorithm>
 #include <iterator>
@@ -285,7 +286,7 @@ std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 };
 
 template<typename T>
-void write(std::string filename, const std::vector<T>& x)
+void write(const std::string filename, const std::vector<T>& x)
 {
 	std::ofstream of(filename);
 	of.setf(std::ios_base::scientific);
@@ -295,6 +296,16 @@ void write(std::string filename, const std::vector<T>& x)
 		of << x[i] << std::endl;		
 	}	
 }
+
+template<typename T>
+void write(const std::string filename, const std::vector<std::complex<T>>& x)
+{
+	std::ofstream of(filename);
+	of.setf(std::ios_base::scientific);	
+	for (auto i = 0; i < x.size(); i++) {
+		of << x[i].real() << " " << x[i].imag() << std::endl;
+	}
+};
 
 template<typename T>
 void write(std::string filename, const T& x)
