@@ -15,7 +15,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 template<typename T>
 T irand(const T& imin, const T& imax)
 {
-	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());	
+	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<T> dist(imin, imax);
 	return dist(gen);
 };
