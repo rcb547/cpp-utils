@@ -318,5 +318,27 @@ void write(std::string filename, const T& x)
 	of << x << std::endl;	
 }
 
+template<typename T>
+std::vector<T> linspace(const T& x1, const T& x2, const size_t n)
+{
+	T dx = (x2 - x1) / (T)(n - 1);
+	std::vector<T> xi(n);
+	xi[0] = x1;
+	for (size_t i = 1; i < n; i++) {
+		xi[i] += xi[i - 1] + dx;
+	}
+	return xi;
+};
+
+template<typename T>
+std::vector<T> log10space(const T& x1, const T& x2, const size_t n)
+{
+	std::vector<T> v = linspace(std::log10(x1), std::log10(x2), n);
+	for (size_t i = 0; i < n; i++) {
+		v[i] = std::pow(10.0, v[i]);
+	}
+	return v;
+};
+
 #endif
 

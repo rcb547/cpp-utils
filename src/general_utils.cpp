@@ -1005,26 +1005,6 @@ std::vector<float> dvec2fvec(std::vector<double>& vd)
 	return vf;
 }
 
-std::vector<double> linspace(const double x1, const double x2, const size_t n)
-{
-	double dx = (x2 - x1) / (double)(n - 1);
-	std::vector<double> xi(n);
-	xi[0] = x1;
-	for (size_t i = 1; i < n; i++){
-		xi[i] += xi[i - 1] + dx;
-	}
-	return xi;
-};
-
-std::vector<double> log10space(const double x1, const double x2, const size_t n)
-{
-	std::vector<double> v = linspace(std::log10(x1), std::log10(x2), n);
-	for (size_t i = 0; i < n; i++){
-		v[i] = std::pow(10.0,v[i]);
-	}
-	return v;
-};
-
 bool filegetline(FILE* fp, std::string& str)
 {
 	size_t buflen = 8192;//buffer length
