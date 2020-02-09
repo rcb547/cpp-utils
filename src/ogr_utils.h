@@ -48,7 +48,7 @@ public:
 	OGRFieldType fieldtype() const {
 		if (value.index() == 0) return OFTString;
 		else if (value.index() == 1) return OFTInteger;
-		else if (value.index() == 2) return OFTReal;
+		else return OFTReal;
 	}
 
 	std::string fieldtypename() const {		
@@ -243,7 +243,8 @@ public:
 			a[i].print();
 		}
 		
-		poFeature->SetGeometry(&OGRPoint(x, y));
+		OGRPoint p(x,y);
+		poFeature->SetGeometry(&p);
 		if (pL->CreateFeature(poFeature) != OGRERR_NONE){
 			printf("Failed to create point feature in shapefile.\n");
 			exit(1);
