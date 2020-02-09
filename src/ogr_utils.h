@@ -6,8 +6,8 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef shape_utils_H
-#define shape_utils_H
+#ifndef ogr_utils_H
+#define ogr_utils_H
 
 #include <vector>
 #include <variant>
@@ -55,7 +55,7 @@ public:
 		const char* tn = OGRFieldDefn::GetFieldTypeName(fieldtype());
 		return std::string(tn);
 	}
-
+	
 	void set(OGRFeature* poFeature) const {
 		if (index() == 0) {
 			poFeature->SetField(name.c_str(), (std::get<std::string>(value)).c_str());
@@ -181,15 +181,21 @@ public:
 	}
 };
 
-class  cLayer : public OGRLayer {
+class  cLayer {
 
 private:
 	
+	OGRLayer* pL = NULL;
+
 public:
-		
+	
+	cLayer(OGRLayer* pLayer) {
+		pL = pLayer;
+	}
+
 	std::vector<cAttribute> get_fields() {
 		
-		OGRFeatureDefn& ld = *GetLayerDefn();
+		OGRFeatureDefn& ld = *pL->GetLayerDefn();
 		int n = ld.GetFieldCount();
 		std::vector<cAttribute> a(n);
 		for (size_t i = 0; i < n; i++) {
@@ -204,12 +210,20 @@ public:
 		return a;
 	}
 
+	//static OGRFieldDefn fielddefinition(const cAttribute& a) {
+	//	OGRFieldDefn fd(a.name.c_str(), a.fieldtype());
+	//	if (a.fieldtype() == OFTString) { fd.SetWidth(32); }
+		//return fd;
+	//}
+
 	void add_field(const cAttribute& a) {	
-		OGRFieldDefn oField(a.name.c_str(), a.fieldtype());				
-		const char* tn  = oField.GetFieldTypeName(a.fieldtype());
-		if (a.fieldtype() == OFTString) oField.SetWidth(32);						
-		if (CreateField(&oField) != OGRERR_NONE){
-			printf("Creating field %s (%s) failed.\n", a.name.c_str(),tn);
+		OGRFieldDefn fd(a.name.c_str(), a.fieldtype());
+		if (a.fieldtype() == OFTString){
+			fd.SetWidth(32); 
+		}
+		OGRErr err = pL->CreateField(&fd);
+		if (err != OGRERR_NONE){
+			std::cout << "Creating field " << a.name << "(" << fd.GetFieldTypeName(a.fieldtype()) << ")" << "failed." << std::endl;
 		}
 	}
 
@@ -222,7 +236,7 @@ public:
 	void add_point_feature(const std::vector<cAttribute> a, const double& x, const double& y)
 	{
 		OGRFeature *poFeature;
-		poFeature = OGRFeature::CreateFeature(GetLayerDefn());
+		poFeature = OGRFeature::CreateFeature(pL->GetLayerDefn());
 		
 		for (auto i = 0; i < a.size(); i++) {
 			a[i].set(poFeature);
@@ -230,7 +244,7 @@ public:
 		}
 		
 		poFeature->SetGeometry(&OGRPoint(x, y));
-		if (CreateFeature(poFeature) != OGRERR_NONE){
+		if (pL->CreateFeature(poFeature) != OGRERR_NONE){
 			printf("Failed to create point feature in shapefile.\n");
 			exit(1);
 		}
@@ -238,27 +252,27 @@ public:
 	}
 
 	void add_linestring_feature(const std::vector<cAttribute> a, const std::vector<double>& x, const std::vector<double>& y)
-	{			
-		OGRFeature *poFeature;
-		poFeature = OGRFeature::CreateFeature(GetLayerDefn());
-		for (auto i = 0; i < a.size(); i++) {
+	{					
+		OGRFeatureDefn* fd = pL->GetLayerDefn();
+		OGRFeature* poFeature = OGRFeature::CreateFeature(fd);
+		for (auto i = 0; i < a.size(); i++) {			
 			a[i].set(poFeature);
 		}
-
+		
 		OGRLineString ls;
-		ls.setPoints(x.size(), x.data(), y.data());
+		ls.setPoints(x.size(), x.data(), y.data());		
 		poFeature->SetGeometry(&ls);
-		if (CreateFeature(poFeature) != OGRERR_NONE){
+		if (pL->CreateFeature(poFeature) != OGRERR_NONE){
 				printf("Failed to create line feature in shapefile.\n");
 				exit(1);
 		}
-		OGRFeature::DestroyFeature(poFeature);		
+		OGRFeature::DestroyFeature(poFeature);				
 	}
 	
 	void add_polygon_feature(const std::vector<cAttribute> a, const std::vector<double>& x, const std::vector<double>& y)
 	{
 		OGRFeature *poFeature;
-		poFeature = OGRFeature::CreateFeature(GetLayerDefn());
+		poFeature = OGRFeature::CreateFeature(pL->GetLayerDefn());
 		for (auto i = 0; i < a.size(); i++) {
 			a[i].set(poFeature);
 		}
@@ -269,30 +283,26 @@ public:
 		OGRPolygon p;
 		p.addRing(&c);		
 		poFeature->SetGeometry(&p);
-		if (CreateFeature(poFeature) != OGRERR_NONE){
+		if (pL->CreateFeature(poFeature) != OGRERR_NONE){
 			printf("Failed to create line feature in shapefile.\n");
 			exit(1);
 		}
 		OGRFeature::DestroyFeature(poFeature);
 	}
-
-	//cLineStringFeature get_linestring_feature(OGRFeature* poFeature, const std::vector<cAttribute>& attributes)
-	//{
-	//	return cLineStringFeature(poFeature, attributes);		
-	//}	
+	
 };
 
-class  cGeoDataset : public GDALDataset {
+class  cGeoDataset {
 	
 private:	
-
+	GDALDataset* pD=NULL;
 	static GDALDriver* get_driver(const std::string DriverName)
 	{		
 		int nd = GetGDALDriverManager()->GetDriverCount();
-		for (int i = 0; i < nd; i++) {
-			GDALDriver* poDriver = GetGDALDriverManager()->GetDriver(i);
-			std::cout << poDriver->GetDescription() << std::endl;
-		}
+		//for (int i = 0; i < nd; i++) {
+		//	GDALDriver* poDriver = GetGDALDriverManager()->GetDriver(i);
+		//	std::cout << poDriver->GetDescription() << std::endl;
+		//}
 
 		GDALDriver* poDriver;
 		poDriver = GetGDALDriverManager()->GetDriverByName(DriverName.c_str());
@@ -304,27 +314,38 @@ private:
 
 public:			
 	
+	cGeoDataset(GDALDataset* pDataset){
+		pD = pDataset; 
+	}
+
+	~cGeoDataset(){
+		if(pD) {
+			GDALClose(pD);
+			pD = NULL;
+		}		
+	}
+
 	static cGeoDataset* open_existing(const std::string shapepath) {
 		_GSTITEM_		
 		cGeoDataset* poDS = (cGeoDataset*)GDALDataset::Open(shapepath.c_str(), GDAL_OF_VECTOR);		
 		return (cGeoDataset*)poDS;
 	}
 
-	cGeoDataset* create_shapefile(const std::string shapepath) {
-		_GSTITEM_		
-		GDALDriver* poDriver = get_driver("ESRI Shapefile");				
-		cGeoDataset* poDS = (cGeoDataset*) poDriver->Create(shapepath.c_str(), 0, 0, 0, GDT_Unknown, NULL);
+	static cGeoDataset create_shapefile(const std::string shapepath) {
+		_GSTITEM_
+		GDALDriver*  poDriver = get_driver("ESRI Shapefile");				
+		GDALDataset* poDS = poDriver->Create(shapepath.c_str(), 0, 0, 0, GDT_Unknown, NULL);
 		if (poDS == NULL){
 			glog.errormsg(_SRC_,"Creation of output file failed.\n");			
 		}				
-		return poDS;		
+		return cGeoDataset(poDS);
 	}
 
-	int  nlayers(){ return GetLayerCount(); }
+	int  nlayers(){ return pD->GetLayerCount(); }
 
 	std::vector<std::string> filelist() {
 		std::vector<std::string> list;
-		char** fl = GetFileList();
+		char** fl = pD->GetFileList();
 		int k = 0;
 		while (fl[k] != NULL) {
 			list.push_back(std::string(fl[k]));
@@ -333,16 +354,15 @@ public:
 		return list;		
 	}
 	
-	cLayer* create_layer(const std::string& layername, OGRwkbGeometryType layertype){
+	cLayer create_layer(const std::string& layername, OGRwkbGeometryType layertype){
 		OGRSpatialReference srs;
 		srs.importFromEPSG(4283);				
-		cLayer* poLayer = (cLayer*)CreateLayer(layername.c_str(), &srs, layertype, NULL);
+		OGRLayer* poLayer = pD->CreateLayer(layername.c_str(), &srs, layertype, NULL);
 		if (poLayer == NULL) {
 			printf("Layer creation failed.\n");
 			exit(1);
-		}
-		//return cLayer(poLayer);		
-		return poLayer;
+		}		
+		return cLayer(poLayer);
 	}
 
 };
