@@ -66,6 +66,16 @@ class cLogger
 			ostrm() << std::flush;			
 		}
 		
+		std::ofstream& ostrm()
+		{
+			if ((int)ofs.size() == 0) {
+				ofs.resize(1);
+				return ofs[0];
+			}
+			const int i = threadindex();
+			return ofs[i];
+		}
+
 public:    
 
 	cLogger() {};
@@ -76,8 +86,8 @@ public:
 	
 	bool open(const std::string& logfilename)
 	{				
-		const int i = threadindex();		
-		if ((int)ofs.size() < i + 1) {			
+		const size_t i = (size_t)threadindex();		
+		if (ofs.size() < i + 1) {			
 			ofs.resize(i + 1);
 		}
 		makedirectorydeep(extractfiledirectory(logfilename));
@@ -99,17 +109,7 @@ public:
 	{		
 		closeindex(threadindex());
 	}
-
-	std::ofstream& ostrm()
-	{		
-		if ((int)ofs.size() == 0) {
-			ofs.resize(1);
-			return ofs[0];
-		}		
-		const int i = threadindex();
-		return ofs[i];	
-	}
-		
+	
 	~cLogger()
 	{		
 		for (size_t i = 0; i < ofs.size(); i++) {
@@ -117,25 +117,10 @@ public:
 		}
 	};
 
-	void logmsg(const std::string& msg){
-		std::ofstream& fs = ostrm();
-		if ((int)ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
-		std::cout << msg << std::flush;		
-	};
-
 	void log(const std::string& msg) {
 		std::ofstream& fs = ostrm();
 		if (ofs.size() > 0 && fs.is_open()) fs << msg << std::flush;
 	};
-
-	void logmsg(const char* fmt, ...)
-	{				
-		va_list vargs;
-		va_start(vargs, fmt);		
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		logmsg(msg);
-	}
 
 	void log(const char* fmt, ...)
 	{
@@ -144,6 +129,21 @@ public:
 		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		log(msg);
+	}
+
+	void logmsg(const std::string& msg){
+		std::ofstream& fs = ostrm();
+		if ((int)ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
+		std::cout << msg << std::flush;		
+	};
+
+	void logmsg(const char* fmt, ...)
+	{
+		va_list vargs;
+		va_start(vargs, fmt);
+		std::string msg = strprint_va(fmt, vargs);
+		va_end(vargs);
+		logmsg(msg);
 	}
 
 	void logmsg(const int& rank, const std::string& msg) {		

@@ -11,9 +11,13 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cmath>
 #include <numeric>
+#include <complex>
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <iostream> 
+#include <iomanip> 
+#include <fstream> 
 
 //Vector scalar unary op
 template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a,  const S& s)
@@ -77,7 +81,8 @@ template<typename T, typename S> std::vector<T> operator-(const S& s, const std:
 	return b -= a;
 }
 
-template<typename T, typename S> std::vector<T> operator*(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator*(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b = a;
 	return b *= s;
@@ -277,6 +282,61 @@ std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 	std::vector<T> v(n);
 	v[0] = start;
 	for (size_t i = 1; i<n; i++) v[i] = v[i - 1] + inc;
+	return v;
+};
+
+template<typename T>
+void write(const std::string filename, const std::vector<T>& x)
+{
+	std::ofstream of(filename);
+	of.setf(std::ios_base::scientific);
+	//of.width(width);
+	//of.precision(precision);	
+	for (size_t i = 0; i < x.size(); i++) {				
+		of << x[i] << std::endl;		
+	}	
+}
+
+template<typename T>
+void write(const std::string filename, const std::vector<std::complex<T>>& x)
+{
+	std::ofstream of(filename);
+	of.setf(std::ios_base::scientific);	
+	for (auto i = 0; i < x.size(); i++) {
+		of << x[i].real() << " " << x[i].imag() << std::endl;
+	}
+};
+
+template<typename T>
+void write(std::string filename, const T& x)
+{
+	std::ofstream of(filename);
+	of.setf(std::ios_base::scientific);
+	//of.setf(std::scientific);
+	//of.width(width);
+	//of.precision(precision);		
+	of << x << std::endl;	
+}
+
+template<typename T>
+std::vector<T> linspace(const T& x1, const T& x2, const size_t n)
+{
+	T dx = (x2 - x1) / (T)(n - 1);
+	std::vector<T> xi(n);
+	xi[0] = x1;
+	for (size_t i = 1; i < n; i++) {
+		xi[i] += xi[i - 1] + dx;
+	}
+	return xi;
+};
+
+template<typename T>
+std::vector<T> log10space(const T& x1, const T& x2, const size_t n)
+{
+	std::vector<T> v = linspace(std::log10(x1), std::log10(x2), n);
+	for (size_t i = 0; i < n; i++) {
+		v[i] = std::pow(10.0, v[i]);
+	}
 	return v;
 };
 

@@ -14,41 +14,41 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include "undefinedvalues.h"
 
-typedef std::vector<double>  dvector;
-typedef std::vector<dvector> dmatrix;
+//typedef std::vector<double>  dvector;
+//typedef std::vector<dvector> dmatrix;
 
-typedef std::complex<double> cdouble;
-typedef std::vector<cdouble> cvector;
-typedef std::vector<cvector> cmatrix;
+//typedef std::complex<double> cdouble;
+//typedef std::vector<cdouble> cvector;
+//typedef std::vector<cvector> cmatrix;
 
 template<typename T>
 class cHistogramStats{
 
 public:
-	size_t nbins;//number of bins in histogram
-	size_t nsamples;//number of samples in histogram
-	T min;//minimum of sample
-	T max;//maximum of sample
-	T mean;
-	T std;
-	T var;	
-	T mode;
-	T p10;
-	T p50;
-	T p90;
+	size_t nbins=0;//number of bins in histogram
+	size_t nsamples=0;//number of samples in histogram
+	T min=0;//minimum of sample
+	T max=0;//maximum of sample
+	T mean=0;
+	T std=0;
+	T var=0;	
+	T mode=0;
+	T p10=0;
+	T p50=0;
+	T p90=0;
 
 	cHistogramStats(){
 		nbins = 0;
 	}
 
 	template<typename U> 
-	cHistogramStats(const std::vector<T>& bins, const std::vector<U>& counts){
+	cHistogramStats(const std::vector<T>& bins, const U* counts){
 		compute(bins, counts);
 	};
 
 	template<typename U>
-	void compute(const std::vector<T>& bins, const std::vector<U>& counts){
-		
+	void compute(const std::vector<T>& bins, const U* counts)
+	{		
 		nbins = bins.size();
 
 		min = bins[nbins-1];
@@ -250,9 +250,12 @@ struct sBoundingBox{
 class cPoint{
 
 public:
-	double x;
-	double y;
+
+	double x=0;
+	double y=0;
+
 	cPoint(){};
+
 	cPoint(const double& px, const double& py){
 		x = px;
 		y = py;

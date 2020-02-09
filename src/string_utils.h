@@ -12,6 +12,21 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <cstdarg>
 #include <string>
+#include <sstream>
+
+template<typename T>
+void str2num(const std::string str, T& v)
+{
+	std::stringstream ss(str);
+	ss >> v;
+}
+
+template<typename T>
+void str2num(const char* str, T& v)
+{
+	std::stringstream ss(str);
+	ss >> v;
+}
 
 inline std::string strprint_va(const char* fmt, va_list vargs)
 {

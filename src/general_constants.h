@@ -9,39 +9,26 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _general_constants_H
 #define _general_constants_H
 
-#ifndef MUZERO
-#define MUZERO 12.56637061435917295384e-7 //magnetic permeability of free space
-#endif 
+constexpr auto MUZERO = 12.56637061435917295384e-7; //Magnetic permeability of free space;
+constexpr auto EZERO = 8.854e-12;  //Electrical permitivity of free space
+constexpr auto UGC = 6.67384e-11; //Universal gravitational constant
 
-#ifndef EZERO
-#define EZERO  8.854e-12  //electrical permitivity of free space
-#endif 
+constexpr double PI = 3.1415926535897931;
+constexpr auto TWOPI = 6.2831853071795862;
+constexpr auto THREEPI = 9.4247779607693793;
+constexpr auto FOURPI = 12.5663706143591720;
+constexpr auto PIONTWO = 1.5707963267948966;
+constexpr auto PIONTHREE = 1.0471975511965976;
+constexpr auto PIONFOUR = 0.7853981633974483;
+constexpr auto ONEONPI = 0.3183098861837907;
+constexpr auto ONEONTWOPI = 0.1591549430918954;
+constexpr auto ONEONTHREEPI = 0.1061032953945969;
+constexpr auto ONEONFOURPI = 0.0795774715459477;
+constexpr auto THREEONFOURPI = 0.2387324146378430;
 
-#ifndef UGC
-#define UGC    6.67384e-11 //universal gravitational constant
-#endif 
+constexpr auto D2R = PI / 180.0; //Convert degrees to radians
+constexpr auto R2D = 180.0 / PI; //Convert radians to degrees
 
-#ifndef D2R
-#define D2R 0.0174532925199432957692369076848 //convert degrees to radians
-#endif 
-
-#ifndef R2D
-#define R2D 57.295779513082320876798154814105  //convert radians to degrees
-#endif 
-
-#define NLOG10 2.3025850929940459 //Natrural log(10)
-
-#define PI        3.1415926535897931
-#define TWOPI     6.2831853071795862
-#define THREEPI   9.4247779607693793
-#define FOURPI   12.5663706143591720
-#define PIONTWO   1.5707963267948966
-#define PIONTHREE 1.0471975511965976
-#define PIONFOUR  0.7853981633974483
-#define ONEONPI      0.3183098861837907
-#define ONEONTWOPI   0.1591549430918954
-#define ONEONTHREEPI 0.1061032953945969  
-#define ONEONFOURPI  0.0795774715459477
-#define THREEONFOURPI  0.2387324146378430
+constexpr auto NLOG10 = 2.3025850929940459; //Natrural log(10)
 
 #endif

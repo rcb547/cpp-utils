@@ -23,6 +23,7 @@ struct sFilePathParts{
 char pathseparator();
 std::string pathseparatorstring();
 void fixseparator(std::string& path);
+std::string fixseparator(const std::string& path);
 void removetrailingseparator(std::string& path);
 void addtrailingseparator(std::string& path);
 bool exists(std::string path);
@@ -59,13 +60,23 @@ size_t countlines1(const std::string filename);
 
 class cDirectoryAccess  
 {
-	private:
-		static std::vector<std::string> getfilelist_single(const std::string& searchpattern);
+
+private:
+	static std::vector<std::string> getfilelist_single(const std::string& searchpattern);
+	char pathsepchar;
+
 public:
-    char pathseperator;	
+
+	cDirectoryAccess()
+	{
+		pathsepchar = pathseparator();
+	}
+
+	~cDirectoryAccess()
+	{
+
+	}
 	
-	cDirectoryAccess();
-	~cDirectoryAccess();
 
 	static std::vector<std::string> getfilelist(const std::string& searchpattern);
 	static bool wildcmp(std::string& wildpattern, std::string& stringpattern);
