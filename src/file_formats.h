@@ -42,7 +42,10 @@ public:
 	
 	std::string units;
 
-	bool hasnullvalue;
+	bool hasnullvalue() const {
+		if (nullvaluestr.size() > 0) return true;
+		return false;
+	}
 	std::string nullvaluestr;
 	double nullvalue;
 	std::string comment;
@@ -64,8 +67,7 @@ public:
 
 	void initialise(){
 		nbands = 1;
-		fmtdecimals = 0;
-		hasnullvalue = false;
+		fmtdecimals = 0;		
 		nullvalue = -32767;
 	};
 
@@ -179,7 +181,7 @@ public:
 	}
 
 	bool isnull(const double v) const {
-		if (hasnullvalue){
+		if (hasnullvalue()){
 			if (v == nullvalue)return true;
 		}
 		return false;

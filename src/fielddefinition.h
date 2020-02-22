@@ -185,11 +185,17 @@ public:
 		}
 		else if (deftype == VARIABLENAME) {
 			size_t findex;
-			bool status = A.fieldindexbyname(varname,findex);
+			bool status = A.fieldindexbyname(varname,findex);			
 			if (status == false) {
 				glog.errormsg(_SRC_, "Could not find a field named %s\n", varname.c_str());
 			}
-			A.getfield(findex, vec);
+			
+			bool okstatus = A.getfield(findex, vec);
+			if (okstatus == false){
+				glog.warningmsg("","Null value %s in field named %s\n", A.fields[findex].nullvaluestr.c_str(), varname.c_str());
+				return false;
+			}
+
 			for (size_t i = 0; i < n; i++) {				
 				if (flip) vec[i] = -1 * vec[i];
 			}

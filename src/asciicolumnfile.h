@@ -75,6 +75,11 @@ public:
 		filegetline(fp, str);
 		while (filegetline(fp, str)){
 
+			//glog.logmsg(0,str);
+			if (strcasecmp(str, "end defn") == 0) {
+				break;
+			}
+
 			std::vector<std::string> tokens = tokenise(str, ';');			
 			if (strcasecmp(tokens[1], "end defn") == 0){
 				break;
@@ -83,7 +88,7 @@ public:
 			cAsciiColumnField F;
 
 			int intorder;
-			sscanf(tokens[0].c_str(), "DEFN %d ST = RECD, RT = ", &intorder);
+			std::sscanf(tokens[0].c_str(), "DEFN %d ST = RECD, RT = ", &intorder);
 			F.order = (size_t)intorder;
 			F.startcolumn = startcolumn;
 			
@@ -240,7 +245,10 @@ public:
 	bool getfield(const size_t& findex, T& v) const 
 	{
 		size_t base = fields[findex].startcolumn-1;
-		getcolumn(base,v);		
+		getcolumn(base,v);	
+		if (fields[findex].isnull(v) == true) {
+			return false;
+		}
 		return true;
 	}
 
@@ -252,6 +260,9 @@ public:
 		vec.resize(nb);
 		for (size_t bi = 0; bi < nb; bi++) {			
 			getcolumn(base,vec[bi]);
+			if (fields[findex].isnull(vec[bi]) == true) {
+				return false;
+			}
 			base++;
 		}
 		return true;
@@ -265,7 +276,10 @@ public:
 		vec.resize(nb);
 		for (size_t bi = 0; bi < nb; bi++) {
 			getcolumn(base,vec[bi]);
-			if (fields[findex].isnull(vec[bi]) == false) {
+			if (fields[findex].isnull(vec[bi]) == true) {
+				return false;
+			}
+			else {
 				vec[bi] = log10(vec[bi]);
 			}
 			base++;
