@@ -53,8 +53,10 @@ struct SurveyInfoEntry{
 
 class IDataType {
 
+//see https://docs.intrepid-geophysics.com/intrepid/topics/databases-files-and-data-structures.html#The_INTREPID_null
+
 public: 
-	enum class ID{ BYTE, SHORT, INT, FLOAT, DOUBLE, STRING, UNKNOWN };
+	enum class ID{ UBYTE, SHORT, INT, FLOAT, DOUBLE, STRING, UNKNOWN };
 
 private:	
 	
@@ -83,62 +85,65 @@ public:
 	const std::string getName() const
 	{
 		_GSTITEM_
-			if (itypeid == ID::BYTE) return "UnSigned8BitInteger";
-			else if (itypeid == ID::SHORT) return "Signed16BitInteger";
-			else if (itypeid == ID::INT) return "Signed32BitInteger";
-			else if (itypeid == ID::FLOAT) return "IEEE4ByteReal";
-			else if (itypeid == ID::DOUBLE) return "IEEE8ByteReal";
-			else if (itypeid == ID::STRING) return "String";
-			else return "UNKNOWN";
+		if      (itypeid == ID::UBYTE) return "UnSigned8BitInteger";
+		else if (itypeid == ID::SHORT) return "Signed16BitInteger";
+		else if (itypeid == ID::INT) return "Signed32BitInteger";
+		else if (itypeid == ID::FLOAT) return "IEEE4ByteReal";
+		else if (itypeid == ID::DOUBLE) return "IEEE8ByteReal";
+		else if (itypeid == ID::STRING) return "String";
+		else return "UNKNOWN";
 	}
 
-	static unsigned char bytenull() { return 0; }
-	static int16_t  shortnull() { return -32767; }
-	static int    intnull() { return -2147483647; }
-	static float  floatnull() { return -3.4E+38f; }
-	static double doublenull() { return -5.0E+75; }
-	
-	size_t size() const 
+	size_t size() const
 	{
 		_GSTITEM_
-		switch (itypeid) {
-		    case ID::BYTE: return 1;
+			switch (itypeid) {
+			case ID::UBYTE: return 1;
 			case ID::SHORT: return 2;
 			case ID::INT: return 4;
 			case ID::FLOAT: return 4;
 			case ID::DOUBLE: return 8;
 			case ID::STRING: return bytesize;
 			default: glog.logmsg("IDatatype::size() Unknown datatype\n"); return 0;
-		}
+			}
 	}
 
-	bool isbyte() const { if (itypeid == ID::BYTE) return true; else return false; }
+	bool isubyte() const { if (itypeid == ID::UBYTE) return true; else return false; }
 	bool isshort() const { if (itypeid == ID::SHORT) return true; else return false; }
 	bool isint() const { if (itypeid == ID::INT) return true; else return false; }
 	bool isfloat() const { if (itypeid == ID::FLOAT) return true; else return false; }
-	bool isdouble() const { if (itypeid == ID::DOUBLE) return true; else return false;}
+	bool isdouble() const { if (itypeid == ID::DOUBLE) return true; else return false; }
 	bool isstring() const { if (itypeid == ID::STRING) return true; else return false; }
-
-	double nullasdouble() const {
-		_GSTITEM_
-		switch (itypeid) {
-			case ID::BYTE: return (double) bytenull(); break;
-			case ID::SHORT: return (double) shortnull(); break;
-			case ID::INT: return (double)intnull(); break;
-			case ID::FLOAT: return (double)floatnull(); break;
-			case ID::DOUBLE: return (double)doublenull(); break;
-			default: return doublenull();
-		}
-	}
-
-	static bool isnull(unsigned char number)
+	
+	static uint8_t  ubytenull() { return 0; }
+	static int16_t  shortnull() { return -32768; }
+	static int32_t  intnull() { return -2147483648; }
+	static float  floatnull() { return -3.4E+38f; } //-5.0E+75f is actually out of range for float
+	//static float  floatnull() { return -5.0E+75f; }	
+	static double doublenull() { return -5.0E+75; }
+	
+	static bool isnull(const uint8_t& number)
 	{
 		_GSTITEM_
-		if (number == bytenull()) return true;
+		if (number == ubytenull()) return true;
 		else return false;
 	}	
 
-	static bool isnull(const float number)
+	static bool isnull(const int16_t& number)
+	{
+		_GSTITEM_		
+		if (number == shortnull()) return true;//not clear if null is -32767 or -32768
+		return false;
+	}
+
+	static bool isnull(const int32_t& number)
+	{
+		_GSTITEM_		
+		if (number == intnull()) return true;
+		return false;
+	}
+
+	static bool isnull(const float& number)
 	{
 		_GSTITEM_
 		if (number == floatnull()) return true;
@@ -148,7 +153,7 @@ public:
 		return false;
 	}
 
-	static bool isnull(const double number)
+	static bool isnull(const double& number)
 	{
 		_GSTITEM_
 		if (number == doublenull()) return true;
@@ -158,20 +163,17 @@ public:
 		return false;
 	}
 
-	static bool isnull(int16_t number)
-	{
+	double nullasdouble() const {
 		_GSTITEM_
-		if (number == shortnull()) return true;
-		return false;
+			switch (itypeid) {
+			case ID::UBYTE: return (double)ubytenull(); break;
+			case ID::SHORT: return (double)shortnull(); break;
+			case ID::INT: return (double)intnull(); break;
+			case ID::FLOAT: return (double)floatnull(); break;
+			case ID::DOUBLE: return (double)doublenull(); break;
+			default: return doublenull();
+			}
 	}
-
-	static bool isnull(int number)
-	{
-		_GSTITEM_
-		if (number == intnull()) return true;
-		return false;
-	}	
-
 };
 
 template<typename T>
@@ -296,7 +298,7 @@ public:
 
 		int16_t dt = s[73];
 		int16_t ds = s[90];
-		if (dt == 1 && ds == 8)	datatype = IDataType(IDataType::ID::BYTE);
+		if (dt == 1 && ds == 8)	datatype = IDataType(IDataType::ID::UBYTE);
 		else if (dt == 2 && ds == 16) datatype = IDataType(IDataType::ID::SHORT);
 		else if (dt == 2 && ds == 32) datatype = IDataType(IDataType::ID::INT);
 		else if (dt == 3 && ds == 32) datatype = IDataType(IDataType::ID::FLOAT);
@@ -433,7 +435,7 @@ public:
 			case IDataType::ID::DOUBLE: ddata.resize(ns, nb, groupby); return;
 			case IDataType::ID::SHORT: sdata.resize(ns, nb, groupby); return;
 			case IDataType::ID::INT: idata.resize(ns, nb, groupby); return;
-			case IDataType::ID::BYTE: cdata.resize(ns, nb, groupby); return;
+			case IDataType::ID::UBYTE: cdata.resize(ns, nb, groupby); return;
 			case IDataType::ID::STRING: strdata.resize(ns, nb, groupby); return;
 			default: printf("ILSegment::createbuffer() Unknown type");
 		}
@@ -446,7 +448,7 @@ public:
 			case IDataType::ID::DOUBLE: return ddata.pvoid();
 			case IDataType::ID::SHORT: return sdata.pvoid();
 			case IDataType::ID::INT: return idata.pvoid();
-			case IDataType::ID::BYTE: return cdata.pvoid();
+			case IDataType::ID::UBYTE: return cdata.pvoid();
 			case IDataType::ID::STRING: return sdata.pvoid();
 			default: printf("ILSegment::pvoid() Unknown type"); return (void*)NULL;
 		}
@@ -459,7 +461,7 @@ public:
 			case IDataType::ID::DOUBLE: return ddata.pvoid_groupby();
 			case IDataType::ID::SHORT: return sdata.pvoid_groupby();
 			case IDataType::ID::INT: return idata.pvoid_groupby();
-			case IDataType::ID::BYTE: return cdata.pvoid_groupby();
+			case IDataType::ID::UBYTE: return cdata.pvoid_groupby();
 			case IDataType::ID::STRING: return strdata.pvoid_groupby();
 			default: printf("ILSegment::pvoid_groupby() Unknown type"); return (void*)NULL;
 		}
@@ -481,7 +483,7 @@ public:
 				if (IDataType::isnull(idata(s, b))) return IDataType::doublenull();
 				else return (double)idata(s, b);
 			}
-			case IDataType::ID::BYTE:{
+			case IDataType::ID::UBYTE:{
 				if (IDataType::isnull(cdata(s, b))) return IDataType::doublenull();
 				else return (double)cdata(s, b);
 			}
@@ -498,7 +500,7 @@ public:
 			case IDataType::ID::DOUBLE: return (float)ddata(s, b); break;
 			case IDataType::ID::SHORT: return (float)sdata(s, b); break;
 			case IDataType::ID::INT: return (float)idata(s, b); break;
-			case IDataType::ID::BYTE: return (float)cdata(s, b); break;
+			case IDataType::ID::UBYTE: return (float)cdata(s, b); break;
 			default: printf("ILSegment::f() Unknown type"); return IDataType::floatnull();
 		}
 	}
@@ -510,7 +512,7 @@ public:
 			case IDataType::ID::DOUBLE: return (int32_t)ddata(s, b);
 			case IDataType::ID::SHORT: return (int32_t)sdata(s, b);
 			case IDataType::ID::INT: return idata(s, b);
-			case IDataType::ID::BYTE: return (int32_t)cdata(s, b);
+			case IDataType::ID::UBYTE: return (int32_t)cdata(s, b);
 			default: printf("ILSegment::i() Unknown type"); return IDataType::intnull();
 		}
 	}
@@ -522,7 +524,7 @@ public:
 			case IDataType::ID::DOUBLE: return (int16_t)ddata(s, b);
 			case IDataType::ID::SHORT: return sdata(s, b);
 			case IDataType::ID::INT: return (int16_t)idata(s, b);
-			case IDataType::ID::BYTE: return (int16_t)cdata(s, b);
+			case IDataType::ID::UBYTE: return (int16_t)cdata(s, b);
 			default: printf("ILSegment::s() Unknown type"); return IDataType::shortnull();
 		}
 	}
@@ -569,12 +571,12 @@ public:
 					v[i] = (T)idata(i, band);
 				}
 				return true;
-			case IDataType::ID::BYTE:
+			case IDataType::ID::UBYTE:
 				for (size_t i = 0; i< ns; i++){				
 					v[i] = (T)cdata(i, band);
 				}			
 				return true;						
-			default: printf("ILSegment::i() Unknown type"); return false;
+			default: std::printf("ILSegment::i() Unknown type"); return false;
 		}
 	}
 
@@ -615,7 +617,7 @@ public:
 		if(dt.isnull(newnullvalue)) return;
 		T* fp = (T*)pvoid();
 		for (size_t k = 0; k < nstored(); k++) {
-			if (dt.isnull(fp[k])) {
+			if (dt.isnull(fp[k])){
 				fp[k] = newnullvalue;
 			}
 		}		
@@ -1630,7 +1632,7 @@ bool ILSegment::readbuffer()
 			idata.swap_endian();
 		}
 		break;
-	case IDataType::ID::BYTE:
+	case IDataType::ID::UBYTE:
 		cdata.resize(nsamples(), nbands(), isgroupbyline() );
 		n = std::fread(cdata.pvoid(), nbytes(), 1, filepointer());
 		if (Field.endianswap()) cdata.swap_endian();
@@ -1674,7 +1676,7 @@ bool ILSegment::writebuffer()
 		if (Field.endianswap()) idata.swap_endian();
 		n = fwrite(idata.pvoid(), nbytes(), 1, filepointer());		
 		break;
-	case IDataType::ID::BYTE:
+	case IDataType::ID::UBYTE:
 		if (Field.endianswap()) cdata.swap_endian();
 		n = fwrite(cdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
@@ -1744,7 +1746,7 @@ bool ILField::create_new(const std::string& fieldname, const IDataType& _datatyp
 	hdata[72] = 1000; //LINE
 
 	Header.datatype = _datatype;
-	if (_datatype.isbyte()) { hdata[73] = 1; hdata[90] = 8; }
+	if (_datatype.isubyte()) { hdata[73] = 1; hdata[90] = 8; }
 	else if (_datatype.isshort()) { hdata[73] = 2; hdata[90] = 16; }
 	else if (_datatype.isint()) { hdata[73] = 2; hdata[90] = 32; }
 	else if (_datatype.isfloat()) { hdata[73] = 3; hdata[90] = 32; }
