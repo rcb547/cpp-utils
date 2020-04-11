@@ -34,7 +34,7 @@ void writetofile(const Eigen::Matrix<T,-1,-1>& A, const std::string& path)
 	std::ofstream ofs(path, std::ofstream::out);
 	for (auto i = 0; i < A.rows(); i++) {
 		for (auto j = 0; j < A.cols(); j++) {
-			ofs << i + 1 << "\t" << j + 1 << A(i, j) << std::endl;;
+			ofs << i + 1 << "\t" << j + 1 << "\t" << A(i, j) << std::endl;;
 		}
 	}
 };
