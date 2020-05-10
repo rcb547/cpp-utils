@@ -122,23 +122,24 @@ void prompttocontinue()
 {
 
 #if defined MATLAB_MEX_FILE				
-	return;
-#endif	
+	
+#elif
 	std::printf("Press any key to continue...\n");
 	std::getchar();
+#endif
 	return;
 }
 
 void prompttoexit()
 {
 #if defined MATLAB_MEX_FILE		
-	mexErrMsgTxt("Error");
-	return;
-#endif
-
+	mexErrMsgTxt("Error");	
+#elif
 	std::printf("Press any key to exit...\n");
 	std::getchar();
 	exit(0);
+#endif
+	return;
 }
 
 bool wildcmp(const char* wildpattern, const char* stringpattern)
