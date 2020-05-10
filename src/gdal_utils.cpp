@@ -15,6 +15,12 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "gdal_utils.h"
 
+void checkogrerror(const OGRErr& err)
+{
+	if(err != OGRERR_NONE){
+		std::printf("Warning OGRErr %d\n",err);
+	}
+}
 
 int erm2epsgcode(const std::string& datum, const std::string& projection)
 {	
@@ -47,6 +53,7 @@ OGRSpatialReference getsrs(const std::string& datum, const std::string& projecti
 {
 	OGRSpatialReference srs;	
 	OGRErr err = srs.importFromERM(projection.c_str(), datum.c_str(), units.c_str());
+	checkogrerror(err);
 	return srs;
 }
 
@@ -54,6 +61,7 @@ OGRSpatialReference getsrs(const int& epsgcode)
 {
 	OGRSpatialReference srs;
 	OGRErr err = srs.importFromEPSG(epsgcode);	
+	checkogrerror(err);
 	return srs;
 }
 
@@ -61,8 +69,10 @@ std::string WellKnownText(const int epsgcode)
 {
 	OGRSpatialReference srs;
 	OGRErr err = srs.importFromEPSG(epsgcode);
+	checkogrerror(err);
 	char* wkt = NULL;
 	err = srs.exportToWkt(&wkt);
+	checkogrerror(err);
 	return std::string(wkt);
 }
 
@@ -79,7 +89,9 @@ bool transform(
 	OGRErr err;
 	OGRSpatialReference inSRS, outSRS;
 	err = inSRS.importFromEPSG(epsgcodein);
+	checkogrerror(err);
 	err = outSRS.importFromEPSG(epsgcodeout);	
+	checkogrerror(err);
 
 	xout = xin;
 	yout = yin;

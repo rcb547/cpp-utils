@@ -124,8 +124,8 @@ void prompttocontinue()
 #if defined MATLAB_MEX_FILE				
 	return;
 #endif	
-	printf("Press any key to continue...\n");
-	int i = std::getchar();
+	std::printf("Press any key to continue...\n");
+	std::getchar();
 	return;
 }
 
@@ -136,8 +136,8 @@ void prompttoexit()
 	return;
 #endif
 
-	printf("Press any key to exit...\n");
-	int i = std::getchar();
+	std::printf("Press any key to exit...\n");
+	std::getchar();
 	exit(0);
 }
 
@@ -993,7 +993,10 @@ std::vector<double> getdoublevector(const char* str, const char* delims)
 	std::vector<std::string> fields = fieldparsestring(str, delims);
 	for (size_t i = 0; i < fields.size(); i++){
 		int n = sscanf(fields[i].c_str(), "%lf", &v);
-		vec.push_back(v);
+		if(n == 1) vec.push_back(v);
+		else{
+			glog.warningmsg(_SRC_,"Could not parse field %zu from string\n",i);
+		}
 	}
 	return vec;
 }
