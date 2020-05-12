@@ -121,9 +121,9 @@ void debug(const char* msg)
 void prompttocontinue()
 {
 
-#if defined MATLAB_MEX_FILE				
+#if defined MATLAB_MEX_FILE
 	
-#elif
+#else
 	std::printf("Press any key to continue...\n");
 	std::getchar();
 #endif
@@ -134,7 +134,7 @@ void prompttoexit()
 {
 #if defined MATLAB_MEX_FILE		
 	mexErrMsgTxt("Error");	
-#elif
+#else
 	std::printf("Press any key to exit...\n");
 	std::getchar();
 	exit(0);
