@@ -549,7 +549,25 @@ public:
 		}
 	}
 
-	
+		
+	bool getband(std::vector<std::string>& v, size_t band = 0)
+	{
+		size_t ns = nsamples();
+		if (isgroupbyline()) ns = 1;
+		v.resize(ns);
+		if(getTypeId() == IDataType::ID::STRING){
+			size_t len = getType().size();
+			char* p = strdata.pchar();
+			for (size_t i = 0; i < ns; i++) {
+				v[i] = std::string(p, len);								
+				p += len;
+			}
+			return true;
+		}
+		return true;
+	}
+
+
 	template <typename T>
 	bool getband(std::vector<T>& v, size_t band=0)
 	{
