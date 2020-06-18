@@ -31,7 +31,7 @@ public:
 	T max=0;//maximum of sample
 	T mean=0;
 	T std=0;
-	T var=0;	
+	T var=0;
 	T mode=0;
 	T p10=0;
 	T p50=0;
@@ -41,14 +41,14 @@ public:
 		nbins = 0;
 	}
 
-	template<typename U> 
+	template<typename U>
 	cHistogramStats(const std::vector<T>& bins, const U* counts){
 		compute(bins, counts);
 	};
 
 	template<typename U>
 	void compute(const std::vector<T>& bins, const U* counts)
-	{		
+	{
 		nbins = bins.size();
 
 		min = bins[nbins-1];
@@ -77,13 +77,26 @@ public:
 
 		size_t modebin = 0;
 		T sumdsqr = 0.0;
+		//nearest-rank method for percentiles
+		bool set10 = true;
+		bool set50 = true;
+		bool set90 = true;
 		for (size_t i = 0; i < nbins; i++){
 			T d = bins[i] - mean;
 			sumdsqr += d*d*(T)counts[i];
 
-			if (cumcounts[i] <= np10 && cumcounts[i + 1] >= np10)p10 = bins[i];
-			if (cumcounts[i] <= np50 && cumcounts[i + 1] >= np50)p50 = bins[i];
-			if (cumcounts[i] <= np90 && cumcounts[i + 1] >= np90)p90 = bins[i];
+			if (cumcounts[i] <= np10 && cumcounts[i + 1] >= np10 && set10) {
+				p10 = bins[i];
+				set10 = false;
+			}
+			if (cumcounts[i] <= np50 && cumcounts[i + 1] >= np50 && set50) {
+				p50 = bins[i];
+				set50 = false;
+			}
+			if (cumcounts[i] <= np90 && cumcounts[i + 1] >= np90 && set90) {
+				p90 = bins[i];
+				set90 = false;
+			}
 
 			if (counts[i] > counts[modebin]){
 				mode = bins[i];
@@ -91,7 +104,7 @@ public:
 			}
 		}
 		var = sumdsqr / (T)nsamples;
-		std = sqrt(var);		
+		std = sqrt(var);
 	}
 };
 
@@ -133,13 +146,13 @@ public:
 				size_t b = (size_t)floor((v[i] - hmin) / dx);
 				count[b]++;
 			}
-		}		
+		}
 	}
 };
 
 
 template<typename T>
-class cStats{	
+class cStats{
 
 public:
 	size_t nulls;
@@ -148,7 +161,7 @@ public:
 	T max;
 	T mean;
 	T var;
-	T std;		
+	T std;
 
 	cStats(){
 		nulls = 0;
@@ -180,7 +193,7 @@ public:
 
 			sx  += v[i];
 			sx2 += (v[i] * v[i]);
-		};		
+		};
 		mean = sx / nonnulls;
 		var  = (sx2 - (sx*sx) / nonnulls) / (nonnulls - 1.0);
 		std  = sqrt(var);
@@ -209,7 +222,7 @@ public:
 
 			sx  += v[i];
 			sx2 += (v[i] * v[i]);
-		};		
+		};
 		mean = sx / nonnulls;
 		var  = (sx2 - (sx*sx) / nonnulls) / (nonnulls - 1.0);
 		std  = sqrt(var);
@@ -234,7 +247,7 @@ public:
 	}
 
 	bool valid(){
-		if (isdefined(from) && isdefined(to)) return true;		
+		if (isdefined(from) && isdefined(to)) return true;
 		return false;
 	}
 
@@ -265,7 +278,7 @@ public:
 		if (x == p.x && y == p.y)return true;
 		return false;
 	}
-	
+
 };
 
 template <typename T>
@@ -281,14 +294,14 @@ public:
 		for (int i = 0; i < ni; ++i){
 			data[i].resize(nj);
 			for (int j = 0; j < nj; ++j){
-				data[i][j].resize(nk);								
+				data[i][j].resize(nk);
 			}
 		}
 	}
 
-	void initialise(const T& v){		
-		for (int i = 0; i < ni(); ++i){			
-			for (int j = 0; j < nj(); ++j){				
+	void initialise(const T& v){
+		for (int i = 0; i < ni(); ++i){
+			for (int j = 0; j < nj(); ++j){
 				for (int k = 0; k < nk(); ++k){
 					data[i][j][k] = v;
 				}
