@@ -124,7 +124,7 @@ void prompttocontinue()
 #if defined MATLAB_MEX_FILE
 	
 #else
-	std::printf("Press any key to continue...\n");
+	std::printf("Press enter to continue...\n");
 	std::getchar();
 #endif
 	return;
@@ -135,7 +135,7 @@ void prompttoexit()
 #if defined MATLAB_MEX_FILE		
 	mexErrMsgTxt("Error");	
 #else
-	std::printf("Press any key to exit...\n");
+	std::printf("Press enter to exit...\n");
 	std::getchar();
 	exit(0);
 #endif
