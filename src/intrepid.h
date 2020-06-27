@@ -579,10 +579,19 @@ public:
 			size_t len = getType().size();
 			char* p = strdata.pchar();						
 			for (size_t i = 0; i < ns; i++) {				
-				std::string s(p,len);				
+				std::string s(p,len);
+				
+				//Remove whitespace from right
+				size_t index = s.find_last_not_of(" \t\r\n");
+				if(index >= 0 && index < s.size()-1){
+					s = s.substr(0, index+1);
+				}
+
+				//Change internal blanks to zeros due to some stupid date strings in legacy databases
+				//for (size_t k = 1; k < s.size(); k++) {
+				//	if (s[k]==' ') s[k]='0';
+				//}				
 				str2num(s,v[i]);
-				//std::stringstream ss(p);
-				//ss >> v[i];
 				p += len;
 			}
 			return true;
@@ -614,7 +623,7 @@ public:
 					v[i] = (T)ubdata(i, band);
 				}			
 				return true;						
-			default: std::printf("ILSegment::i() Unknown type"); return false;
+			default: std::printf("ILSegment::getband() Unknown type"); return false;
 		}
 	}
 
