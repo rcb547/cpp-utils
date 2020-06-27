@@ -121,7 +121,7 @@ void debug(const char* msg)
 void prompttocontinue()
 {
 
-#if defined MATLAB_MEX_FILE				
+#if defined MATLAB_MEX_FILE
 	
 #else
 	std::printf("Press enter to continue...\n");

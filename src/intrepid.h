@@ -163,6 +163,13 @@ public:
 		return false;
 	}
 
+	static bool isnull(const std::string& str)
+	{
+		_GSTITEM_
+		if (str.size() == 0) return true;
+		return false;
+	}
+
 	double nullasdouble() const {
 		_GSTITEM_
 			switch (itypeid) {
@@ -191,13 +198,26 @@ private:
 	std::vector<T> _gbbuf;
 
 	std::vector<T> groupbybuffer(){
-		std::vector<T> v(ns*nb);
-		for (size_t bi = 0; bi < nb; bi++){
-			for (size_t si = 0; si < ns; si++){
-				v[bi*ns + si] = buffer[bi];
+		if (ssize == 1) {
+			std::vector<T> v(ns * nb);
+			for (size_t bi = 0; bi < nb; bi++) {
+				for (size_t si = 0; si < ns; si++) {
+					v[bi * ns + si] = buffer[bi];
+				}
 			}
+			return v;
 		}
-		return v;
+		else {
+			std::vector<T> v(nb*ssize);
+			for (size_t bi = 0; bi < nb; bi++) {				
+				for (size_t ei = 0; ei < ssize; ei++) {
+					int vi   = ssize * bi + ei;
+					int bufi = ssize * bi + ei;
+					v[ssize*bi+ei] = buffer[ssize*bi+ei];
+				}				
+			}
+			return v;
+		}
 	}
 
 public:
@@ -406,7 +426,7 @@ public:
 	IData<double> ddata;
 	IData<int32_t> idata;
 	IData<int16_t> sdata;
-	IData<char> cdata;
+	IData<uint8_t> ubdata;
 	IData<char> strdata;
 	
 	bool readbuffer();
@@ -435,7 +455,7 @@ public:
 			case IDataType::ID::DOUBLE: ddata.resize(ns, nb, groupby); return;
 			case IDataType::ID::SHORT: sdata.resize(ns, nb, groupby); return;
 			case IDataType::ID::INT: idata.resize(ns, nb, groupby); return;
-			case IDataType::ID::UBYTE: cdata.resize(ns, nb, groupby); return;
+			case IDataType::ID::UBYTE: ubdata.resize(ns, nb, groupby); return;
 			case IDataType::ID::STRING: strdata.resize(ns, nb, groupby); return;
 			default: printf("ILSegment::createbuffer() Unknown type");
 		}
@@ -448,7 +468,7 @@ public:
 			case IDataType::ID::DOUBLE: return ddata.pvoid();
 			case IDataType::ID::SHORT: return sdata.pvoid();
 			case IDataType::ID::INT: return idata.pvoid();
-			case IDataType::ID::UBYTE: return cdata.pvoid();
+			case IDataType::ID::UBYTE: return ubdata.pvoid();
 			case IDataType::ID::STRING: return sdata.pvoid();
 			default: printf("ILSegment::pvoid() Unknown type"); return (void*)NULL;
 		}
@@ -461,7 +481,7 @@ public:
 			case IDataType::ID::DOUBLE: return ddata.pvoid_groupby();
 			case IDataType::ID::SHORT: return sdata.pvoid_groupby();
 			case IDataType::ID::INT: return idata.pvoid_groupby();
-			case IDataType::ID::UBYTE: return cdata.pvoid_groupby();
+			case IDataType::ID::UBYTE: return ubdata.pvoid_groupby();
 			case IDataType::ID::STRING: return strdata.pvoid_groupby();
 			default: printf("ILSegment::pvoid_groupby() Unknown type"); return (void*)NULL;
 		}
@@ -484,8 +504,8 @@ public:
 				else return (double)idata(s, b);
 			}
 			case IDataType::ID::UBYTE:{
-				if (IDataType::isnull(cdata(s, b))) return IDataType::doublenull();
-				else return (double)cdata(s, b);
+				if (IDataType::isnull(ubdata(s, b))) return IDataType::doublenull();
+				else return (double)ubdata(s, b);
 			}
 			default:{
 				printf("ILSegment::d() Unknown type"); return IDataType::doublenull();
@@ -500,7 +520,7 @@ public:
 			case IDataType::ID::DOUBLE: return (float)ddata(s, b); break;
 			case IDataType::ID::SHORT: return (float)sdata(s, b); break;
 			case IDataType::ID::INT: return (float)idata(s, b); break;
-			case IDataType::ID::UBYTE: return (float)cdata(s, b); break;
+			case IDataType::ID::UBYTE: return (float)ubdata(s, b); break;
 			default: printf("ILSegment::f() Unknown type"); return IDataType::floatnull();
 		}
 	}
@@ -512,7 +532,7 @@ public:
 			case IDataType::ID::DOUBLE: return (int32_t)ddata(s, b);
 			case IDataType::ID::SHORT: return (int32_t)sdata(s, b);
 			case IDataType::ID::INT: return idata(s, b);
-			case IDataType::ID::UBYTE: return (int32_t)cdata(s, b);
+			case IDataType::ID::UBYTE: return (int32_t)ubdata(s, b);
 			default: printf("ILSegment::i() Unknown type"); return IDataType::intnull();
 		}
 	}
@@ -524,7 +544,7 @@ public:
 			case IDataType::ID::DOUBLE: return (int16_t)ddata(s, b);
 			case IDataType::ID::SHORT: return sdata(s, b);
 			case IDataType::ID::INT: return (int16_t)idata(s, b);
-			case IDataType::ID::UBYTE: return (int16_t)cdata(s, b);
+			case IDataType::ID::UBYTE: return (int16_t)ubdata(s, b);
 			default: printf("ILSegment::s() Unknown type"); return IDataType::shortnull();
 		}
 	}
@@ -573,7 +593,7 @@ public:
 				return true;
 			case IDataType::ID::UBYTE:
 				for (size_t i = 0; i< ns; i++){				
-					v[i] = (T)cdata(i, band);
+					v[i] = (T)ubdata(i, band);
 				}			
 				return true;						
 			default: std::printf("ILSegment::i() Unknown type"); return false;
@@ -1370,7 +1390,7 @@ public:
 		for (size_t li = 0; li < nlines(); li++){
 			ILSegment S(F,li);
 			std::vector<T> b;
-			if (S.readbuffer()) {			
+			if (S.readbuffer()) {		
 				S.getband(b, band);
 				v[li] = b[0];
 			}
@@ -1633,9 +1653,9 @@ bool ILSegment::readbuffer()
 		}
 		break;
 	case IDataType::ID::UBYTE:
-		cdata.resize(nsamples(), nbands(), isgroupbyline() );
-		n = std::fread(cdata.pvoid(), nbytes(), 1, filepointer());
-		if (Field.endianswap()) cdata.swap_endian();
+		ubdata.resize(nsamples(), nbands(), isgroupbyline() );
+		n = std::fread(ubdata.pvoid(), nbytes(), 1, filepointer());
+		if (Field.endianswap()) ubdata.swap_endian();
 		break;
 	case IDataType::ID::STRING:
 		strdata.resize(nsamples(), nbands(), isgroupbyline(), len);
@@ -1677,8 +1697,8 @@ bool ILSegment::writebuffer()
 		n = fwrite(idata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	case IDataType::ID::UBYTE:
-		if (Field.endianswap()) cdata.swap_endian();
-		n = fwrite(cdata.pvoid(), nbytes(), 1, filepointer());		
+		if (Field.endianswap()) ubdata.swap_endian();
+		n = fwrite(ubdata.pvoid(), nbytes(), 1, filepointer());		
 		break;
 	default: printf("ILSegment::read() Unknown type"); return false;
 	}
