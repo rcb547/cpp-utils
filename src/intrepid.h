@@ -210,9 +210,7 @@ private:
 		else {
 			std::vector<T> v(nb*ssize);
 			for (size_t bi = 0; bi < nb; bi++) {				
-				for (size_t ei = 0; ei < ssize; ei++) {
-					int vi   = ssize * bi + ei;
-					int bufi = ssize * bi + ei;
+				for (size_t ei = 0; ei < ssize; ei++) {					
 					v[ssize*bi+ei] = buffer[ssize*bi+ei];
 				}				
 			}

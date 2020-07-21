@@ -71,7 +71,7 @@ public:
 	};
 
 	static void fill(std::vector<cAttribute>& attributes, OGRFeature* poFeature){		
-		for (auto i = 0; i < attributes.size(); i++){
+		for (size_t i = 0; i < attributes.size(); i++){
 			attributes[i].get(poFeature);
 		}
 	};
@@ -198,7 +198,7 @@ public:
 		OGRFeatureDefn& ld = *pL->GetLayerDefn();
 		int n = ld.GetFieldCount();
 		std::vector<cAttribute> a(n);
-		for (size_t i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {
 			OGRFieldDefn& fd = *ld.GetFieldDefn(i);			
 			a[i].name = std::string(fd.GetNameRef());
 			if (fd.GetType() == OFTString) a[i].value = std::string();
@@ -228,7 +228,7 @@ public:
 	}
 
 	void add_fields(const std::vector<cAttribute>& atts) {
-		for (auto i = 0; i < atts.size(); i++) {
+		for (size_t i = 0; i < atts.size(); i++) {
 			add_field(atts[i]);
 		}
 	}
@@ -238,7 +238,7 @@ public:
 		OGRFeature *poFeature;
 		poFeature = OGRFeature::CreateFeature(pL->GetLayerDefn());
 		
-		for (auto i = 0; i < a.size(); i++) {
+		for (size_t i = 0; i < a.size(); i++) {
 			a[i].set(poFeature);
 			a[i].print();
 		}
@@ -256,7 +256,7 @@ public:
 	{					
 		OGRFeatureDefn* fd = pL->GetLayerDefn();
 		OGRFeature* poFeature = OGRFeature::CreateFeature(fd);
-		for (auto i = 0; i < a.size(); i++) {			
+		for (size_t i = 0; i < a.size(); i++) {			
 			a[i].set(poFeature);
 		}
 		
@@ -274,7 +274,7 @@ public:
 	{
 		OGRFeature *poFeature;
 		poFeature = OGRFeature::CreateFeature(pL->GetLayerDefn());
-		for (auto i = 0; i < a.size(); i++) {
+		for (size_t i = 0; i < a.size(); i++) {
 			a[i].set(poFeature);
 		}
 
@@ -299,7 +299,7 @@ private:
 	GDALDataset* pD=NULL;
 	static GDALDriver* get_driver(const std::string DriverName)
 	{		
-		int nd = GetGDALDriverManager()->GetDriverCount();
+		//int nd = GetGDALDriverManager()->GetDriverCount();
 		//for (int i = 0; i < nd; i++) {
 		//	GDALDriver* poDriver = GetGDALDriverManager()->GetDriver(i);
 		//	std::cout << poDriver->GetDescription() << std::endl;

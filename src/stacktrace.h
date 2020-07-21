@@ -69,12 +69,20 @@ public:
 	}
 
 	~cTraceItem(){
+		
+	#if __cplusplus >= 201703
+		if (std::uncaught_exceptions() == 0) {
+			//If an Exception has not occurred, pop it off the global stack
+			gtrace.pop();
+		}
+	#else
 		if (std::uncaught_exception() == false) {
 			//If an Exception has not occurred, pop it off the global stack
 			gtrace.pop();
 		}
+	#endif
 	}
-
+        
 };
 
 #endif
