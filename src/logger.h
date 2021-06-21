@@ -16,6 +16,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdarg>
 #include <cstdio>
 #include <vector>
+#include <stdexcept>
 
 #if defined _OPENMP
 	#include <omp.h>
@@ -37,23 +38,23 @@ class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager
 #define _SRC_ cLogger::src_code_location(__FILE__, __FUNCTION__, __LINE__)
 
-class cLogger  
+class cLogger
 {
-	private:			
+	private:
 		std::vector<std::ofstream> ofs;
-			
+
 		void closeindex(const int i)
-		{						
+		{
 			if ((int)ofs.size() > i) {
 				if (ofs[i].is_open()) {
 					ofs[i] << "Logfile closed on " << timestamp() << std::endl;
-					ofs[i].close();										
+					ofs[i].close();
 				}
 			}
-		}		
+		}
 
 		int threadindex()
-		{			
+		{
 			#if defined _OPENMP
 				return omp_get_thread_num();
 			#else
@@ -63,9 +64,9 @@ class cLogger
 
 		void flushindex(const int i)
 		{
-			ostrm() << std::flush;			
+			ostrm() << std::flush;
 		}
-		
+
 		std::ofstream& ostrm()
 		{
 			if ((int)ofs.size() == 0) {
@@ -76,42 +77,42 @@ class cLogger
 			return ofs[i];
 		}
 
-public:    
+public:
 
 	cLogger() {};
 
 	void set_num_omp_threads(const size_t& n){
 		ofs.resize(n);
 	}
-	
+
 	bool open(const std::string& logfilename)
-	{				
-		const size_t i = (size_t)threadindex();		
-		if (ofs.size() < i + 1) {			
+	{
+		const size_t i = (size_t)threadindex();
+		if (ofs.size() < i + 1) {
 			ofs.resize(i + 1);
 		}
 		makedirectorydeep(extractfiledirectory(logfilename));
-		ofs[i].open(logfilename, std::ios_base::out);		
+		ofs[i].open(logfilename, std::ios_base::out);
 
 		if (ofs[i].fail()) {
 			glog.errormsg(_SRC_,"Failed to open Log file %s", logfilename.c_str());
-		}		
+		}
 		ofs[i] << "Logfile opened on " << timestamp() << std::endl << std::flush;
 		return true;
 	}
 
 	void flush()
-	{		
+	{
 		flushindex(threadindex());
 	}
-	
+
 	void close()
-	{		
+	{
 		closeindex(threadindex());
 	}
-	
+
 	~cLogger()
-	{		
+	{
 		for (size_t i = 0; i < ofs.size(); i++) {
 			closeindex((int)i);
 		}
@@ -134,7 +135,7 @@ public:
 	void logmsg(const std::string& msg){
 		std::ofstream& fs = ostrm();
 		if ((int)ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
-		std::cout << msg << std::flush;		
+		std::cout << msg << std::flush;
 	};
 
 	void logmsg(const char* fmt, ...)
@@ -146,10 +147,10 @@ public:
 		logmsg(msg);
 	}
 
-	void logmsg(const int& rank, const std::string& msg) {		
+	void logmsg(const int& rank, const std::string& msg) {
 		log(msg);
 		if (mpi_openmp_rank() == rank) {
-			std::cout << msg << std::flush;			
+			std::cout << msg << std::flush;
 		}
 	};
 
@@ -160,7 +161,7 @@ public:
 		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		logmsg(rank, msg);
-	}	
+	}
 
 	void warningmsg(const std::string& srccodeloc, const char* fmt, ...)
 	{
@@ -172,8 +173,8 @@ public:
 		#if defined MATLAB_MEX_FILE
 			mexWarnMsgTxt(msg.c_str());
 		#else
-			logmsg(msg);		
-		#endif		
+			logmsg(msg);
+		#endif
 		logmsg(strprint("%s\n",srccodeloc.c_str()));
 	}
 
@@ -183,17 +184,17 @@ public:
 		va_start(vargs, fmt);
 		std::string msg = "**Error: " + strprint_va(fmt, vargs);
 		va_end(vargs);
-				
+
 		#if defined MATLAB_MEX_FILE
 			mexErrMsgTxt(msg.c_str());
 		#else
-			logmsg(msg);	
-			throw(strprint("Exception throw from %s\n", srccodeloc.c_str()));
-		#endif		
+			logmsg(msg);
+			throw(std::runtime_error(strprint("Exception throw from %s\n", srccodeloc.c_str())));
+		#endif
 	}
 
 	static std::string src_code_location(const char* file, const char* function, const int& linenumber)
-	{		
+	{
 		std::string s = strprint("File: %s\t Function:%s\t Line:%d", extractfilename(file).c_str(), function, linenumber);
 		return s;
 	}
@@ -201,4 +202,3 @@ public:
 };
 
 #endif
-
