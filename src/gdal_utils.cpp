@@ -6,13 +6,6 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#include <ogr_spatialref.h>
-
-#pragma warning( push )  
-#pragma warning (disable: 4251)
-#include <gdal_priv.h>
-#pragma warning( pop )   
-
 #include "gdal_utils.h"
 
 void checkogrerror(const OGRErr& err)

@@ -9,7 +9,11 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _gdal_utils_H
 #define _gdal_utils_H
 
+#pragma warning( push )  
+#pragma warning (disable: 4251)
 #include <ogr_spatialref.h>
+#include <gdal_priv.h>
+#pragma warning( pop )   
 
 int erm2epsgcode(const std::string& datum, const std::string& projection = "GEODETIC");
 
