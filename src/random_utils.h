@@ -14,8 +14,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 template<typename T>
 T irand(const T& imin, const T& imax)
-{
-	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+{		
+	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<T> dist(imin, imax);
 	return dist(gen);
 };
@@ -23,14 +23,14 @@ T irand(const T& imin, const T& imax)
 template<typename T>
 T urand(const T& rmin=0.0, const T& rmax=1.0)
 {
-	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_real_distribution<T> dist(rmin, rmax);
 	return dist(gen);	
 };
 
 template<typename T>
 T nrand(const T& mean = 0.0, const T& stddev = 1.0) {
-	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<T> dist(mean, stddev);	
 	return dist(gen);
 };
@@ -38,7 +38,7 @@ T nrand(const T& mean = 0.0, const T& stddev = 1.0) {
 template<typename T>
 void nrand(size_t n, T* x, const T& mean=0.0, const T& stddev=1.0)
 {
-	std::mt19937 gen(std::chrono::system_clock::now().time_since_epoch().count());
+	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
 	std::normal_distribution<T> dist(mean, stddev);
 	for (size_t i = 0; i < n; i++) {
 		x[i] = dist(gen);
