@@ -48,7 +48,7 @@ public:
 	}
 	std::string nullvaluestr;
 	double nullvalue;
-	std::string comment;
+	std::string description;
 
 	cAsciiColumnField(){
 		initialise();
@@ -127,9 +127,9 @@ public:
 			o += strprint(" NULL = %s ", nullvaluestr.c_str());
 		}
 
-		if (comment.size() > 0){
+		if (description.size() > 0){
 			if (o[o.size() - 1] != colon && s[s.size() - 1] != comma) o += comma;
-			o += strprint(" %s", comment.c_str());
+			o += strprint(" %s", description.c_str());
 		}
 
 		if (o.size() > 2) s += o;
@@ -150,7 +150,7 @@ public:
 		printf(" nullvalue=%s", nullvaluestr.c_str());
 		printf(" nullvalue=%lf", nullvalue);
 		printf(" expandedname=%s", expandedname.c_str());
-		printf(" comment=%s", comment.c_str());
+		printf(" comment=%s", description.c_str());
 		printf("\n");
 	}
 
@@ -208,7 +208,7 @@ class cOutputFileInfo{
 		allowmorefields = false;
 	}
 
-	void addfield(const std::string _name, const char _form, const size_t _width, const size_t _decimals, const size_t _nbands = 1){
+	void addfield(const std::string& _name, const char& _form, const size_t _width, const size_t& _decimals, const size_t& _nbands = 1){
 		if (allowmorefields){
 			cAsciiColumnField cf(lastfield,lastcolumn, _name, _form, _width, _decimals, _nbands);
 			fields.push_back(cf);
@@ -217,21 +217,21 @@ class cOutputFileInfo{
 		}
 	}
 
-	void setunits(const std::string _units){
+	void setunits(const std::string& _units){
 		if (allowmorefields){			
 			fields[lastfield-1].units = _units;			
 		}
 	}
 
-	void setnullvalue(const std::string _nullvaluestr){
+	void setnullvalue(const std::string& _nullvaluestr){
 		if (allowmorefields){
 			fields[lastfield - 1].nullvaluestr = _nullvaluestr;
 		}
 	}
 
-	void setcomment(const std::string _comment){
+	void setdescription(const std::string& _description){
 		if (allowmorefields){
-			fields[lastfield-1].comment = _comment;
+			fields[lastfield-1].description = _description;
 		}
 	}
 
@@ -349,9 +349,9 @@ public:
 					}
 					else{						
 						if (i < tokens.size() - 1) 
-							F.comment += tokens[i] + ", ";
+							F.description += tokens[i] + ", ";
 						else{
-							F.comment += tokens[i];
+							F.description += tokens[i];
 						}
 							
 					}
