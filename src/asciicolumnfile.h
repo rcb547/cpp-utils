@@ -260,7 +260,7 @@ public:
 		vec.resize(nb);
 		for (size_t bi = 0; bi < nb; bi++) {			
 			getcolumn(base,vec[bi]);
-			if (fields[findex].isnull(vec[bi]) == true) {
+			if (fields[findex].isnull((double)vec[bi]) == true) {
 				return false;
 			}
 			base++;
