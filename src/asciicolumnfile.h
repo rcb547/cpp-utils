@@ -134,7 +134,7 @@ public:
 						F.nullvalue = atof(t[1].c_str());
 					}
 					else{
-						F.comment += tokens[i];
+						F.description += tokens[i];
 					}
 				}
 			}			

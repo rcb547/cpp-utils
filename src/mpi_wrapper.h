@@ -117,6 +117,11 @@ public:
 		return r;
 	}
 
+	static void world_barrier() {		
+		int ierr = MPI_Barrier(MPI_COMM_WORLD);
+		chkerr(ierr);		
+	}
+
 	static void printsizeofs()
 	{
 		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));

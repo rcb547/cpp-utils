@@ -14,6 +14,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <complex>
 #include <vector>
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <iostream> 
 #include <iomanip> 
@@ -283,6 +284,14 @@ std::vector<T> increment(const size_t n, const T start = 0, const T inc = 1)
 	v[0] = start;
 	for (size_t i = 1; i<n; i++) v[i] = v[i - 1] + inc;
 	return v;
+};
+
+template<typename T>
+std::vector<T> cumulative_sum(const std::vector<T>& v)
+{
+	std::vector<T> csum(v.size());
+	std::partial_sum(v.begin(), v.end(), csum.begin(), std::plus<double>());	
+	return csum;
 };
 
 template<typename T>
