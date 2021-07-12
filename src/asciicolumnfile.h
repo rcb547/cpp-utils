@@ -28,9 +28,11 @@ private:
 
 public:
 
-	std::vector<cAsciiColumnField> fields;
-
-
+	std::string ST_string;
+	std::string RT_string;
+	std::vector<cAsciiColumnField> fields;	
+	
+	
 	cAsciiColumnFile() { };
 
 	cAsciiColumnFile(const std::string& filename){		
@@ -64,91 +66,128 @@ public:
 		return tokens;
 	}
 
-	bool parse_aseggdf2_header(const std::string& dfnfile){
+	bool parse_aseggdf2_header(const std::string& dfnfile) {
 
 		fields.clear();
+			
 
 		FILE* fp = fileopen(dfnfile, "r");
-		std::string str;		
+		std::string str;
 
 		size_t startcolumn = 1;
 		filegetline(fp, str);
-		while (filegetline(fp, str)){
-
+		int line = 1;
+		while (filegetline(fp, str)) {
+			line++;
 			//glog.logmsg(0,str);
 			if (strcasecmp(str, "end defn") == 0) {
 				break;
 			}
 
-			std::vector<std::string> tokens = tokenise(str, ';');			
-			if (strcasecmp(tokens[1], "end defn") == 0){
+			std::vector<std::string> tokens = tokenise(str, ';');
+			if (strcasecmp(tokens[1], "end defn") == 0) {
 				break;
 			}
-			
-			cAsciiColumnField F;
 
-			int intorder;
-			std::sscanf(tokens[0].c_str(), "DEFN %d ST = RECD, RT = ", &intorder);
+			cAsciiColumnField F;
+			
+			int intorder = 0;
+			int n = std::sscanf(tokens[0].c_str(), "DEFN %d",&intorder);
 			F.order = (size_t)intorder;
 			F.startcolumn = startcolumn;
-			
-			
+
+			std::vector<std::string> t1 = tokenise(tokens[0], ',');
+			std::vector<std::string> t2 = tokenise(t1[0], '=');
+			std::vector<std::string> t3 = tokenise(t1[1], '=');
+
+			ST_string = t2[1];
+			RT_string = t3[1];
+
+			if (ST_string != "RECD") {				
+				std::string msg = _SRC_;
+				msg += strprint("\n\tError parsing line %d of DFN file %s\n",line,dfnfile.c_str());
+				msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");
+				throw(std::runtime_error(msg));
+			}
+
+			if (RT_string != "" && RT_string != "DATA") {
+				std::string msg = _SRC_;
+				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
+				msg += strprint("\tThe key 'RT' should be 'RT=DATA;' or 'RT=;'\n");
+				throw(std::runtime_error(msg));
+			}
+
 			tokens = tokenise(tokens[1], ':');
 			F.name = tokens[0];
 			std::string formatstr = tokens[1];
+
+			int nbands   = -1;
+			int width    = -1;
+			int decimals = -1;
 			
-			int nbands = 1;
-			int width = 0;
-			int decimals = 0;
-			
-			if (sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmttype, &width, &decimals) == 4){
-				//
+			if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmttype, &width, &decimals) == 4) {
+				int dummy = 0;
 			}
-			else if (sscanf(formatstr.c_str(), "%c%d.%d", &F.fmttype, &width, &decimals) == 3){
-				//
+			else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &F.fmttype, &width, &decimals) == 3) {
+				nbands   = 1;				
 			}
-			else if (sscanf(formatstr.c_str(), "%c%d", &F.fmttype, &width) == 2){
-				//
+			else if (std::sscanf(formatstr.c_str(), "%c%d", &F.fmttype, &width) == 2) {
+				nbands = 1;
+				decimals = 0;
 			}
-			else{
-				printf("%s\n", formatstr.c_str());
-			}			
+						
+			static const std::string validfmts = "iIeEfF";			
+			bool stat = instring(validfmts, F.fmttype);
+			if (stat == false) {
+				std::string msg = _SRC_;
+				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
+				msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), validfmts.c_str());
+				throw(std::runtime_error(msg));
+			}
+
+			if(nbands < 1 || width < 1 || decimals < 0){
+				std::string msg = _SRC_;
+				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
+				msg += strprint("\tCould not understand the format %s\n", formatstr.c_str());
+				throw(std::runtime_error(msg));
+			}
+
 			F.nbands = nbands;
 			F.fmtwidth = width;
-			F.fmtdecimals = decimals;			
+			F.fmtdecimals = decimals;
 			startcolumn += F.nbands;
 
-			if (tokens.size() > 2){
+			if (tokens.size() > 2) {
 				std::string remainder = tokens[2];
 				tokens = tokenise(remainder, ',');
-				for (size_t i = 0; i < tokens.size(); i++){
+				for (size_t i = 0; i < tokens.size(); i++) {
 					std::vector<std::string> t = tokenise(tokens[i], '=');
-					if (strcasecmp(t[0], "unit") == 0 || strcasecmp(t[0], "units") == 0){
+					if (strcasecmp(t[0], "unit") == 0 || strcasecmp(t[0], "units") == 0) {
 						F.units = t[1];
 					}
-					else if (strcasecmp(t[0], "name") == 0){
+					else if (strcasecmp(t[0], "name") == 0) {
 						F.expandedname = t[1];
 					}
-					else if (strcasecmp(t[0], "null") == 0){
+					else if (strcasecmp(t[0], "null") == 0) {
 						F.nullvaluestr = t[1];
 						F.nullvalue = atof(t[1].c_str());
 					}
-					else{
+					else {
 						F.description += tokens[i];
 					}
 				}
-			}			
+			}
 			fields.push_back(F);
 		};
 		fclose(fp);
 
-		size_t k = 0;
-		for (size_t i = 0; i < fields.size(); i++){
+		size_t k = RT_string.size();
+		for (size_t i = 0; i < fields.size(); i++) {
 			fields[i].startchar = k;
-			fields[i].endchar   = k - 1 + fields[i].fmtwidth * fields[i].nbands;
+			fields[i].endchar = k - 1 + fields[i].fmtwidth * fields[i].nbands;
 			k = fields[i].endchar + 1;
 		}
-		return true;		
+		return true;
 	};
 
 	static size_t nullfieldindex(){

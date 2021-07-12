@@ -274,7 +274,7 @@ class cASEGGDF2Header {
 
 private:
 
-	std::vector<cAsciiColumnField> fields;
+	std::vector<cAsciiColumnField> fields;	
 
 public:
 
@@ -285,7 +285,7 @@ public:
 	bool read(const std::string& dfnpath){
 
 		fields.clear();
-
+		
 		FILE* fp = fileopen(dfnpath, "r");
 		std::string str;
 
@@ -361,7 +361,7 @@ public:
 		};
 		fclose(fp);
 
-		size_t k = 0;
+		size_t k = 0;		
 		for (size_t i = 0; i < fields.size(); i++){
 			fields[i].startchar = k;
 			fields[i].endchar = k - 1 + fields[i].fmtwidth * fields[i].nbands;

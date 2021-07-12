@@ -48,6 +48,22 @@ inline std::string strprint(const char* fmt, ...)
 	va_end(vargs);
 	return s;
 }
+
+
+inline bool instring(const char* str, const char& c)
+{
+	const char* p = str;
+	while (*p != 0){
+		if (*p == c) return true;
+		p++;
+	}
+	return false;
+}
+
+inline bool instring(const std::string str, const char& c)
+{
+	return instring(str.c_str(), c);	
+}
 #endif
 
 
