@@ -18,43 +18,42 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 
 
-enum eFieldType {REAL,INTEGER};
+enum eFieldType { REAL, INTEGER, CHAR };
 
 class cAsciiColumnField {
 
 public:
-	size_t order;
-	size_t startcolumn;
-	size_t endcolumn() const
-	{
-		return startcolumn + nbands - 1;
-	}
+	char fmttype;
+	int  nbands;
+	int  fmtwidth;
+	int  fmtdecimals;
 	size_t startchar;
 	size_t endchar;
 	std::string name;
 	std::string expandedname;
+	std::string units;	
+	std::string nullvaluestr;
+	double nullvalue;
+	std::string description;
+	size_t order;
+	size_t startcolumn;
+	std::string validfmttypes = "aAiIeEfF";
 
-	size_t nbands;
-
-	char   fmttype;
-	size_t fmtwidth;
-	size_t fmtdecimals;
+	size_t endcolumn() const
+	{
+		return startcolumn + nbands - 1;
+	}
 	
-	std::string units;
-
 	bool hasnullvalue() const {
 		if (nullvaluestr.size() > 0) return true;
 		return false;
 	}
-	std::string nullvaluestr;
-	double nullvalue;
-	std::string description;
-
-	cAsciiColumnField(){
+	
+	cAsciiColumnField() {
 		initialise();
 	};
 
-	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1){
+	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1) {
 		initialise();
 		order = _order;
 		startcolumn = _startcolumn;
@@ -65,11 +64,36 @@ public:
 		nbands = _nbands;
 	};
 
-	void initialise(){
+	void initialise() {
 		nbands = 1;
-		fmtdecimals = 0;		
+		fmtdecimals = 0;
 		nullvalue = -32767;
 	};
+
+	bool valid_fmttype(){		
+		return instring(validfmttypes, fmttype);
+	}
+
+	bool parse_format_string(const std::string& formatstr){
+
+		if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &fmttype, &fmtwidth, &fmtdecimals) == 4) {
+			int dummy = 0;
+		}
+		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmttype, &fmtwidth, &fmtdecimals) == 3) {
+			nbands = 1;
+		}
+		else if (std::sscanf(formatstr.c_str(), "%c%d", &fmttype, &fmtwidth) == 2) {
+			nbands = 1;
+			fmtdecimals = 0;
+		}
+		else {
+			return false;
+		}
+		
+		bool stat = valid_fmttype();
+		if (stat && nbands > 0 && fmtwidth > 0 && fmtdecimals >= 0)return true;
+		return false;
+	}
 
 	std::string simple_header_record(){
 
@@ -162,13 +186,21 @@ public:
 			return eFieldType::REAL;
 		}
 		else if (fmttype == 'E' || fmttype == 'e'){
-			return eFieldType::INTEGER;
+			return eFieldType::REAL;
+		}
+		if (fmttype == 'A' || fmttype == 'a') {
+			return eFieldType::CHAR;
 		}
 		else{			
 			glog.warningmsg(_SRC_,"Unknown data type <%c>\n", fmttype);			
 		}
 		return eFieldType::REAL;
 	};
+
+	bool ischar() const {
+		if (datatype() == eFieldType::CHAR) return true;
+		return false;
+	}
 
 	bool isinteger() const {
 		if ( datatype() == eFieldType::INTEGER) return true;

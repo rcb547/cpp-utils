@@ -25,6 +25,7 @@ private:
 	size_t recordsreadsuccessfully = 0;
 	std::string currentrecord;		
 	std::vector<std::string> currentcolumns;
+	bool charpositions_adjusted = false;
 
 public:
 
@@ -74,12 +75,11 @@ public:
 		FILE* fp = fileopen(dfnfile, "r");
 		std::string str;
 
-		size_t startcolumn = 1;
-		filegetline(fp, str);
-		int line = 1;
+		size_t datarec = 0;
+		int dfnlinenum = 0;
 		while (filegetline(fp, str)) {
-			line++;
-			//glog.logmsg(0,str);
+			dfnlinenum++;
+			
 			if (strcasecmp(str, "end defn") == 0) {
 				break;
 			}
@@ -94,69 +94,69 @@ public:
 			int intorder = 0;
 			int n = std::sscanf(tokens[0].c_str(), "DEFN %d",&intorder);
 			F.order = (size_t)intorder;
-			F.startcolumn = startcolumn;
-
+			
 			std::vector<std::string> t1 = tokenise(tokens[0], ',');
 			std::vector<std::string> t2 = tokenise(t1[0], '=');
 			std::vector<std::string> t3 = tokenise(t1[1], '=');
-
+			
 			ST_string = t2[1];
-			RT_string = t3[1];
+			std::string rt = t3[1];
 
 			if (ST_string != "RECD") {				
 				std::string msg = _SRC_;
-				msg += strprint("\n\tError parsing line %d of DFN file %s\n",line,dfnfile.c_str());
+				msg += strprint("\n\tError parsing line %d of DFN file %s\n",dfnlinenum,dfnfile.c_str());
 				msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");
 				throw(std::runtime_error(msg));
 			}
 
-			if (RT_string != "" && RT_string != "DATA") {
-				std::string msg = _SRC_;
-				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
-				msg += strprint("\tThe key 'RT' should be 'RT=DATA;' or 'RT=;'\n");
-				throw(std::runtime_error(msg));
+			if (rt != "" && rt != "DATA") {
+				std::string msg = strprint("\tSkipping DFN entry that does not have a record type 'RT=DATA;' or 'RT=;' on line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+				glog.logmsg(0, msg);
+				continue;
 			}
 
+			//Detect and try to fix Geosoft style DFN
+			static bool geosoft_reported = false;
+			if (geosoft_reported == false && tokens.size() > 2) {
+				bool geosoft = detect_geosoft_error(tokens[1], tokens[2]);
+				if (geosoft) {
+					std::vector<std::string> tmp1 = tokenise(tokens[1], ':');
+					std::vector<std::string> tmp2 = tokenise(tokens[2], ':');
+					std::string msg = strprint("\n\tDetected Geosoft style DFN with two format specifiers (%s and %s) in the one entry ", tmp1[1].c_str(), tmp2[1].c_str());
+					msg += strprint("on line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
+					msg += strprint("Removing %s.\n", tokens[1].c_str());
+					msg += strprint("\t%s\n", str.c_str());
+					geosoft_reported = true;
+					glog.logmsg(0, msg);
+					for (size_t i = 1; i < tokens.size() - 1; i++) {
+						tokens[i] = tokens[i + 1];
+					}
+					tokens.pop_back();
+				}
+			}
+			
+			//Data DEFN
 			tokens = tokenise(tokens[1], ':');
 			F.name = tokens[0];
 			std::string formatstr = tokens[1];
 
-			int nbands   = -1;
-			int width    = -1;
-			int decimals = -1;
-			
-			if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmttype, &width, &decimals) == 4) {
-				int dummy = 0;
-			}
-			else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &F.fmttype, &width, &decimals) == 3) {
-				nbands   = 1;				
-			}
-			else if (std::sscanf(formatstr.c_str(), "%c%d", &F.fmttype, &width) == 2) {
-				nbands = 1;
-				decimals = 0;
-			}
-						
-			static const std::string validfmts = "iIeEfF";			
-			bool stat = instring(validfmts, F.fmttype);
-			if (stat == false) {
+			F.parse_format_string(formatstr);
+					
+			if (F.valid_fmttype() == false) {
 				std::string msg = _SRC_;
-				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
-				msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), validfmts.c_str());
+				msg += strprint("\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
+				msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), F.validfmttypes.c_str());
 				throw(std::runtime_error(msg));
 			}
 
-			if(nbands < 1 || width < 1 || decimals < 0){
+			if(F.nbands < 1 || F.fmtwidth < 1 || F.fmtdecimals < 0){
 				std::string msg = _SRC_;
-				msg += strprint("\n\tError parsing line %d of DFN file %s\n", line, dfnfile.c_str());
-				msg += strprint("\tCould not understand the format %s\n", formatstr.c_str());
+				msg += strprint("\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
+				msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
 				throw(std::runtime_error(msg));
 			}
 
-			F.nbands = nbands;
-			F.fmtwidth = width;
-			F.fmtdecimals = decimals;
-			startcolumn += F.nbands;
-
+			//Parse the rest
 			if (tokens.size() > 2) {
 				std::string remainder = tokens[2];
 				tokens = tokenise(remainder, ',');
@@ -177,15 +177,47 @@ public:
 					}
 				}
 			}
+
+			if (datarec == 0) {
+				RT_string = rt;
+			}
+			else {
+				static bool reported_mixing = false;				
+				if (reported_mixing == false && rt != RT_string) {
+					std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
+					msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
+					msg += strprint("Making all data record types RT=%s;.\n", RT_string.c_str());
+					glog.logmsg(0, msg);
+					reported_mixing = true;
+				}
+			}
+			
+
+			if (datarec==0 && rt == "DATA") {
+				if (!F.ischar() && F.fmtwidth != 4) {					
+					cAsciiColumnField R;
+					R.name = "RT";
+					R.expandedname = "Record type";
+					R.order = (size_t)0;
+					R.fmttype = 'A';
+					R.fmtwidth = 4;					
+					fields.push_back(R);					
+					datarec++;
+				}
+			}
 			fields.push_back(F);
+			datarec++;			
 		};
 		fclose(fp);
 
-		size_t k = RT_string.size();
-		for (size_t i = 0; i < fields.size(); i++) {
+		size_t k = 0;
+		size_t startcolumn = 1;
+		for (size_t i = 0; i < fields.size(); i++) {			
 			fields[i].startchar = k;
-			fields[i].endchar = k - 1 + fields[i].fmtwidth * fields[i].nbands;
+			fields[i].endchar   = k - 1 + fields[i].fmtwidth * fields[i].nbands;
 			k = fields[i].endchar + 1;
+			fields[i].startcolumn = startcolumn;
+			startcolumn += fields[i].nbands;
 		}
 		return true;
 	};
@@ -193,6 +225,67 @@ public:
 	static size_t nullfieldindex(){
 		return UINT64_MAX;		
 	};
+
+	bool detect_geosoft_error(std::string s1, std::string s2) {				
+		s1.erase(remove_if(s1.begin(), s1.end(), isspace), s1.end());
+		s2.erase(remove_if(s2.begin(), s2.end(), isspace), s2.end());		
+		std::transform(s1.begin(), s1.end(), s1.begin(), ::toupper);
+		
+		if (s1 == "RT:A4") {
+			std::vector<std::string> t = tokenise(s2, ':');
+			cAsciiColumnField F2;
+			bool sttus = F2.parse_format_string(t[1]);
+			return true;
+		}
+		return false;
+	}
+
+	bool contains_non_numeric_characters(const std::string& str, size_t startpos)
+	{
+		const static std::string validchars = "0123456789.+-eE ,\t\r\n";
+		size_t pos = str.find_first_not_of(validchars, startpos);
+		if (pos == std::string::npos) return false;
+		else return true;
+	}
+
+	bool is_record_valid() {
+
+		size_t startpos = RT_string.size();//character pos to start non-numeric check from
+		if (RT_string.size() == 0){
+			if (fields[0].fmttype == 'A' || fields[0].fmttype == 'a') {
+				startpos = fields[0].fmtwidth;
+			}
+			else {
+				if (charpositions_adjusted == false) {
+					//Check if record starts with DATA or COMM that is not declared as a field in the DFN and adjust character positions accordingly
+					if (strncasecmp(currentrecord.c_str(), "DATA", 4) == 0) {
+						glog.logmsg(0, "\nDetected DATA at start of record that is not specified in the DFN file as a column. Adjusting character positions accordingly\n%s\n", currentrecord.c_str());
+						RT_string = currentrecord.substr(0, 4);
+						adjust_character_positions(RT_string.size());
+						startpos = RT_string.size();
+					}
+					else if (strncasecmp(currentrecord.c_str(), "COMM", 4) == 0) {
+						glog.logmsg(0, "\nDetected COMM at start of record that is not specified in the DFN file as a column. Adjusting character positions accordingly\n%s\n", currentrecord.c_str());
+						RT_string = currentrecord.substr(0, 4);
+						adjust_character_positions(RT_string.size());
+						startpos = RT_string.size();
+					}					
+				}
+			}
+		}
+		
+		bool nonnumeric = contains_non_numeric_characters(currentrecord, startpos);
+		if (nonnumeric) return false;
+		else return true;
+	}
+	
+	void adjust_character_positions(const size_t& offset) {
+		for (size_t i = 0; i < fields.size(); i++) {			
+			fields[i].startchar += offset;
+			fields[i].endchar   += offset;
+		}
+		charpositions_adjusted = true;
+	}
 
 	size_t fieldindexbyname(const std::string& fieldname) const
 	{

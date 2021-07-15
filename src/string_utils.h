@@ -60,7 +60,7 @@ inline bool instring(const char* str, const char& c)
 	return false;
 }
 
-inline bool instring(const std::string str, const char& c)
+inline bool instring(const std::string& str, const char& c)
 {
 	return instring(str.c_str(), c);	
 }
