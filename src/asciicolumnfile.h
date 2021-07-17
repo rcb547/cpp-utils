@@ -32,8 +32,7 @@ public:
 	std::string ST_string;
 	std::string RT_string;
 	std::vector<cAsciiColumnField> fields;	
-	
-	
+		
 	cAsciiColumnFile() { };
 
 	cAsciiColumnFile(const std::string& filename){		
@@ -93,7 +92,7 @@ public:
 			
 			int intorder = 0;
 			int n = std::sscanf(tokens[0].c_str(), "DEFN %d",&intorder);
-			F.order = (size_t)intorder;
+			F.fileorder = (size_t)intorder;
 			
 			std::vector<std::string> t1 = tokenise(tokens[0], ',');
 			std::vector<std::string> t2 = tokenise(t1[0], '=');
@@ -149,7 +148,7 @@ public:
 				throw(std::runtime_error(msg));
 			}
 
-			if(F.nbands < 1 || F.fmtwidth < 1 || F.fmtdecimals < 0){
+			if(F.nbands < 1 || F.width < 1 || F.decimals < 0){
 				std::string msg = _SRC_;
 				msg += strprint("\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
 				msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
@@ -166,11 +165,11 @@ public:
 						F.units = t[1];
 					}
 					else if (strcasecmp(t[0], "name") == 0) {
-						F.expandedname = t[1];
+						F.longname = t[1];
 					}
 					else if (strcasecmp(t[0], "null") == 0) {
-						F.nullvaluestr = t[1];
-						F.nullvalue = atof(t[1].c_str());
+						F.nullvaluestring = t[1];
+						//F.nullvalue = atof(t[1].c_str());
 					}
 					else {
 						F.description += tokens[i];
@@ -194,13 +193,15 @@ public:
 			
 
 			if (datarec==0 && rt == "DATA") {
-				if (!F.ischar() && F.fmtwidth != 4) {					
+				if (!F.ischar() && F.width != 4) {					
 					cAsciiColumnField R;
 					R.name = "RT";
-					R.expandedname = "Record type";
-					R.order = (size_t)0;
-					R.fmttype = 'A';
-					R.fmtwidth = 4;					
+					R.longname = "Record type";
+					R.fileorder = (size_t)0;
+					R.fmtchar = 'A';
+					R.width = 4;
+					R.decimals = 0;
+					R.nbands = 1;
 					fields.push_back(R);					
 					datarec++;
 				}
@@ -213,9 +214,8 @@ public:
 		size_t k = 0;
 		size_t startcolumn = 1;
 		for (size_t i = 0; i < fields.size(); i++) {			
-			fields[i].startchar = k;
-			fields[i].endchar   = k - 1 + fields[i].fmtwidth * fields[i].nbands;
-			k = fields[i].endchar + 1;
+			fields[i].startchar = k;			
+			k = fields[i].endchar() + 1;
 			fields[i].startcolumn = startcolumn;
 			startcolumn += fields[i].nbands;
 		}
@@ -252,8 +252,8 @@ public:
 
 		size_t startpos = RT_string.size();//character pos to start non-numeric check from
 		if (RT_string.size() == 0){
-			if (fields[0].fmttype == 'A' || fields[0].fmttype == 'a') {
-				startpos = fields[0].fmtwidth;
+			if (fields[0].fmtchar == 'A' || fields[0].fmtchar == 'a') {
+				startpos = fields[0].width;
 			}
 			else {
 				if (charpositions_adjusted == false) {
@@ -281,8 +281,7 @@ public:
 	
 	void adjust_character_positions(const size_t& offset) {
 		for (size_t i = 0; i < fields.size(); i++) {			
-			fields[i].startchar += offset;
-			fields[i].endchar   += offset;
+			fields[i].startchar += offset;			
 		}
 		charpositions_adjusted = true;
 	}
@@ -336,7 +335,7 @@ public:
 		for (size_t i = 0; i < fields.size(); i++) {
 			cAsciiColumnField& f = fields[i];
 			for (size_t j = 0; j < f.nbands; j++) {
-				cs.push_back(currentrecord.substr(f.startchar + j * f.fmtwidth, f.fmtwidth));				
+				cs.push_back(currentrecord.substr(f.startchar + j * f.width, f.width));				
 			}
 		}
 		return cs;

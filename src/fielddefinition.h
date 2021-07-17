@@ -192,7 +192,7 @@ public:
 			
 			bool okstatus = A.getfield(findex, vec);
 			if (okstatus == false){
-				glog.warningmsg("","Null value %s in field named %s\n", A.fields[findex].nullvaluestr.c_str(), varname.c_str());
+				glog.warningmsg("","Null value %s in field named %s\n", A.fields[findex].nullvaluestring.c_str(), varname.c_str());
 				return false;
 			}
 

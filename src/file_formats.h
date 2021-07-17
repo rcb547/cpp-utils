@@ -18,80 +18,89 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 
 
-enum eFieldType { REAL, INTEGER, CHAR };
+enum class eFieldType { REAL, INTEGER, CHAR };
 
 class cAsciiColumnField {
 
+private:
+	
 public:
-	char fmttype;
-	int  nbands;
-	int  fmtwidth;
-	int  fmtdecimals;
-	size_t startchar;
-	size_t endchar;
-	std::string name;
-	std::string expandedname;
-	std::string units;	
-	std::string nullvaluestr;
-	double nullvalue;
-	std::string description;
-	size_t order;
-	size_t startcolumn;
 	std::string validfmttypes = "aAiIeEfF";
 
+	std::string name;	
+	size_t nbands = 0;
+	char fmtchar = 'E';	
+	size_t width = 15;
+	size_t decimals = 6;
+	size_t startchar = 0;	
+	size_t fileorder = 0;
+	size_t startcolumn = 0;
+
+	std::string longname;
+	std::string description;
+	std::string units;	
+
+	std::string nullvaluestring;
+
+	double nullvalue() const {
+		return atof(nullvaluestring.c_str());
+	}
+	
 	size_t endcolumn() const
 	{
-		return startcolumn + nbands - 1;
+		return startcolumn - 1 + nbands;
+	}
+
+	size_t endchar() const
+	{		
+		return startchar - 1 + (nbands*width);
 	}
 	
 	bool hasnullvalue() const {
-		if (nullvaluestr.size() > 0) return true;
+		if (nullvaluestring.size() > 0) return true;
 		return false;
 	}
 	
-	cAsciiColumnField() {
-		initialise();
-	};
+	cAsciiColumnField() {};
 
-	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1) {
-		initialise();
-		order = _order;
+	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const int _fmtwidth, const int _fmtdecimals, const int _nbands = 1) {		
+		fileorder = _order;
 		startcolumn = _startcolumn;
 		name = _name;
-		fmttype = _fmttype;
-		fmtwidth = _fmtwidth;
-		fmtdecimals = _fmtdecimals;
+		fmtchar = _fmttype;
+		width = _fmtwidth;
+		decimals = _fmtdecimals;
 		nbands = _nbands;
 	};
 
-	void initialise() {
-		nbands = 1;
-		fmtdecimals = 0;
-		nullvalue = -32767;
-	};
-
 	bool valid_fmttype(){		
-		return instring(validfmttypes, fmttype);
+		return instring(validfmttypes, fmtchar);
 	}
 
 	bool parse_format_string(const std::string& formatstr){
 
-		if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &fmttype, &fmtwidth, &fmtdecimals) == 4) {
-			int dummy = 0;
+		int inbands, iwidth, idecimals;
+		if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &inbands, &fmtchar, &iwidth, &idecimals) == 4) {			
+			nbands = inbands;
+			width = iwidth;
+			decimals = idecimals;
 		}
-		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmttype, &fmtwidth, &fmtdecimals) == 3) {
+		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmtchar, &iwidth, &idecimals) == 3) {
 			nbands = 1;
+			width = iwidth;
+			decimals = idecimals;
 		}
-		else if (std::sscanf(formatstr.c_str(), "%c%d", &fmttype, &fmtwidth) == 2) {
+		else if (std::sscanf(formatstr.c_str(), "%c%d", &fmtchar, &iwidth) == 2) {
 			nbands = 1;
-			fmtdecimals = 0;
+			width = iwidth;
+			decimals = 0;
 		}
 		else {
 			return false;
 		}
 		
 		bool stat = valid_fmttype();
-		if (stat && nbands > 0 && fmtwidth > 0 && fmtdecimals >= 0)return true;
+		if (stat && nbands > 0 && width > 0 && decimals >= 0)return true;
 		return false;
 	}
 
@@ -115,28 +124,28 @@ public:
 		}
 
 		std::string typestr;
-		if (fmttype == 'I'){
+		if (fmtchar == 'I'){
 			typestr = "INTEGER";
 		}
-		else if (fmttype == 'F'){
+		else if (fmtchar == 'F'){
 			typestr = "DOUBLE";
 		}
 
 		std::string s;
-		s += strprint("DATA\t%lu, %lu, NORMAL, , , ,\n", startcolumn, fmtwidth);
-		s += strprint("CHAN\t%s, %s, NORMAL, %lu, %lu, LABEL = \"%s\"\n", channelname.c_str(), typestr.c_str(), fmtwidth, fmtdecimals, name.c_str());
+		s += strprint("DATA\t%lu, %lu, NORMAL, , , ,\n", startcolumn, width);
+		s += strprint("CHAN\t%s, %s, NORMAL, %lu, %lu, LABEL = \"%s\"\n", channelname.c_str(), typestr.c_str(), width, decimals, name.c_str());
 		return s;
 	}
 
 	std::string aseggdf_header_record(){
 		std::string fmtstr;
 		if (nbands > 1) fmtstr += strprint("%lu", nbands);
-		fmtstr += strprint("%c", fmttype);
-		fmtstr += strprint("%zu", fmtwidth);
-		if (fmttype != 'I')fmtstr += strprint(".%zu", fmtdecimals);
+		fmtstr += strprint("%c", fmtchar);
+		fmtstr += strprint("%zu", width);
+		if (fmtchar != 'I')fmtstr += strprint(".%zu", decimals);
 
 		std::string s;
-		s += strprint("DEFN %lu ST=RECD,RT=; %s : %s", order + 1, name.c_str(), fmtstr.c_str());
+		s += strprint("DEFN %lu ST=RECD,RT=; %s : %s", fileorder + 1, name.c_str(), fmtstr.c_str());
 
 		char comma = ',';
 		char colon = ':';
@@ -146,9 +155,9 @@ public:
 			o += strprint(" UNITS = %s ", units.c_str());
 		}
 
-		if (nullvaluestr.size() > 0){
+		if (nullvaluestring.size() > 0){
 			if (o[o.size() - 1] != colon && o[o.size() - 1] != comma) o += comma;
-			o += strprint(" NULL = %s ", nullvaluestr.c_str());
+			o += strprint(" NULL = %s ", nullvaluestring.c_str());
 		}
 
 		if (description.size() > 0){
@@ -164,35 +173,35 @@ public:
 	void print(){		
 		printf("\n");
 		printf(" name=%s", name.c_str());
-		printf(" order=%zu", order);
+		printf(" order=%zu", fileorder);
 		printf(" startcolumn=%zu", startcolumn);		
 		printf(" bands=%zu", nbands);
-		printf(" type=%c", fmttype);
-		printf(" width=%zu", fmtwidth);
-		printf(" decimals=%zu", fmtdecimals);
+		printf(" type=%c", fmtchar);
+		printf(" width=%zu", width);
+		printf(" decimals=%zu", decimals);
 		printf(" units=%s", units.c_str());
-		printf(" nullvalue=%s", nullvaluestr.c_str());
-		printf(" nullvalue=%lf", nullvalue);
-		printf(" expandedname=%s", expandedname.c_str());
+		printf(" nullvalue=%s", nullvaluestring.c_str());
+		printf(" nullvalue=%lf", nullvalue());
+		printf(" longname=%s", longname.c_str());
 		printf(" comment=%s", description.c_str());
 		printf("\n");
 	}
 
 	eFieldType datatype() const {		
-		if (fmttype == 'I' || fmttype == 'i'){
+		if (fmtchar == 'I' || fmtchar == 'i'){
 			return eFieldType::INTEGER;
 		}
-		else if (fmttype == 'F' || fmttype == 'f'){
+		else if (fmtchar == 'F' || fmtchar == 'f'){
 			return eFieldType::REAL;
 		}
-		else if (fmttype == 'E' || fmttype == 'e'){
+		else if (fmtchar == 'E' || fmtchar == 'e'){
 			return eFieldType::REAL;
 		}
-		if (fmttype == 'A' || fmttype == 'a') {
+		if (fmtchar == 'A' || fmtchar == 'a') {
 			return eFieldType::CHAR;
 		}
 		else{			
-			glog.warningmsg(_SRC_,"Unknown data type <%c>\n", fmttype);			
+			glog.warningmsg(_SRC_,"Unknown data type <%c>\n", fmtchar);			
 		}
 		return eFieldType::REAL;
 	};
@@ -214,7 +223,7 @@ public:
 
 	bool isnull(const double v) const {
 		if (hasnullvalue()){
-			if (v == nullvalue)return true;
+			if (v == nullvalue())return true;
 		}
 		return false;
 	}
@@ -240,7 +249,12 @@ class cOutputFileInfo{
 		allowmorefields = false;
 	}
 
-	void addfield(const std::string& _name, const char& _form, const size_t _width, const size_t& _decimals, const size_t& _nbands = 1){
+	void addfield(const std::string& _name, const char& _form, const size_t _width, const size_t& _decimals, const size_t& _nbands = 1) {
+		//Stop compiler whinging
+		addfield_impl(_name, _form, (int)_width, (int)_decimals, (int)_nbands);
+	}
+
+	void addfield_impl(const std::string& _name, const char& _form, const int _width, const int& _decimals, const int& _nbands = 1){
 		if (allowmorefields){
 			cAsciiColumnField cf(lastfield,lastcolumn, _name, _form, _width, _decimals, _nbands);
 			fields.push_back(cf);
@@ -257,7 +271,7 @@ class cOutputFileInfo{
 
 	void setnullvalue(const std::string& _nullvaluestr){
 		if (allowmorefields){
-			fields[lastfield - 1].nullvaluestr = _nullvaluestr;
+			fields[lastfield - 1].nullvaluestring = _nullvaluestr;
 		}
 	}
 
@@ -335,7 +349,7 @@ public:
 			int intorder;
 			sscanf(tokens[0].c_str(), "DEFN %d ST = RECD, RT = ", &intorder);
 			intorder--;
-			F.order = (size_t)intorder;
+			F.fileorder = (size_t)intorder;
 			F.startcolumn = startcolumn;
 
 			tokens = trimsplit(tokens[1], ':');
@@ -346,13 +360,13 @@ public:
 			int width = 0;
 			int decimals = 0;
 
-			if (sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmttype, &width, &decimals) == 4){
+			if (sscanf(formatstr.c_str(), "%d%c%d.%d", &nbands, &F.fmtchar, &width, &decimals) == 4){
 				//
 			}
-			else if (sscanf(formatstr.c_str(), "%c%d.%d", &F.fmttype, &width, &decimals) == 3){
+			else if (sscanf(formatstr.c_str(), "%c%d.%d", &F.fmtchar, &width, &decimals) == 3){
 				//
 			}
-			else if (sscanf(formatstr.c_str(), "%c%d", &F.fmttype, &width) == 2){
+			else if (sscanf(formatstr.c_str(), "%c%d", &F.fmtchar, &width) == 2){
 				//
 			}
 			else{
@@ -360,8 +374,8 @@ public:
 				throw(std::runtime_error(msg));				
 			}
 			F.nbands = nbands;
-			F.fmtwidth = width;
-			F.fmtdecimals = decimals;
+			F.width = width;
+			F.decimals = decimals;
 			startcolumn += F.nbands;
 
 			if (tokens.size() > 2){
@@ -373,11 +387,10 @@ public:
 						F.units = t[1];
 					}
 					else if (strcasecmp(t[0], "name") == 0){
-						F.expandedname = t[1];
+						F.longname = t[1];
 					}
 					else if (strcasecmp(t[0], "null") == 0){
-						F.nullvaluestr = t[1];
-						F.nullvalue = atof(t[1].c_str());
+						F.nullvaluestring = t[1];						
 					}
 					else{						
 						if (i < tokens.size() - 1) 
@@ -395,9 +408,8 @@ public:
 
 		size_t k = 0;		
 		for (size_t i = 0; i < fields.size(); i++){
-			fields[i].startchar = k;
-			fields[i].endchar = k - 1 + fields[i].fmtwidth * fields[i].nbands;
-			k = fields[i].endchar + 1;
+			fields[i].startchar = k;			
+			k = fields[i].endchar() + 1;
 		}
 		return true;
 	};

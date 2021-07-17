@@ -57,20 +57,18 @@ void writetofile(const VecType& x, const std::string& path)
 	}	
 };
 
-//template<typename T>
-//std::vector<T> operator*(const Eigen::Matrix<T, -1, -1>& A, const std::vector<T>& x)
-//{
-//	size_t M = A.rows();
-//	size_t N = A.cols();
-//	std::vector<double> b(M);
-//	for (auto i = 0; i < M; i++) {
-//		b[i] = 0.0;
-//		for (auto j = 0; j < N; j++) {
-//			b[i] += A(i, j) * x[j];
-//		}
-//	}
-//	return b;
-//};
+std::vector<double> copy(const VectorDouble& d) {
+	std::vector<double> v((double*)(d.data()), (double*)(d.data() + d.size()));
+	return v;
+};
+
+VectorDouble copy(const std::vector<double>& d) {
+	Eigen::VectorXd v(d.size());	
+	for (size_t i = 0; i < d.size(); i++) {
+		v[i] = d[i];
+	}	
+	return v;
+};
 
 template<typename T>
 double mtDm(const Eigen::Matrix<T, -1, 1>& m, const Eigen::Matrix<T, -1, -1>& D)
