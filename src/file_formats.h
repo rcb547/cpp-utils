@@ -166,10 +166,10 @@ public:
 		printf(" name=%s", name.c_str());
 		printf(" order=%zu", order);
 		printf(" startcolumn=%zu", startcolumn);		
-		printf(" bands=%zu", nbands);
+		printf(" bands=%d", nbands);
 		printf(" type=%c", fmttype);
-		printf(" width=%zu", fmtwidth);
-		printf(" decimals=%zu", fmtdecimals);
+		printf(" width=%d", fmtwidth);
+		printf(" decimals=%d", fmtdecimals);
 		printf(" units=%s", units.c_str());
 		printf(" nullvalue=%s", nullvaluestr.c_str());
 		printf(" nullvalue=%lf", nullvalue);
