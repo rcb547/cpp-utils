@@ -86,6 +86,8 @@ bool transform(
 	err = outSRS.importFromEPSG(epsgcodeout);	
 	checkogrerror(err);
 
+	//Note !poCT->Transform below seems to return lon as y and lat as x
+	//hende swapped here.  Not sure if it were a EN to EN transform
 	xout = xin;
 	yout = yin;
 
@@ -95,6 +97,7 @@ bool transform(
 		return false;
 	}
 
+	
 	if (!poCT->Transform((int) xout.size(), xout.data(), yout.data())){
 		printf("Transformation operation failed.\n");
 		return false;

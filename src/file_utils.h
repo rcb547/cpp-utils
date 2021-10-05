@@ -55,6 +55,7 @@ void recursivefilelist(const std::string& path, const std::string& extension, st
 void recursivefilelist(const std::string& path, const std::string& extension, FILE* outfile);
 std::vector<std::string> directoryheirachy(const std::string dirname);
 
+bool filegetline(FILE* fp, std::string& str);
 size_t countlines(const std::string filename);
 size_t countlines1(const std::string filename);
 

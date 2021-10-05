@@ -162,7 +162,7 @@ public:
 		va_end(vargs);
 		logmsg(rank, msg);
 	}
-
+	
 	void warningmsg(const std::string& srccodeloc, const char* fmt, ...)
 	{
 		va_list vargs;

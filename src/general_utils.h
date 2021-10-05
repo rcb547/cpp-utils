@@ -129,14 +129,6 @@ bool regression(double* x, double*y, size_t n, double* gradient, double* interce
 bool regression(const std::vector<double>& x, const std::vector<double>& y, double& gradient, double& intercept);
 bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double>& y, double& x1, double& y1, double& x2, double& y2);
 
-std::string stringvalue(const double value, const char* fmt=(char*)NULL);
-std::string stringvalue(const size_t value, const char* fmt = (char*)NULL);
-std::string stringvalue(const int value,    const char* fmt=(char*)NULL);
-std::string stringvalue(const bool value);
-
-int strcasecmp(const std::string& A, const std::string& B);
-int strncasecmp(const std::string& A, const std::string& B, size_t n);
-
 const std::string timestamp();
 const std::string timestring(const std::string format, std::time_t t = 0);
 
@@ -223,11 +215,6 @@ double percentmemoryused();
 void guage(int ntot, int n, int pdiv1, int pdiv2);
 unsigned int factorial(unsigned int n);
 
-std::vector<std::string> &split(const std::string &str, const char delim, std::vector<std::string> &elems);
-std::vector<std::string> split(const std::string &str, const char delim);
-std::vector<std::string> trimsplit(const std::string &str,  const char delim);
-std::vector<std::string> tokenise(const std::string& str, const char delim);
-	;
 void allocate1darray(int*& a,const size_t n);
 void allocate1darray(double*& a, const size_t n);
 void deallocate1darray(double*& a);
@@ -236,17 +223,11 @@ void allocate2darray(double**& a, const size_t nrows, const size_t ncols);
 void deallocate2darray(double**& a, const size_t nrows);
 
 double median(double* v,size_t n);
-std::string trim(const std::string& s);
-std::string stripquotes(const std::string& s);
-std::vector<std::string> tokenize(const std::string& str);
-std::vector<std::string> parsestrings(const std::string& str, const std::string& delims);
 std::vector<cRange<int>> parserangelist(std::string& str);
-std::vector<std::string> fieldparsestring_old(const char* str, const char delim);
-std::vector<std::string> fieldparsestring(const char* str, const char* delims);
 std::vector<double> getdoublevector(const char* str, const char* delims);
 
-#define SORT_UP 0
-#define SORT_DOWN 1
+constexpr auto SORT_UP = 0;
+constexpr auto SORT_DOWN = 1;
 template<typename T> void quicksortindex(T* a, int* index, const int& leftarg, const int& rightarg, int sortupordown)
 {	
 	if (leftarg < rightarg) {
@@ -299,8 +280,6 @@ bool bwrite(FILE* fp, const std::vector<T>& v){
 }
 
 std::vector<float> dvec2fvec(std::vector<double>& vd);
-
-bool filegetline(FILE* fp, std::string& str);
 
 int LevenshteinDistance(char* s, int len_s, char* t, int len_t);
 

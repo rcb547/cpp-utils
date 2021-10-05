@@ -76,7 +76,7 @@ public:
 			gtrace.pop();
 		}
 	#else
-		if (std::uncaught_exception() == false) {
+		if (std::uncaught_exceptions() == false) {
 			//If an Exception has not occurred, pop it off the global stack
 			gtrace.pop();
 		}

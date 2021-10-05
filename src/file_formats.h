@@ -24,34 +24,40 @@ class cAsciiColumnField {
 
 private:
 	
-public:
-	std::string validfmttypes = "aAiIeEfF";
 
-	std::string name;	
-	size_t nbands = 0;
-	char fmtchar = 'E';	
-	size_t width = 15;
-	size_t decimals = 6;
-	size_t startchar = 0;	
-	size_t fileorder = 0;
-	size_t startcolumn = 0;
+public:
+	inline const static std::string validfmttypes = "aAiIeEfF";
+
+	std::string name;
+	size_t fileorder = 0;//Zero based order of field in the file
+	size_t nbands = 0;//Number of bands in the field
+	char fmtchar = 'E';//Field type notation
+	size_t width = 15;//Total width of field
+	size_t decimals = 6;//Nuber of places after the decimal point
+	size_t startchar = 0;//Zero based character index
+	size_t startcolumn = 0;//Zero based column index
+	std::string nullvaluestring;//String used as the null value
 
 	std::string longname;
 	std::string description;
 	std::string units;	
 
-	std::string nullvaluestring;
-
+	
 	double nullvalue() const {
 		return atof(nullvaluestring.c_str());
 	}
 	
-	size_t endcolumn() const
+	const size_t& startcol() const //Zero based start column index
+	{
+		return startcolumn;
+	}
+
+	const size_t endcol() const //Zero based end column index
 	{
 		return startcolumn - 1 + nbands;
 	}
 
-	size_t endchar() const
+	const size_t endchar() const
 	{		
 		return startchar - 1 + (nbands*width);
 	}
@@ -63,6 +69,7 @@ public:
 	
 	cAsciiColumnField() {};
 
+	
 	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const int _fmtwidth, const int _fmtdecimals, const int _nbands = 1) {		
 		fileorder = _order;
 		startcolumn = _startcolumn;
@@ -108,10 +115,10 @@ public:
 
 		std::string s;
 		if (nbands == 1){
-			s = strprint("%lu\t%s\n", startcolumn + 1, name.c_str());
+			s = strprint("%zu\t%s\n", startcolumn + 1, name.c_str());
 		}
 		else{
-			s = strprint("%lu-%lu\t%s\n", startcolumn + 1, startcolumn + nbands, name.c_str());
+			s = strprint("%zu-%zu\t%s\n", startcolumn + 1, startcolumn + nbands, name.c_str());
 		}
 		return s;
 	}
@@ -174,8 +181,10 @@ public:
 		printf("\n");
 		printf(" name=%s", name.c_str());
 		printf(" order=%zu", fileorder);
-		printf(" startcolumn=%zu", startcolumn);		
 		printf(" bands=%zu", nbands);
+		printf(" startcol=%zu", startcolumn);
+		printf(" startchar=%zu", startchar);
+		printf(" endchar=%zu", startchar);
 		printf(" type=%c", fmtchar);
 		printf(" width=%zu", width);
 		printf(" decimals=%zu", decimals);
@@ -223,7 +232,9 @@ public:
 
 	bool isnull(const double v) const {
 		if (hasnullvalue()){
-			if (v == nullvalue())return true;
+			if (v == nullvalue()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -231,21 +242,17 @@ public:
 
 class cOutputFileInfo{
 
-	size_t lastfield;
-	size_t lastcolumn;
-	bool   allowmorefields;
+	size_t lastfield = 0;
+	size_t lastcolumn = 0;
+	bool   allowmorefields = true;
 
 	public:
 
 	std::vector<cAsciiColumnField> fields;
 
-	cOutputFileInfo(){
-		lastfield  = 0;
-		lastcolumn = 0;
-		allowmorefields = true;
-	}
+	cOutputFileInfo() {	};
 
-	void lockfields(){		
+	void lockfields() {
 		allowmorefields = false;
 	}
 
@@ -335,7 +342,7 @@ public:
 		FILE* fp = fileopen(dfnpath, "r");
 		std::string str;
 
-		size_t startcolumn = 1;
+		size_t startcolumn = 0;
 		filegetline(fp, str);
 		while (filegetline(fp, str)){
 
@@ -556,19 +563,19 @@ public:
 	}
 
 	bool getfield(const size_t findex, int& v){
-		size_t base = fields(findex).startcolumn - 1;
+		size_t base = fields(findex).startcol();
 		v = atoi(currentcolumns[base].c_str());
 		return true;
 	}
 
 	bool getfield(const size_t findex, double& v){
-		size_t base = fields(findex).startcolumn - 1;
+		size_t base = fields(findex).startcol();
 		v = atof(currentcolumns[base].c_str());
 		return true;
 	}
 
 	bool getfield(const size_t findex, std::vector<int>& v){
-		size_t base = fields(findex).startcolumn - 1;
+		size_t base = fields(findex).startcol();
 		size_t nb = fields(findex).nbands;
 		v.resize(nb);
 		for (size_t bi = 0; bi < nb; bi++){
@@ -579,7 +586,7 @@ public:
 	}
 
 	bool getfield(const size_t findex, std::vector<double>& v){
-		size_t base = fields(findex).startcolumn - 1;
+		size_t base = fields(findex).startcol();
 		size_t nb = fields(findex).nbands;
 		v.resize(nb);
 		for (size_t bi = 0; bi < nb; bi++){
@@ -590,7 +597,7 @@ public:
 	}
 
 	bool getfieldlog10(const size_t findex, std::vector<double>& v){
-		size_t base = fields(findex).startcolumn - 1;
+		size_t base = fields(findex).startcol();
 		size_t nb   = fields(findex).nbands;
 
 		v.resize(nb);

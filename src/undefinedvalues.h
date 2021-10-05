@@ -56,11 +56,6 @@ inline std::string undefinedvalue(const std::string&){
 	return ud_string();
 }
 
-//template<typename T>
-//T undefinedvalue(const T& v) {
-//	return (std::numeric_limits<T>::max)();
-//}
-
 template <class T>
 bool isdefined(const T& v){	
 	if (v == undefinedvalue(v)) return false;

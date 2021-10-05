@@ -539,6 +539,25 @@ bool cDirectoryAccess::wildcmp(std::string& wildpattern, std::string& stringpatt
 	return rval;
 }
 
+bool filegetline(FILE* fp, std::string& str)
+{
+	size_t buflen = 8192;//buffer length
+	str.clear();
+	std::vector<char> buf(buflen + 1);
+	while (fgets(&(buf[0]), (int)buflen, fp) != NULL) {
+		str += std::string(&(buf[0]));
+		size_t len = strlen(&(buf[0]));
+		if (len < buflen - 1) {
+			if (str[str.length() - 1] == 10) {
+				//strip linefeed character
+				str.resize(str.length() - 1);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 size_t countlines(const std::string filename)
 {
 	FILE* fp = fileopen(filename, "rb");	
