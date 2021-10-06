@@ -38,10 +38,10 @@ public:
 	size_t startcolumn = 0;//Zero based column index
 	std::string nullvaluestring;//String used as the null value
 
-	std::string longname;
-	std::string description;
-	std::string units;	
-
+	std::string longname;//String used as the long version of the name
+	std::string description;//String used as the description
+	std::string units;//String used as the units
+	std::string extra;//String used for extra unknown tags
 	
 	double nullvalue() const {
 		return atof(nullvaluestring.c_str());

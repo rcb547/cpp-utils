@@ -223,7 +223,7 @@ public:
 				std::string remainder = tokens[2];
 				tokens = tokenise(remainder, ',');
 				for (size_t i = 0; i < tokens.size(); i++) {
-					std::vector<std::string> t = tokenise(tokens[i], '=');
+					std::vector<std::string> t = tokenise(tokens[i], '=');					
 					if (strcasecmp(t[0], "unit") == 0 || strcasecmp(t[0], "units") == 0) {
 						F.units = t[1];
 					}
@@ -231,11 +231,13 @@ public:
 						F.longname = t[1];
 					}
 					else if (strcasecmp(t[0], "null") == 0) {
-						F.nullvaluestring = t[1];
-						//F.nullvalue = atof(t[1].c_str());
+						F.nullvaluestring = t[1];						
+					}
+					else if (strcasecmp(t[0], "desc") == 0 || strcasecmp(t[0], "description") == 0) {
+						F.description = t[1];
 					}
 					else {
-						F.description += tokens[i];
+						F.extra += tokens[i];
 					}
 				}
 			}
