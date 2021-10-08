@@ -66,9 +66,24 @@ public:
 		if (nullvaluestring.size() > 0) return true;
 		return false;
 	}
+
+	std::string fmtstr_single() const {
+		std::string s;
+		//if (nbands > 1) fmtstr += strprint("%lu", nbands);
+		s += strprint("%c", fmtchar);
+		s += strprint("%zu", width);
+		if (fmtchar != 'I') s += strprint(".%zu", decimals);
+		return s;
+	}
+
+	std::string fmtstr() const {
+		std::string s;
+		if (nbands > 1) s += strprint("%zu", nbands);
+		s += fmtstr_single();		
+		return s;
+	}
 	
 	cAsciiColumnField() {};
-
 	
 	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const int _fmtwidth, const int _fmtdecimals, const int _nbands = 1) {		
 		fileorder = _order;
@@ -292,6 +307,23 @@ class cOutputFileInfo{
 		FILE* fp = fileopen(pathname.c_str(), "w");		
 		for (size_t i = 0; i < fields.size(); i++){
 			std::string s = fields[i].simple_header_record();
+			fprintf(fp, s.c_str());
+		}
+		fclose(fp);
+	};
+
+	void write_csv_header(const std::string pathname) {
+		FILE* fp = fileopen(pathname.c_str(), "w");
+		fprintf(fp, "Name,Bands,Format,NullString,Units,Description\n");
+		for (size_t i = 0; i < fields.size(); i++) {
+			std::string s;
+			s += strprint("%s,",fields[i].name.c_str());
+			s += strprint("%zu,",fields[i].nbands);
+			s += strprint("%s,", fields[i].fmtstr_single().c_str());
+			s += strprint("%s,", fields[i].nullvaluestring.c_str());
+			s += strprint("%s,", fields[i].units.c_str());
+			s += strprint("%s", fields[i].description.c_str());
+			s += strprint("\n");
 			fprintf(fp, s.c_str());
 		}
 		fclose(fp);
