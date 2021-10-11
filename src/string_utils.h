@@ -13,6 +13,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdarg>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 template<typename T>
 void str2num(const std::string str, T& v)
@@ -218,6 +219,29 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 	}
 	return fields;
 }
+
+inline void settolower(std::string& s){
+	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+}
+
+inline std::string tolower(const std::string& s) {
+	std::string t = s;
+	settolower(t);
+	return t;
+}
+
+
+
+inline void settoupper(std::string& s) {	
+	std::transform(s.begin(), s.end(), s.begin(), std::toupper);	
+}
+
+inline std::string toupper(const std::string& s) {
+	std::string t = s;
+	settoupper(t);
+	return t;
+}
+
 #endif
 
 
