@@ -50,7 +50,7 @@ std::string commandlinestring(int argc, char** argv){
 };
 
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate){
-	std::string s = strprint("Version: %s Compiled at %s on %s\n", version.c_str(), compiletime.c_str(), compiledate.c_str());
+	std::string s = strprint("Version: %s Compiled at %s on %s", version.c_str(), compiletime.c_str(), compiledate.c_str());
 	return s;
 };
 

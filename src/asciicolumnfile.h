@@ -134,7 +134,7 @@ public:
 	};
 	
 	static int nullfieldindex(){
-		return UINT64_MAX;		
+		return INT_MAX;		
 	};
 
 	bool contains_non_numeric_characters(const std::string& str, size_t startpos)

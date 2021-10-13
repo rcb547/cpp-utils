@@ -229,8 +229,10 @@ public:
 		if (fmtchar == 'A' || fmtchar == 'a') {
 			return eFieldType::CHAR;
 		}
-		else{			
-			glog.warningmsg(_SRC_,"Unknown data type <%c>\n", fmtchar);			
+		else{						
+			std::string msg = strprint("Unknown data type <%c>\n%s\n", fmtchar,_SRC_.c_str());
+			//glog.warningmsg(msg);
+			std::cerr << msg << std::endl;
 		}
 		return eFieldType::REAL;
 	};
@@ -431,7 +433,8 @@ public:
 
 			if (rt != "" && rt != "DATA") {
 				std::string msg = strprint("\tSkipping DFN entry that does not have a record type 'RT=DATA;' or 'RT=;' on line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
-				glog.logmsg(0, msg);
+				//glog.logmsg(0, msg);
+				std::cerr << msg << std::endl;
 				continue;
 			}
 			
@@ -447,7 +450,8 @@ public:
 					msg += strprint("Removing %s.\n", tokens[1].c_str());
 					msg += strprint("\t%s\n", str.c_str());
 					geosoft_reported = true;
-					glog.logmsg(0, msg);
+					//glog.logmsg(0, msg);					
+					std::cerr << msg << std::endl;					
 					for (size_t i = 1; i < tokens.size() - 1; i++) {
 						tokens[i] = tokens[i + 1];
 					}
@@ -525,7 +529,8 @@ public:
 					std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
 					msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
 					msg += strprint("Making all data record types RT=%s;.\n", RT_string.c_str());
-					glog.logmsg(0, msg);
+					//glog.logmsg(0, msg);
+					std::cerr << msg << std::endl;
 					reported_mixing = true;
 				}
 			}
