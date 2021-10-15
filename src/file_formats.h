@@ -230,8 +230,7 @@ public:
 			return eFieldType::CHAR;
 		}
 		else{						
-			std::string msg = strprint("Unknown data type <%c>\n%s\n", fmtchar,_SRC_.c_str());
-			//glog.warningmsg(msg);
+			std::string msg = strprint("Unknown data type <%c>\n%s\n", fmtchar,_SRC_.c_str());			
 			std::cerr << msg << std::endl;
 		}
 		return eFieldType::REAL;
@@ -377,7 +376,7 @@ private:
 		toupper(s1);
 
 		if (s1 == "RT:A4") {
-			std::vector<std::string> t = tokenise(s2, ':');
+			auto t = tokenise(s2, ':');
 			cAsciiColumnField F2;
 			bool sttus = F2.parse_format_string(t[1]);
 			return true;
@@ -391,169 +390,222 @@ public:
 		read(dfnpath);
 	}
 
-	bool read(const std::string& dfnfile) {						
+	bool read(const std::string& dfnfile) {
 		fields.clear();
 
 		FILE* fp = fileopen(dfnfile, "r");
 		std::string str;
+		bool reported_mixing = false;
+		bool reported_badincrement = false;
+		bool reported_geosoft = false;
 
 		size_t datarec = 0;
 		int dfnlinenum = 0;
+		int lastfileorder = -1;
 		while (filegetline(fp, str)) {
 			dfnlinenum++;
+			//std::cout << str << std::endl;
 
-			if (strcasecmp(str, "end defn") == 0) {
-				break;
-			}
+			auto tk_space = tokenise(str, ' ');
+			auto tk_semicolon = tokenise(str, ';');
+			bool enddefn = false;
+			bool processrecord = true;
 
-			std::vector<std::string> tokens = tokenise(str, ';');
-			if (strcasecmp(tokens[1], "end defn") == 0) {
-				break;
-			}
-
-			cAsciiColumnField F;
-
-			int intorder = 0;
-			int n = std::sscanf(tokens[0].c_str(), "DEFN %d", &intorder);
-			F.fileorder = (size_t)intorder;
-
-			std::vector<std::string> t1 = tokenise(tokens[0], ',');
-			std::vector<std::string> t2 = tokenise(t1[0], '=');
-			std::vector<std::string> t3 = tokenise(t1[1], '=');
-
-			ST_string = t2[1];
-			std::string rt = t3[1];
-
-			if (ST_string != "RECD") {
-				std::string msg = _SRC_;
-				msg += strprint("\n\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
-				msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");
-				throw(std::runtime_error(msg));
-			}
-
-			if (rt != "" && rt != "DATA") {
-				std::string msg = strprint("\tSkipping DFN entry that does not have a record type 'RT=DATA;' or 'RT=;' on line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
-				//glog.logmsg(0, msg);
-				std::cerr << msg << std::endl;
-				continue;
-			}
-			
-			//Detect and try to fix Geosoft style DFN
-			static bool geosoft_reported = false;
-			if (geosoft_reported == false && tokens.size() > 2) {
-				bool geosoft = detect_geosoft_error(tokens[1], tokens[2]);
-				if (geosoft) {
-					std::vector<std::string> tmp1 = tokenise(tokens[1], ':');
-					std::vector<std::string> tmp2 = tokenise(tokens[2], ':');
-					std::string msg = strprint("\n\tDetected Geosoft style DFN with two format specifiers (%s and %s) in the one entry ", tmp1[1].c_str(), tmp2[1].c_str());
-					msg += strprint("on line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
-					msg += strprint("Removing %s.\n", tokens[1].c_str());
-					msg += strprint("\t%s\n", str.c_str());
-					geosoft_reported = true;
-					//glog.logmsg(0, msg);					
-					std::cerr << msg << std::endl;					
-					for (size_t i = 1; i < tokens.size() - 1; i++) {
-						tokens[i] = tokens[i + 1];
+			//Check for 'END DEFN' 
+			for (size_t i = 0; i < tk_semicolon.size(); i++) {
+				if (strcasecmp(tk_semicolon[i], "end defn") == 0) {
+					enddefn = true;
+					if (i == 0) {
+						processrecord = false;
 					}
-					tokens.pop_back();
 				}
 			}
 
-			//Data DEFN
-			tokens = tokenise(tokens[1], ':');
-			F.name = tokens[0];
-			std::string formatstr = tokens[1];
-
-			F.parse_format_string(formatstr);
-
-			if (F.valid_fmttype() == false) {
-				std::string msg = _SRC_;
-				msg += strprint("\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
-				msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), F.validfmttypes.c_str());
-				throw(std::runtime_error(msg));
+			if (strcasecmp(tk_space[0], "defn") != 0) {
+				std::string msg;
+				msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+				msg += strprint("\tSkipping DFN entry that does not begin with 'DEFN' or 'END DEFN'\n");
+				std::cerr << msg << std::endl;
+				processrecord = false;
 			}
 
-			if (F.nbands < 1 || F.width < 1 || F.decimals < 0) {
-				std::string msg = _SRC_;
-				msg += strprint("\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());
-				msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
-				throw(std::runtime_error(msg));
+			if (dfnlinenum == 28) {
+				int dummy = 0;
 			}
 
-			//Parse the rest
-			if (tokens.size() > 2) {
-				int nea = 0;
-				std::string remainder = tokens[2];
-				tokens = tokenise(remainder, ',');
-				for (size_t i = 0; i < tokens.size(); i++) {
-					std::vector<std::string> t = tokenise(tokens[i], '=');					
-					if (t.size() == 1) {						
-						nea++;
-						std::string eaname = strprint("extra%d",nea);						
-						std::pair<std::string, std::string> p(eaname, tokens[i]);
-						F.atts.insert(p);						
+			if (processrecord) {
+				cAsciiColumnField F;
+
+				int order = 0;
+				int n = std::sscanf(tk_semicolon[0].c_str(), "DEFN %d", &order);				
+				F.fileorder = (size_t) order;
+				if (lastfileorder == -1) {
+					if (F.fileorder != 1 && F.fileorder != 0) {
+						std::string msg;
+						msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+						msg += strprint("\tDEFN number does not start at 0 or 1. Check recommended.\n");						
+						std::cerr << msg << std::endl;
 					}
-					else if (t.size() == 2) {
-						if (strcasecmp(t[0], "unit") == 0 || strcasecmp(t[0], "units") == 0) {
-							F.units = t[1];							
+				}
+				else {
+					if(reported_badincrement==false){
+						if (F.fileorder != (int)(lastfileorder + 1)) {
+							std::string msg;
+							msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+							msg += strprint("\tDEFN numbers are not incrementing by 1. Check recommended.\n");
+							std::cerr << msg << std::endl;
+							reported_badincrement = true;
+						}						
+					}
+				}
+				
+
+				auto t1 = tokenise(tk_semicolon[0], ',');
+				auto t2 = tokenise(t1[0], '=');
+				auto t3 = tokenise(t1[1], '=');
+
+				ST_string = t2[1];
+				std::string rt = t3[1];
+
+				if (ST_string != "RECD") {
+					std::string msg;					
+					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+					msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");					
+					throw(std::runtime_error(msg));
+				}
+
+				if (rt != "" && rt != "DATA") {
+					std::string msg;
+					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+					msg += strprint("\tSkipping DFN entry that does not have a record type 'RT=DATA;' or 'RT=;'\n");
+					std::cerr << msg << std::endl;
+					continue;
+				}
+
+				//Detect and try to fix Geosoft style DFN				
+				if (reported_geosoft == false && tk_semicolon.size() > 2) {
+					bool geosoft = detect_geosoft_error(tk_semicolon[1], tk_semicolon[2]);
+					if (geosoft) {
+						auto tmp1 = tokenise(tk_semicolon[1], ':');
+						auto tmp2 = tokenise(tk_semicolon[2], ':');
+						std::string msg;
+						msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+						msg += strprint("\tDetected Geosoft style DFN with two format specifiers (%s and %s) in the one entry ", tmp1[1].c_str(), tmp2[1].c_str());
+						msg += strprint("\tRemoving %s.\n", tk_semicolon[1].c_str());
+						std::cerr << msg << std::endl;
+						reported_geosoft = true;						
+						for (size_t i = 1; i < tk_semicolon.size() - 1; i++) {
+							tk_semicolon[i] = tk_semicolon[i + 1];
 						}
-						else if (strcasecmp(t[0], "name") == 0) {
-							F.longname = t[1];							
-						}
-						else if (strcasecmp(t[0], "null") == 0) {
-							F.nullvaluestring = t[1];							
-						}
-						else if (strcasecmp(t[0], "desc") == 0 || strcasecmp(t[0], "description") == 0) {
-							F.description = t[1];							
-						}
-						else {							
-							std::pair<std::string, std::string> p(tolower(t[0]), t[1]);
+						tk_semicolon.pop_back();
+					}
+				}
+
+				
+				//Data DEFN				
+				auto colon_tokens = tokenise(tk_semicolon[1], ':');
+				F.name = colon_tokens[0];
+				if (strcasecmp(F.name,"end defn")==0){
+					std::string msg;
+					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+					msg += strprint("\t'END DEFN' is out of place\n");
+					std::cerr << msg << std::endl;
+					continue;					
+				}
+
+				std::string formatstr = colon_tokens[1];
+
+				F.parse_format_string(formatstr);
+
+				if (F.valid_fmttype() == false) {
+					std::string msg;					
+					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+					msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), F.validfmttypes.c_str());
+					throw(std::runtime_error(msg));
+				}
+
+				if (F.nbands < 1 || F.width < 1 || F.decimals < 0) {
+					std::string msg = _SRC_;					
+					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+					msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
+					throw(std::runtime_error(msg));
+				}
+
+				//Parse the rest
+				if (colon_tokens.size() > 2) {
+					int nea = 0;
+					std::string remainder = colon_tokens[2];
+					auto tk_comma = tokenise(remainder, ',');
+					for (size_t i = 0; i < tk_comma.size(); i++) {
+						auto tk_equal = tokenise(tk_comma[i], '=');
+						if (tk_equal.size() == 1) {
+							nea++;
+							std::string eaname = strprint("extra%d", nea);
+							std::pair<std::string, std::string> p(eaname, tk_comma[i]);
 							F.atts.insert(p);
 						}
+						else if (tk_equal.size() == 2) {
+							if (strcasecmp(tk_equal[0], "unit") == 0 || strcasecmp(tk_equal[0], "units") == 0) {
+								F.units = tk_equal[1];
+							}
+							else if (strcasecmp(tk_equal[0], "name") == 0) {
+								F.longname = tk_equal[1];
+							}
+							else if (strcasecmp(tk_equal[0], "null") == 0) {
+								F.nullvaluestring = tk_equal[1];
+							}
+							else if (strcasecmp(tk_equal[0], "desc") == 0 || strcasecmp(tk_equal[0], "description") == 0) {
+								F.description = tk_equal[1];
+							}
+							else {
+								std::pair<std::string, std::string> p(tolower(tk_equal[0]), tk_equal[1]);
+								F.atts.insert(p);
+							}
+						}
+						else {
+							std::string msg;							
+							msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+							msg += strprint("\tunknown erroe\n");
+							throw(std::runtime_error(msg));
+						}
 					}
-					else {
-						std::string msg = _SRC_;
-						msg += strprint("\n\tError parsing line %d of DFN file %s\n", dfnlinenum, dfnfile.c_str());						
-						msg += strprint("\t%s\n", str.c_str());						
-						throw(std::runtime_error(msg));
-					}						
-				}								
-			}
-
-			if (datarec == 0) {
-				RT_string = rt;
-			}
-			else {
-				static bool reported_mixing = false;
-				if (reported_mixing == false && rt != RT_string) {
-					std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
-					msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
-					msg += strprint("Making all data record types RT=%s;.\n", RT_string.c_str());
-					//glog.logmsg(0, msg);
-					std::cerr << msg << std::endl;
-					reported_mixing = true;
 				}
-			}
 
-			if (datarec == 0 && rt == "DATA") {
-				if (!F.ischar() && F.width != 4) {
-					cAsciiColumnField R;
-					R.name = "RT";
-					R.longname = "Record type";
-					R.fileorder = (size_t)0;
-					R.fmtchar = 'A';
-					R.width = 4;
-					R.decimals = 0;
-					R.nbands = 1;
-					fields.push_back(R);
-					datarec++;
+				if (datarec == 0) {
+					RT_string = rt;
 				}
+				else {					
+					if (reported_mixing == false && rt != RT_string) {
+						std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
+						msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
+						msg += strprint("Making all data record types RT=%s;.\n", RT_string.c_str());
+						std::cerr << msg << std::endl;
+						reported_mixing = true;
+					}
+				}
+
+				if (datarec == 0 && rt == "DATA") {
+					if (!F.ischar() && F.width != 4) {
+						cAsciiColumnField R;
+						R.name = "RT";
+						R.longname = "Record type";
+						R.fileorder = (size_t)0;
+						R.fmtchar = 'A';
+						R.width = 4;
+						R.decimals = 0;
+						R.nbands = 1;
+						fields.push_back(R);
+						datarec++;
+					}
+				}
+				//F.print();
+				lastfileorder = F.fileorder;
+				fields.push_back(F);
+				datarec++;
 			}
-			//F.print();
-			fields.push_back(F);
-			datarec++;
 		};
 		fclose(fp);
+		std::cerr << std::flush;
 
 		size_t startchar = 0;
 		size_t startcolumn = 0;
