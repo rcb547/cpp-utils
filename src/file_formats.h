@@ -31,7 +31,7 @@ private:
 public:
 	inline const static std::string validfmttypes = "aAiIeEfF";
 
-	std::string name;
+	std::string name;//String used as the shorthand name of the field
 	size_t fileorder = 0;//Zero based order of field in the file
 	size_t nbands = 0;//Number of bands in the field
 	char fmtchar = 'E';//Field type notation
@@ -421,7 +421,7 @@ public:
 				}
 			}
 
-			if (strcasecmp(tk_space[0], "defn") != 0) {
+			if (strncasecmp(tk_space[0], "defn",4) != 0) {
 				std::string msg;
 				msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
 				msg += strprint("\tSkipping DFN entry that does not begin with 'DEFN' or 'END DEFN'\n");
@@ -435,31 +435,7 @@ public:
 
 			if (processrecord) {
 				cAsciiColumnField F;
-
-				int order = 0;
-				int n = std::sscanf(tk_semicolon[0].c_str(), "DEFN %d", &order);				
-				F.fileorder = (size_t) order;
-				if (lastfileorder == -1) {
-					if (F.fileorder != 1 && F.fileorder != 0) {
-						std::string msg;
-						msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
-						msg += strprint("\tDEFN number does not start at 0 or 1. Check recommended.\n");						
-						std::cerr << msg << std::endl;
-					}
-				}
-				else {
-					if(reported_badincrement==false){
-						if (F.fileorder != (int)(lastfileorder + 1)) {
-							std::string msg;
-							msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
-							msg += strprint("\tDEFN numbers are not incrementing by 1. Check recommended.\n");
-							std::cerr << msg << std::endl;
-							reported_badincrement = true;
-						}						
-					}
-				}
-				
-
+								
 				auto t1 = tokenise(tk_semicolon[0], ',');
 				auto t2 = tokenise(t1[0], '=');
 				auto t3 = tokenise(t1[1], '=');
@@ -498,6 +474,30 @@ public:
 							tk_semicolon[i] = tk_semicolon[i + 1];
 						}
 						tk_semicolon.pop_back();
+					}
+				}
+
+				//Get DEFN Number
+				int order = 0;
+				int n = std::sscanf(tk_semicolon[0].c_str(), "DEFN%d", &order);
+				F.fileorder = (size_t)order;
+				if (lastfileorder == -1) {
+					if (F.fileorder != 1 && F.fileorder != 0) {
+						std::string msg;
+						msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+						msg += strprint("\tDEFN number does not start at 0 or 1. Check recommended.\n");
+						std::cerr << msg << std::endl;
+					}
+				}
+				else {
+					if (reported_badincrement == false) {
+						if (F.fileorder != (int)(lastfileorder + 1)) {
+							std::string msg;
+							msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
+							msg += strprint("\tDEFN numbers are not incrementing by 1. Check recommended.\n");
+							std::cerr << msg << std::endl;
+							reported_badincrement = true;
+						}
 					}
 				}
 

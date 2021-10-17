@@ -24,7 +24,7 @@ class cAsciiColumnFile {
 
 private:	
 
-	std::ifstream ifs;
+	std::ifstream IFS;
 	size_t recordsreadsuccessfully = 0;
 	std::string currentrecord;		
 	std::vector<std::string> colstrings;
@@ -63,8 +63,8 @@ public:
 	bool openfile(const std::string& datafilename){
 		std::string name = datafilename;
 		fixseparator(name);
-		ifs.open(datafilename, std::ifstream::in);
-		if (!ifs) {
+		IFS.open(datafilename, std::ifstream::in);
+		if (!IFS) {
 			glog.errormsg(_SRC_,"Could not open file %s\n",datafilename.c_str());
 		}
 		return true;
@@ -200,16 +200,16 @@ public:
 		
 	bool skiprecords(const size_t& nskip) {		
 		for (size_t i = 0; i < nskip; i++) {			
-			if (ifs.eof()) return false;
-			std::getline(ifs, currentrecord);						
+			if (IFS.eof()) return false;
+			std::getline(IFS, currentrecord);						
 		}
 		return true;
 	}
 	   	  
 	bool readnextrecord() {
-		if (ifs.eof()) return false;
-		std::getline(ifs, currentrecord);
-		if (ifs.eof() && currentrecord.size() == 0){
+		if (IFS.eof()) return false;
+		std::getline(IFS, currentrecord);
+		if (IFS.eof() && currentrecord.size() == 0){
 			return false;			
 		}	
 		recordsreadsuccessfully++;
@@ -359,11 +359,11 @@ public:
 		}
 	};
 	
-	size_t readnextgroup(const size_t& fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields){
-		
+	size_t readnextgroup(const size_t& fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields) {
+
 		size_t nfields = fields.size();
 		size_t numcolumns = ncolumns();
-		if (ifs.eof()) return 0;
+		if (IFS.eof()) return 0;
 
 		intfields.clear();
 		doublefields.clear();
@@ -372,12 +372,12 @@ public:
 
 		int lastline;
 		size_t count = 0;
-		do{
+		do {
 			if (recordsreadsuccessfully == 0) {
-				readnextrecord();
+				readnextrecord();//Put the first record in
 			}
-			
-			if (parserecord() != numcolumns){
+
+			if (parserecord() != numcolumns) {
 				continue;
 			}
 			int line;
@@ -385,29 +385,94 @@ public:
 
 			if (count == 0)lastline = line;
 
-			if (line != lastline) return count;			
+			if (line != lastline) return count;
 
-			for (size_t fi = 0; fi < nfields; fi++){
+			for (size_t fi = 0; fi < nfields; fi++) {
 				size_t nbands = fields[fi].nbands;
-				if (fields[fi].datatype() == eFieldType::INTEGER){
+				if (fields[fi].datatype() == eFieldType::INTEGER) {
 					std::vector<int> vec;
 					getfieldbyindex(fi, vec);
-					for (size_t bi = 0; bi < nbands; bi++){
+					for (size_t bi = 0; bi < nbands; bi++) {
 						intfields[fi].push_back(vec[bi]);
 					}
 				}
-				else{
+				else {
 					std::vector<double> vec;
 					getfieldbyindex(fi, vec);
-					for (size_t bi = 0; bi < nbands; bi++){
+					for (size_t bi = 0; bi < nbands; bi++) {
 						doublefields[fi].push_back(vec[bi]);
 					}
 				}
 			}
 			count++;
-		}while(readnextrecord());
+		} while (readnextrecord());
 		return count;
 	};
+
+	void rewind() {
+		IFS.clear();
+		IFS.seekg(0);
+	}
+
+	size_t scan_for_line_index(const size_t& field_index, std::vector<unsigned int>& line_index_start, std::vector<unsigned int>& line_index_count, std::vector<unsigned int>& line_number)
+	{
+		_GSTITEM_
+		rewind();
+		size_t fi = field_index;
+		size_t i1 = fields[fi].startchar;
+		size_t i2 = fields[fi].endchar();
+
+		unsigned int n = 0;		
+		std::string s;
+
+		int width = (int)(i2 - i1 + 1);
+		unsigned int lastline = 0;
+		size_t nlines = 0;
+		while (std::getline(IFS, s)) {
+			std::string t = s.substr(i1, width);
+			unsigned int lnum = atoi(t.data());
+			if (lnum != lastline) {
+				line_number.push_back(lnum);
+				line_index_start.push_back(n);
+				line_index_count.push_back(1);
+				lastline = lnum;
+			}
+			else {
+				line_index_count.back()++;
+			}
+			n++;
+		}
+		rewind();
+		return n;
+	}
+
+	std::vector<bool>  scan_for_groupby_fields(const std::vector<unsigned int>& line_index_count)
+	{
+		_GSTITEM_		
+		//Rewind first
+		rewind();		
+		std::vector<bool> groupby(fields.size(), true);
+		std::string s, t;
+		int nl = std::min((int)2, (int)line_index_count.size());
+		for (size_t li = 0; li < nl; li++) {
+			std::getline(IFS, s);
+			for (size_t si = 1; si < line_index_count[li]; si++) {
+				std::getline(IFS, t);
+				for (size_t fi = 0; fi < fields.size(); fi++) {
+					if (groupby[fi] == true) {
+						size_t i1 = fields[fi].startchar;
+						size_t i2 = fields[fi].endchar();
+						size_t width = i2 - i1 + 1;
+						std::string a = s.substr(i1, width);
+						std::string b = t.substr(i1, width);
+						if (a != b) groupby[fi] = false;
+					}
+				}
+			}
+		}
+		rewind();
+		return groupby;
+	}
 };
 
 #endif
