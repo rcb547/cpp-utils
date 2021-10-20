@@ -11,10 +11,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <vector>
 #include <Eigen/Dense>
-typedef Eigen::VectorXd VectorDouble;
-typedef Eigen::MatrixXd MatrixDouble;
+typedef Eigen::VectorXd Vector;
+typedef Eigen::MatrixXd Matrix;
 
-#include "random_utils.h"
+//#include "random_utils.h"
 
 template<typename T>
 void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name)
@@ -57,12 +57,12 @@ void writetofile(const VecType& x, const std::string& path)
 	}	
 };
 
-std::vector<double> copy(const VectorDouble& d) {
+std::vector<double> copy(const Vector& d) {
 	std::vector<double> v((double*)(d.data()), (double*)(d.data() + d.size()));
 	return v;
 };
 
-VectorDouble copy(const std::vector<double>& d) {
+Vector copy(const std::vector<double>& d) {
 	Eigen::VectorXd v(d.size());	
 	for (size_t i = 0; i < d.size(); i++) {
 		v[i] = d[i];
@@ -137,8 +137,8 @@ std::vector<T> mvnrand_lowercholesky(const Eigen::Matrix<T, -1, -1>& L)
 {
 	//L - lower diagonal of the Cholesky decomposition
 	size_t n = L.rows();
-	VectorDouble u = get_nrand<double>(n, 0.0, 1.0);	
-	VectorDouble v = L * u;
+	Vector u = get_nrand<double>(n, 0.0, 1.0);	
+	Vector v = L * u;
 	std::vector<double> x(n);
 	for (size_t i = 0; i < n; i++) {
 		x[i] = v[i];
@@ -154,16 +154,16 @@ std::vector<T> mvnrand_covariance(const Eigen::Matrix<T, -1, -1>& C)
 };
 
 template<typename T>
-T mvgaussian_pdf(const VectorDouble& m0, const Eigen::Matrix<T, -1, -1>& C, const VectorDouble& m)
+T mvgaussian_pdf(const Vector& m0, const Eigen::Matrix<T, -1, -1>& C, const Vector& m)
 {
 	size_t k = m0.rows();
-	MatrixDouble I = MatrixDouble::Identity(k, k);
+	Matrix I = Matrix::Identity(k, k);
 
-	Eigen::FullPivLU<MatrixDouble> lu(C);
-	MatrixDouble invC = lu.solve(I);
+	Eigen::FullPivLU<Matrix> lu(C);
+	Matrix invC = lu.solve(I);
 	double detC = lu.determinant();
 
-	VectorDouble dm = m - m0;
+	Vector dm = m - m0;
 	double a = -0.5 * mtAm(dm, invC);
 	double pdf = exp(a) / sqrt(pow(TWOPI, k) * detC);
 	return pdf;
