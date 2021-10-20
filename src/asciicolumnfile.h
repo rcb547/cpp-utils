@@ -174,7 +174,7 @@ public:
 					}
 				}
 			}
-			int reclen = fields.back().endchar();
+			size_t reclen = fields.back().endchar();
 			if (currentrecord.size() < reclen) return false;
 		}
 				
@@ -193,7 +193,7 @@ public:
 	int fieldindexbyname(const std::string& fieldname) const
 	{
 		for (size_t fi = 0; fi < fields.size(); fi++){
-			if (strcasecmp(fields[fi].name, fieldname) == 0) return fi;
+			if (strcasecmp(fields[fi].name, fieldname) == 0) return (int)fi;
 		}
 		return -1;
 	}
@@ -274,7 +274,7 @@ public:
 	}
 
 	template<typename T>
-	inline void getcolumns(const size_t& columnnumber, std::vector<T>& vec, const int& n) const
+	inline void getcolumns(const size_t& columnnumber, std::vector<T>& vec, const size_t& n) const
 	{
 		vec.resize(n);
 		for (size_t i = 0; i < n; i++) {
@@ -330,7 +330,7 @@ public:
 			if (fd.flip) {
 				for (size_t i = 0; i < n; i++) {					
 					if (isdefined(vec[i])) {
-						vec[i] *= -1.0;
+						vec[i] *= (T)-1;
 					}
 				}
 			}
@@ -344,7 +344,7 @@ public:
 			getfieldbyindex(findex, vec);
 			if (fd.flip) {
 				for (size_t i = 0; i < n; i++) {
-					if (isdefined(vec[i])) vec[i] *= -1.0;
+					if (isdefined(vec[i])) vec[i] *= (T)-1;
 				}
 			}
 			return true;

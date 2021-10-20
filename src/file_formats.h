@@ -599,7 +599,7 @@ public:
 					}
 				}
 				//F.print();
-				lastfileorder = F.fileorder;
+				lastfileorder = (int)F.fileorder;
 				fields.push_back(F);
 				datarec++;
 			}
