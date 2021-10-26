@@ -43,35 +43,10 @@ public:
 
 	double reportnow(){
 		double e = etimenow();
-		printf("Elapsed time = %lf\n", e);
+		std::cout << "Elapsed time = " << e << std::endl;
 		return e;
 	}
 
-};
-
-class cStopWatch1{
-
-	double t0;
-	double t1;
-
-public:
-
-	cStopWatch1(){ reset(); }
-	void start(){ t0 = gettime(); }
-	void stop(){ t1 = gettime(); }
-	void reset(){
-		t1 = gettime();
-		t0 = gettime();
-	}
-
-	double etime(){
-		return t1 - t0;
-	}
-
-	double etimenow(){
-		t1 = gettime();
-		return t1 - t0;
-	}
 };
 
 #endif
