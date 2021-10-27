@@ -91,6 +91,8 @@ public:
 	
 	const std::vector<std::string>& currentrecord_columns() const { return colstrings; };
 
+	void clear_currentrecord() { CurrentRecord.clear(); };
+
 	void set_record_length(const size_t& length) {
 		RecordLength = length;
 	}
@@ -519,6 +521,60 @@ public:
 		return count;
 	};
 	*/
+
+	
+	size_t readnextgroup(const size_t& fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields) {
+
+		size_t nfields = fields.size();
+		size_t numcolumns = ncolumns();
+		if (IFS.eof()) return 0;
+
+		intfields.clear();
+		doublefields.clear();
+		intfields.resize(fields.size());
+		doublefields.resize(fields.size());
+
+		int lastline;
+		size_t count = 0;
+		//Leave the last read record (from the next line) up the spout for next time
+		do {
+			if (CurrentRecord.empty()) {
+				load_next_record();//Put the first record in
+			}
+
+			if (parserecord() != numcolumns) {
+				continue;
+			}
+
+			int line;
+			getfieldbyindex(fgroupindex, line);
+
+			if (count == 0) lastline = line;
+
+			if (line != lastline) return count;
+
+			for (size_t fi = 0; fi < nfields; fi++) {
+				size_t nbands = fields[fi].nbands;
+				if (fields[fi].datatype() == eFieldType::INTEGER) {
+					std::vector<int> vec;
+					getfieldbyindex(fi, vec);
+					for (size_t bi = 0; bi < nbands; bi++) {
+						intfields[fi].push_back(vec[bi]);
+					}
+				}
+				else {
+					std::vector<double> vec;
+					getfieldbyindex(fi, vec);
+					for (size_t bi = 0; bi < nbands; bi++) {
+						doublefields[fi].push_back(vec[bi]);
+					}
+				}
+			}
+			count++;
+		} while (load_next_record());
+		return count;
+	};
+	
 
 	size_t scan_for_line_index(const int& field_index, std::vector<unsigned int>& line_index_start, std::vector<unsigned int>& line_index_count, std::vector<unsigned int>& line_number)
 	{
