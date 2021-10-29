@@ -18,12 +18,11 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 #include "file_utils.h"
 #include "file_formats.h"
+#include "fielddefinition.h"
 
 #if defined _MPI_ENABLED
 #include "mpi_wrapper.h"
 #endif
-
-class cFieldDefinition;
 
 class cAsciiColumnFile {
 
@@ -136,7 +135,7 @@ public:
 	}
 
 	bool load_record(const size_t& n) {
-		bool status = goto_record(n);
+		goto_record(n);
 		if (std::getline(IFS, CurrentRecord)) {
 			return true;
 		}
@@ -240,10 +239,9 @@ public:
 			F.parse_format_string(formatstr);
 			F.nbands = row[inbands].get<size_t>();
 			fields.push_back(F);
-			if (iunits != csv::CSV_NOT_FOUND) F.units = row[iunits].get<std::string>();
-			if (ilongn != csv::CSV_NOT_FOUND) F.longname = row[ilongn].get<std::string>();
-			if (idesc != csv::CSV_NOT_FOUND) F.description = row[idesc].get<std::string>();
-			int dummy = 0;
+			if (iunits != (size_t)csv::CSV_NOT_FOUND) F.units = row[iunits].get<std::string>();
+			if (ilongn != (size_t)csv::CSV_NOT_FOUND) F.longname = row[ilongn].get<std::string>();
+			if (idesc != (size_t)csv::CSV_NOT_FOUND) F.description = row[idesc].get<std::string>();
 		}
 
 		size_t startchar = 0;
@@ -583,7 +581,7 @@ public:
 		const size_t& i1 = fields[fi].startchar;
 		const size_t& width = fields[fi].width;		
 		
-		unsigned int lastline;		
+		unsigned int lastline=-1;		
 		rewind();		
 		unsigned int nread = 0;
 		while (load_next_record()) {
@@ -608,7 +606,7 @@ public:
 	{
 		_GSTITEM_						
 		std::vector<bool> groupby(fields.size(), true);		
-		int nltocheck = std::min((int)4, (int)line_index_count.size());
+		size_t nltocheck = std::min((size_t)4, line_index_count.size());
 		rewind();
 		for (size_t li = 0; li < nltocheck; li++) {			
 			std::string first = get_next_record();

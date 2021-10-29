@@ -68,12 +68,12 @@ public:
 		return startcolumn;
 	}
 
-	const size_t endcol() const //Zero based end column index
+	size_t endcol() const //Zero based end column index
 	{
 		return startcolumn - 1 + nbands;
 	}
 
-	const size_t endchar() const
+	size_t endchar() const
 	{		
 		return startchar - 1 + (nbands*width);
 	}
@@ -378,8 +378,8 @@ private:
 		if (s1 == "RT:A4") {
 			auto t = tokenise(s2, ':');
 			cAsciiColumnField F2;
-			bool sttus = F2.parse_format_string(t[1]);
-			return true;
+			bool status = F2.parse_format_string(t[1]);
+			return status;
 		}
 		return false;
 	}
@@ -408,13 +408,11 @@ public:
 
 			auto tk_space = tokenise(str, ' ');
 			auto tk_semicolon = tokenise(str, ';');
-			bool enddefn = false;
 			bool processrecord = true;
 
 			//Check for 'END DEFN' 
 			for (size_t i = 0; i < tk_semicolon.size(); i++) {
 				if (strcasecmp(tk_semicolon[i], "end defn") == 0) {
-					enddefn = true;
 					if (i == 0) {
 						processrecord = false;
 					}
@@ -427,10 +425,6 @@ public:
 				msg += strprint("\tSkipping DFN entry that does not begin with 'DEFN' or 'END DEFN'\n");
 				std::cerr << msg << std::endl;
 				processrecord = false;
-			}
-
-			if (dfnlinenum == 28) {
-				int dummy = 0;
 			}
 
 			if (processrecord) {
@@ -479,7 +473,7 @@ public:
 
 				//Get DEFN Number
 				int order = 0;
-				int n = std::sscanf(tk_semicolon[0].c_str(), "DEFN%d", &order);
+				std::sscanf(tk_semicolon[0].c_str(), "DEFN%d", &order);
 				F.fileorder = (size_t)order;
 				if (lastfileorder == -1) {
 					if (F.fileorder != 1 && F.fileorder != 0) {
@@ -491,7 +485,7 @@ public:
 				}
 				else {
 					if (reported_badincrement == false) {
-						if (F.fileorder != (int)(lastfileorder + 1)) {
+						if ((int)F.fileorder != (lastfileorder + 1)) {
 							std::string msg;
 							msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), str.c_str());
 							msg += strprint("\tDEFN numbers are not incrementing by 1. Check recommended.\n");
