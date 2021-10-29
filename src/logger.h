@@ -178,6 +178,21 @@ public:
 		logmsg(strprint("%s\n",srccodeloc.c_str()));
 	}
 
+	void errormsg(const std::string& msg) {
+		errormsg(msg.c_str());
+	}
+
+	void errormsg(const char* str)
+	{		
+		std::string msg = "**Error: " + std::string(str);		
+		#if defined MATLAB_MEX_FILE
+			mexErrMsgTxt(msg.c_str());
+		#else
+			logmsg(msg);
+			throw(std::runtime_error(msg));
+		#endif
+	}
+
 	void errormsg(const std::string& srccodeloc, const char* fmt, ...)
 	{
 		va_list vargs;
