@@ -37,7 +37,7 @@ public:
 
 	enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };	
 	size_t coff = 1;//First column in ascii files for user perspective
-	TYPE type;//The type of definition
+	TYPE type = TYPE::UNAVAILABLE;//The type of definition
 	char op = ' ';
 	double opval = 0.0;
 	bool flip = false;//flip polarity or not
@@ -49,8 +49,8 @@ public:
 	
 	cFieldDefinition() { }
 
-	TYPE definitiontype() const {
-		return type;
+	cFieldDefinition(const cBlock& b, const std::string& key) {
+		initialise(b, key);
 	}
 	
 	void initialise(const cBlock& b, const std::string& key)
@@ -102,6 +102,10 @@ public:
 		}		
 	}
 		
+	TYPE definitiontype() const {
+		return type;
+	}
+
 	template<typename T>
 	inline void getcolumn_val(const std::vector<std::string>& colstrings, const size_t& columnnumber, T& v) const
 	{

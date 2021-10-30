@@ -39,6 +39,11 @@ public:
 		loadfromfile(filename);
 	}
 
+	bool empty() {
+		if (Entries.empty() && Blocks.empty())return true;
+		return false;
+	}
+
 	void loadfromfile(const std::string& filename)
 	{
 		Filename = filename;
@@ -339,6 +344,7 @@ public:
 		}
 		return vec;
 	}
+
 	std::vector<double> getdoublevector(const std::string id) const
 	{		
 		std::vector<double> vec;
@@ -466,6 +472,19 @@ public:
 		}
 		value = getstringvalue(id);
 		return true;
+	}
+
+	//bookmark
+	template<typename T>
+	bool get(const std::string id, T& value, const T& defaultvalue) const
+	{
+		std::string e = getentry(id);
+		if (e.compare(ud_string()) == 0) {
+			value = defaultvalue;
+			return false;
+		}
+		bool status = getvalue(id,value);
+		return status;
 	}
 
 	std::vector<int> getmultipleints(const std::string id) const
