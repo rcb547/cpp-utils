@@ -22,6 +22,8 @@ class cFieldDefinition{
 
 private:
 	
+	bool initialised = false;
+
 	bool isnumeric(const std::string& rhs)
 	{
 		std::vector<std::string> tokens = tokenise(rhs, " \t,");
@@ -55,24 +57,28 @@ public:
 	
 	void initialise(const cBlock& b, const std::string& key)
 	{
-		int col;
+		int col;		
 		std::string rhs = b.getstringvalue(key);
 		if (rhs == ud_string()) {
 			type = cFieldDefinition::TYPE::UNAVAILABLE;
 			column = 0;
+			initialised = false;
 		}
 		else if (rhs.size() == 0) {
 			type = cFieldDefinition::TYPE::UNAVAILABLE;
 			column = 0;
+			initialised = true;
 		}
 		else if (strncasecmp(rhs, "Unavailable", 11) == 0) {
 			type = cFieldDefinition::TYPE::UNAVAILABLE;
 			column = 0;
+			initialised = true;
 		}
 		else if(isnumeric(rhs)){
 			type = cFieldDefinition::TYPE::NUMERIC;
 			column  = 0;
 			numericvalue = b.getdoublevector(key);			
+			initialised = true;
 		}		
 		else if (strncasecmp(rhs, "Column", 6) == 0){			
 			type = cFieldDefinition::TYPE::COLUMNNUMBER;		
@@ -80,6 +86,7 @@ public:
 			int n = sscanf(&(rhs.c_str()[6]), "%d %c %lf", &col, &op, &opval);
 			column = (size_t)col;
 			if (n == 1){ op = ' '; opval = 0.0; }
+			initialised = true;
 		}
 		else if (strncasecmp(rhs, "-Column", 7) == 0){
 			type = cFieldDefinition::TYPE::COLUMNNUMBER;
@@ -87,21 +94,36 @@ public:
 			int n = sscanf(&(rhs.c_str()[7]), "%d %c %lf", &col, &op, &opval);
 			column = (size_t)col;			
 			if (n == 1){ op = ' '; opval = 0.0; }			
+			initialised = true;
 		}		
 		else{
 			if(rhs[0]=='-'){
 				type = cFieldDefinition::TYPE::VARIABLENAME;
 				flip = true;
-				varname = rhs.substr(1, rhs.size()-1);
+				rhs = rhs.substr(1, rhs.size()-1);				
+				std::istringstream iss(rhs);
+				iss >> varname;
+				iss >> op;
+				iss >> opval;
+				initialised = true;
 			}
 			else {
 				type = cFieldDefinition::TYPE::VARIABLENAME;
 				flip = false;
-				varname = rhs;
-			}			
-		}		
+				//std::vector<std::string> t = tokenize(rhs);				
+				std::istringstream iss(rhs);
+				iss >> varname;
+				iss >> op;
+				iss >> opval;												
+				initialised = true;				
+			}						
+		}				
 	}
-		
+	
+	bool isinitialised() const {
+		return initialised;
+	}
+
 	TYPE definitiontype() const {
 		return type;
 	}
@@ -124,7 +146,6 @@ public:
 			}
 		}
 	}
-
 
 	template<typename T>
 	bool getvalue(const std::vector<std::string>& fields, T& v) const
@@ -199,13 +220,28 @@ public:
 	template<typename T>
 	void applyoperator(T& val) const {
 		if (op == ' ') return;
-		else if (op == '+') val += (T)opval;
-		else if (op == '-') val -= (T)opval;
+		else if (op == '+') {
+			val += (T)opval;
+		}
+		else if (op == '-') {
+			val -= (T)opval;
+		}
 		else if (op == '*') val *= (T)opval;
 		else if (op == '/') val /= (T)opval;
 		else glog.warningmsg(_SRC_,"Unknown operator %c\n", op);
 		return;
 	}	
+
+	template<typename T>
+	void apply_flip_and_operator(std::vector<T>& vec, const T& udval) const {		
+		if (flip == false && op == ' ') return;
+		for(size_t i=0; i<vec.size(); i++){
+			if (vec[i] == udval)continue;
+			if(flip)vec[i] *= (T)-1;
+			applyoperator(vec[i]);
+		}		
+		return;
+	}
 };
 
 #endif
