@@ -124,18 +124,11 @@ public:
 		fprintf(fp, s.c_str());		
 		return;
 	}
-
-	std::string identifier(const std::string entry) const
-	{
-		size_t index = entry.find("=");
-		std::string id = entry.substr(0, index - 1);
-		return trim(id);
-	}
 	
 	void printidentifiers() const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
-			std::cout << identifier(Entries.at(i)).c_str() << std::endl;
+			std::cout << key(Entries.at(i)).c_str() << std::endl;
 		}
 
 		for (size_t i = 0; i < Blocks.size(); i++){
@@ -144,6 +137,18 @@ public:
 
 	}
 	
+	std::string key(const std::string entry) const
+	{
+		size_t index = entry.find("=");
+		std::string id = entry.substr(0, index - 1);
+		return trim(id);
+	}
+	
+	std::string key(const size_t eindex) const
+	{
+		return key(Entries[eindex]);
+	}
+
 	std::string value(const std::string entry) const
 	{
 		size_t index = entry.find("=");
@@ -151,6 +156,11 @@ public:
 		if (len == 0)return std::string("");
 		std::string s = entry.substr(index + 1, len);
 		return trim(s);
+	}
+
+	std::string value(const size_t eindex) const
+	{
+		return value(Entries[eindex]);
 	}
 	
 	void printvalues()  const
@@ -179,7 +189,7 @@ public:
 			}
 		}
 		else{
-			return findidentifer(id);
+			return findkey(id);
 		}
 	}
 	
@@ -221,20 +231,20 @@ public:
 		return v;
 	};
 
-	size_t findidentiferindex(const std::string id) const
+	size_t findkeyindex(const std::string id) const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
-			if (strcasecmp(identifier(Entries[i]), id) == 0){
+			if (strcasecmp(key(Entries[i]), id) == 0){
 				return i;
 			}
 		}		
 		return ud_size_t();
 	}
 
-	std::string findidentifer(const std::string id) const
+	std::string findkey(const std::string id) const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
-			if (strcasecmp(identifier(Entries[i]), id) == 0){
+			if (strcasecmp(key(Entries[i]), id) == 0){
 				return Entries[i];
 			}
 		}

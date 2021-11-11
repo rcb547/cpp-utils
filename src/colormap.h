@@ -70,7 +70,7 @@ public:
 
 		cBlock B(lutfile);
 		size_t n = B.getsizetvalue("NrEntries");		
-		size_t p = B.findidentiferindex("LUT");		
+		size_t p = B.findkeyindex("LUT");
 		r.resize(n);
 		g.resize(n);
 		b.resize(n);
