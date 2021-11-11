@@ -12,14 +12,150 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <complex>
 #include <vector>
+#include <variant>
+#include <iomanip>
 #include "undefinedvalues.h"
 
-//typedef std::vector<double>  dvector;
-//typedef std::vector<dvector> dmatrix;
+//Short cut for setting std::fixed output witdh/decimals
+class ixd {
 
-//typedef std::complex<double> cdouble;
-//typedef std::vector<cdouble> cvector;
-//typedef std::vector<cvector> cmatrix;
+public:
+	const std::streamsize& width;	
+	ixd(const std::streamsize& _width)
+		: width(_width)
+	{	};
+
+	friend std::ostream& operator << (std::ostream& os, const ixd& fmt)
+	{
+		os << std::fixed;
+		os << std::setw(fmt.width);
+		//os << std::setprecision(0);
+		return os;
+	}
+
+};
+
+//Short cut for setting std::fixed output witdh/decimals
+class fxd {
+
+public:
+	const std::streamsize& width;
+	const std::streamsize& decimals;
+	fxd(const std::streamsize& _width, const std::streamsize& _decimals)
+		: width(_width), decimals(_decimals)
+	{	};
+
+	friend std::ostream& operator << (std::ostream& os, const fxd& fmt)
+	{
+		os << std::fixed;
+		os << std::setw(fmt.width);
+		os << std::setprecision(fmt.decimals);
+		return os;
+	}
+
+};
+
+//Short cut for setting std::scientific output witdh/decimals
+class exd {
+
+public:
+	const std::streamsize& width;
+	const std::streamsize& decimals;
+	exd(const std::streamsize& _width, const std::streamsize& _decimals)
+		: width(_width), decimals(_decimals)
+	{	};
+
+	friend std::ostream& operator << (std::ostream& os, const exd& fmt)
+	{
+		os << std::scientific;
+		os << std::setw(fmt.width);
+		os << std::setprecision(fmt.decimals);
+		return os;
+	}
+};
+
+
+
+typedef std::variant<double, int, float, char, std::vector<double>, std::vector<int>, std::vector<float>, std::vector<char>> cVrnt;
+template <typename KeyType, typename ValType, typename Compare = std::equal_to<KeyType>>
+
+//Unsorted vector of unique-key key,value pairs
+class cKeyVec : public std::vector<std::pair<KeyType, ValType>> {
+
+public:
+
+	Compare compare;
+	int keyindex(const KeyType& key) const {
+		for (int i = 0; i < size(); i++) {			
+			if (compare(key, (*this)[i].first)) return i;
+		}
+		return -1;
+	}
+
+	bool add(const std::pair<KeyType, ValType>& p) {
+		if (keyindex(p.first) < 0) {
+			push_back(p);
+			return true;
+		}
+		return false;
+	}
+
+	bool add(const KeyType& key, const ValType& val) {
+		if (keyindex(key) < 0) {
+			push_back(std::pair(key, val));
+			return true;
+		}
+		return false;
+	}
+
+	bool get(const KeyType& key, ValType& val) const {
+		int i = keyindex(key);
+		if (i < 0) {
+			val = ValType{};
+			return  false;
+		}
+		else val = (*this)[i].second;
+		return true;
+	}
+
+	//ValType& operator[](const KeyType& key) {
+	//	const& int i = keyindex(key);		
+	//	return ((*this)[i]).second;
+	//}
+	
+	std::pair<KeyType, ValType>&  pair(const KeyType& key) {
+		const int& i = keyindex(key);
+		std::pair<KeyType, ValType>& p = (*this)[i];
+		return p;
+	}
+	
+	ValType& cref(const KeyType& key) {
+		const int& i = keyindex(key);
+		return ((*this)[i]).second;		
+	}
+	
+	cKeyVec preferred_sort(const std::vector<std::string>& order) const {				
+		const cKeyVec& in = *this;
+		if (in.size() < 2)return *this;
+		
+		cKeyVec out;
+		for (size_t i = 0; i < order.size(); i++) {
+			int ki = in.keyindex(order[i]);
+			if (ki >= 0) {
+				out.add(in[ki]);
+			}
+		}
+
+		for (size_t i = 0; i < in.size(); i++) {			
+			out.add(in[i]);
+		}
+		return out;
+	}
+};
+
+//Case insensitive std::string KeyVec
+using cKeyVecCiStr = cKeyVec<std::string, std::string, caseinsensetiveequal<std::string>>;
+
 
 template<typename T>
 class cHistogramStats{
