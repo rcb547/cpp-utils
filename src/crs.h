@@ -67,6 +67,14 @@ public:
 		else if (datumprojection == "GDA94|MGA54") return 28354;
 		else if (datumprojection == "GDA94|MGA55") return 28355;
 		else if (datumprojection == "GDA94|MGA56") return 28356;		
+		else if (datumprojection == "GDA2020|Zone49") return 28349;
+		else if (datumprojection == "GDA2020|Zone50") return 28350;
+		else if (datumprojection == "GDA2020|Zone51") return 28351;
+		else if (datumprojection == "GDA2020|Zone52") return 28352;
+		else if (datumprojection == "GDA2020|Zone53") return 28353;
+		else if (datumprojection == "GDA2020|Zone54") return 28354;
+		else if (datumprojection == "GDA2020|Zone55") return 28355;
+		else if (datumprojection == "GDA2020|Zone56") return 28356;
 		else return -1;
 	}
 
