@@ -6,9 +6,9 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-//#ifndef _asciicolumnfile_H
-//#define _asciicolumnfile_H
-#pragma once
+#ifndef _asciicolumnfile_H
+#define _asciicolumnfile_H
+#pragma once 
 
 #include <cstdlib>
 #include <cstring>
@@ -69,7 +69,6 @@ private:
 		}
 		return rl;
 	}
-
 
 public:
 	enum class HeaderType { DFN, CSV, NONE } headertype = HeaderType::NONE;
@@ -207,11 +206,9 @@ public:
 		ST_string = H.get_ST_string();
 		RT_string = H.get_RT_string();
 	}
-
+	
 	bool parse_csv_header(const std::string& csvfile) {
-
 		fields.clear();
-
 		csv::CSVFormat csvfm;
 		std::vector<char> dc{ ',' };
 		std::vector<char> ws{ ' ','\t' };
@@ -220,29 +217,32 @@ public:
 		csvfm.header_row(0);
 		csv::CSVReader R(csvfile, csvfm);
 		csv::CSVRow row;
+
+
 		std::vector<std::string> cnames = R.get_col_names();
 		size_t iname = R.index_of("Name");
 		size_t inbands = R.index_of("Bands");
 		size_t ifmt = R.index_of("Format");
-		size_t inullstr = R.index_of("NullString");
-
-		size_t iunits = R.index_of("Units");
-		size_t idesc = R.index_of("Description");
-		size_t ilongn = R.index_of("LongName");
-
+				
 		//Name,Bands,Format,NullString,LongName
 		while (R.read_row(row)) {
 			cAsciiColumnField F;
 			F.fileorder = R.n_rows();
 			F.name = row[iname].get<std::string>();
-			F.nullvaluestring = row[inullstr].get<std::string>();
+			
 			std::string formatstr = row[ifmt].get<std::string>();
 			F.parse_format_string(formatstr);
 			F.nbands = row[inbands].get<size_t>();
-			fields.push_back(F);
-			if (iunits != (size_t)csv::CSV_NOT_FOUND) F.units = row[iunits].get<std::string>();
-			if (ilongn != (size_t)csv::CSV_NOT_FOUND) F.longname = row[ilongn].get<std::string>();
-			if (idesc != (size_t)csv::CSV_NOT_FOUND) F.description = row[idesc].get<std::string>();
+
+			for (int i = 0; i < cnames.size(); i++) {
+				std::string key = cnames[i];
+				std::string value = row[key].get<std::string>();
+				if (value.size() > 0) {
+					F.add_att(key, value);
+				}
+			}
+
+			fields.push_back(F);						
 		}
 
 		size_t startchar = 0;
@@ -256,6 +256,7 @@ public:
 		}
 		return true;
 	};
+	
 
 	bool contains_non_numeric_characters(const std::string& str, size_t startpos)
 	{
@@ -336,9 +337,10 @@ public:
 		std::vector<std::string> cs;
 		for (size_t i = 0; i < fields.size(); i++) {
 			cAsciiColumnField& f = fields[i];
+			std::string nullstr = f.nullstring();
 			for (size_t j = 0; j < f.nbands; j++) {
 				const std::string s = trim(CurrentRecord.substr(f.startchar + j * f.width, f.width));
-				if (s == f.nullvaluestring) {
+				if (s == nullstr) {
 					cs.push_back(std::string());
 				}
 				else cs.push_back(s);
@@ -496,7 +498,7 @@ public:
 
 			for (size_t fi = 0; fi < nfields; fi++) {
 				size_t nbands = fields[fi].nbands;
-				if (fields[fi].datatype() == eFieldType::INTEGER) {
+				if (fields[fi].datatype() == cAsciiColumnField::Type::INTEGER) {
 					std::vector<int> vec;
 					getfieldbyindex(fi, vec);
 					for (size_t bi = 0; bi < nbands; bi++) {
@@ -567,8 +569,6 @@ public:
 		}
 		rewind();
 		return groupby;
-	};
+	};	
 };
-
-//#endif
-
+#endif

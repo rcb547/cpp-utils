@@ -12,8 +12,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <stdlib.h>
 #include <cstring>
 #include <vector>
+#include <functional>
 #include <float.h>
 
+#include "string_utils.h"
 #include "general_utils.h"
 #include "blocklanguage.h"
 #include "asciicolumnfile.h"
@@ -36,19 +38,19 @@ private:
 	};
 
 public:
-
+	
+	std::string keyname = std::string();//A tag name for the definition
 	enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };	
 	size_t coff = 1;//First column in ascii files for user perspective
 	TYPE type = TYPE::UNAVAILABLE;//The type of definition
 	char op = ' ';
 	double opval = 0.0;
 	bool flip = false;//flip polarity or not
-
+	
 	std::string varname = std::string();//Variable name for variablename type defs
 	size_t column = ud_size_t();//Ascii file start column number for COLUMNUMBER type defs
 	std::vector<double> numericvalue;//Numeric value
-
-	
+		
 	cFieldDefinition() { }
 
 	cFieldDefinition(const cBlock& b, const std::string& key) {
@@ -57,7 +59,8 @@ public:
 	
 	void initialise(const cBlock& b, const std::string& key)
 	{
-		int col;		
+		int col;	
+		keyname = key;
 		std::string rhs = b.getstringvalue(key);
 		if (rhs == ud_string()) {
 			type = cFieldDefinition::TYPE::UNAVAILABLE;
@@ -109,8 +112,7 @@ public:
 			}
 			else {
 				type = cFieldDefinition::TYPE::VARIABLENAME;
-				flip = false;
-				//std::vector<std::string> t = tokenize(rhs);				
+				flip = false;				
 				std::istringstream iss(rhs);
 				iss >> varname;
 				iss >> op;
@@ -242,6 +244,22 @@ public:
 		}		
 		return;
 	}
+};
+
+typedef std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>> cFDMap;
+typedef std::pair<cFieldDefinition, cVrnt> cFDVar;
+
+
+class cFdVrnt {
+
+public:	
+	cFdVrnt(const cFieldDefinition& _fd, const cVrnt& _vrnt) {
+		fd  = _fd;
+		vnt = _vrnt;
+	}
+
+	cFieldDefinition fd;
+	cVrnt vnt;
 };
 
 #endif
