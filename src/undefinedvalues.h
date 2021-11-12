@@ -56,6 +56,10 @@ inline std::string undefinedvalue(const std::string&){
 	return ud_string();
 }
 
+inline char undefinedvalue(const char&) {
+	return 0;
+}
+
 template <class T>
 bool isdefined(const T& v){	
 	if (v == undefinedvalue(v)) return false;

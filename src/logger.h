@@ -187,8 +187,7 @@ public:
 		std::string msg = "**Error: " + std::string(str);		
 		#if defined MATLAB_MEX_FILE
 			mexErrMsgTxt(msg.c_str());
-		#else
-			logmsg(msg);
+		#else			
 			throw(std::runtime_error(msg));
 		#endif
 	}

@@ -224,7 +224,7 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 }
 
 inline void settolower(std::string& s){
-	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
 }
 
 inline std::string tolower(const std::string& s) {
@@ -236,7 +236,7 @@ inline std::string tolower(const std::string& s) {
 
 
 inline void settoupper(std::string& s) {	
-	std::transform(s.begin(), s.end(), s.begin(), ::toupper);	
+	std::transform(s.begin(), s.end(), s.begin(), std::toupper);
 }
 
 inline std::string toupper(const std::string& s) {
@@ -244,6 +244,44 @@ inline std::string toupper(const std::string& s) {
 	settoupper(t);
 	return t;
 }
+
+//case insensitive equal function
+inline bool ciequal(const std::string& a, const std::string& b)
+{
+	return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+		[](char x, char y) {
+			return tolower(x) == tolower(y);
+		});
+}
+
+//case insensitive lass function
+inline bool ciless(const std::string& a, const std::string& b)
+{
+	return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
+		[](char x, char y) {
+			return tolower(x) < tolower(y);
+		});
+}
+
+//case insensitive equal functor
+template <class T> struct caseinsensetiveequal {
+	bool operator() (const T& a, const T& b) const {
+		return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+			[](char x, char y) {
+				return tolower(x) == tolower(y);
+			});
+	}
+};
+
+//case insensitive less functor
+template <class T> struct caseinsensetiveless {
+	bool operator() (const T& a, const T& b) const {
+		return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
+			[](char x, char y) {
+				return tolower(x) < tolower(y);
+			});
+	}
+};
 
 #endif
 

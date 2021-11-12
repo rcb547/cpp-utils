@@ -298,9 +298,7 @@ template<typename T>
 void write(const std::string filename, const std::vector<T>& x)
 {
 	std::ofstream of(filename);
-	of.setf(std::ios_base::scientific);
-	//of.width(width);
-	//of.precision(precision);	
+	of.setf(std::ios_base::scientific);	
 	for (size_t i = 0; i < x.size(); i++) {				
 		of << x[i] << std::endl;		
 	}	
@@ -320,10 +318,7 @@ template<typename T>
 void write(std::string filename, const T& x)
 {
 	std::ofstream of(filename);
-	of.setf(std::ios_base::scientific);
-	//of.setf(std::scientific);
-	//of.width(width);
-	//of.precision(precision);		
+	of.setf(std::ios_base::scientific);	
 	of << x << std::endl;	
 }
 
