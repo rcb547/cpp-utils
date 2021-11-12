@@ -11,7 +11,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <cstring>
 #include <vector>
-#include <map>
 #include <fstream>
 
 #include "stacktrace.h"
@@ -96,7 +95,6 @@ public:
 	size_t startchar = 0;//Zero based character index	
 
 	cKeyVecCiStr atts;//Additional key=value pairs
-	//std::map<std::string, std::string> atts;
 	using KeyVal = std::pair<std::string, std::string>;
 	
 	cAsciiColumnField() {};
@@ -111,7 +109,6 @@ public:
 		nbands = _nbands;
 	};
 
-	
 	const size_t& startcol() const //Zero based start column index
 	{
 		return startcolumn;
@@ -144,6 +141,10 @@ public:
 		return val;
 	};
 	
+	std::optional<std::string> oget_att(const std::string& key) {
+
+	}
+
 	bool hasnullvalue() const {
 		return has_att(NULLSTR);
 	};
@@ -154,6 +155,10 @@ public:
 		T val = 0;
 		iss >> val;
 	}
+
+	std::string longname() const {
+		return get_att(LONGNAME);
+	};
 
 	std::string units() const {
 		return get_att(UNITS);
@@ -325,274 +330,6 @@ public:
 			else {
 				std::vector<char> vec;
 				vrnt = vec;
-			}
-		}
-		return true;
-	}
-};
-
-class cAsciiColumnFieldXX {
-
-private:
-	
-public:
-	enum class Type { REAL, INTEGER, CHAR };
-	inline const static std::string validfmttypes = "aAiIeEfF";
-
-	std::string name;//String used as the shorthand name of the field
-	size_t fileorder = 0;//Zero based order of field in the file
-	size_t nbands = 0;//Number of bands in the field
-	char fmtchar = 'E';//Field type notation
-	size_t width = 15;//Total width of field
-	size_t decimals = 6;//Nuber of places after the decimal point
-	size_t startchar = 0;//Zero based character index
-	size_t startcolumn = 0;//Zero based column index
-		
-	std::string nullvaluestring;//String used as the null value
-	std::string longname;//String used as the long version of the name
-	std::string description;//String used as the description	
-	std::string units;//String used as the units			
-	std::map<std::string, std::string> atts;//Additional key=value pairs
-
-	cAsciiColumnFieldXX (){}
-	
-	cAsciiColumnFieldXX(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const int _fmtwidth, const int _fmtdecimals, const int _nbands = 1) {
-		fileorder = _order;
-		startcolumn = _startcolumn;
-		name = _name;
-		fmtchar = _fmttype;
-		width = _fmtwidth;
-		decimals = _fmtdecimals;
-		nbands = _nbands;
-	};
-
-	double nullvalue() const {
-		return atof(nullvaluestring.c_str());
-	}
-	
-	const size_t& startcol() const //Zero based start column index
-	{
-		return startcolumn;
-	}
-
-	size_t endcol() const //Zero based end column index
-	{
-		return startcolumn - 1 + nbands;
-	}
-
-	size_t endchar() const
-	{		
-		return startchar - 1 + (nbands*width);
-	}
-	
-	bool hasnullvalue() const {
-		if (nullvaluestring.size() > 0) return true;
-		return false;
-	}
-
-	std::string fmtstr_single() const {
-		std::string s;		
-		s += strprint("%c", fmtchar);
-		s += strprint("%zu", width);
-		if (fmtchar != 'I') s += strprint(".%zu", decimals);
-		return s;
-	}
-
-	std::string fmtstr() const {
-		std::string s;
-		if (nbands > 1) s += strprint("%zu", nbands);
-		s += fmtstr_single();		
-		return s;
-	}
-		
-	bool valid_fmttype(){		
-		return instring(validfmttypes, fmtchar);
-	}
-
-	bool parse_format_string(const std::string& formatstr){
-
-		int inbands, iwidth, idecimals;
-		if (std::sscanf(formatstr.c_str(), "%d%c%d.%d", &inbands, &fmtchar, &iwidth, &idecimals) == 4) {			
-			nbands = inbands;
-			width = iwidth;
-			decimals = idecimals;
-		}
-		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmtchar, &iwidth, &idecimals) == 3) {
-			nbands = 1;
-			width = iwidth;
-			decimals = idecimals;
-		}
-		else if (std::sscanf(formatstr.c_str(), "%c%d", &fmtchar, &iwidth) == 2) {
-			nbands = 1;
-			width = iwidth;
-			decimals = 0;
-		}
-		else {
-			return false;
-		}
-		
-		bool stat = valid_fmttype();
-		if (stat && nbands > 0 && width > 0 && decimals >= 0)return true;
-		return false;
-	}
-
-	std::string simple_header_record(){
-
-		std::string s;
-		if (nbands == 1){
-			s = strprint("%zu\t%s\n", startcolumn + 1, name.c_str());
-		}
-		else{
-			s = strprint("%zu-%zu\t%s\n", startcolumn + 1, startcolumn + nbands, name.c_str());
-		}
-		return s;
-	}
-
-	std::string i3_header_record(){
-
-		std::string channelname = name;
-		if (nbands > 1){
-			channelname = strprint("%s{%lu}", name.c_str(), nbands);
-		}
-
-		std::string typestr;
-		if (fmtchar == 'I'){
-			typestr = "INTEGER";
-		}
-		else if (fmtchar == 'F'){
-			typestr = "DOUBLE";
-		}
-
-		std::string s;
-		s += strprint("DATA\t%lu, %lu, NORMAL, , , ,\n", startcolumn, width);
-		s += strprint("CHAN\t%s, %s, NORMAL, %lu, %lu, LABEL = \"%s\"\n", channelname.c_str(), typestr.c_str(), width, decimals, name.c_str());
-		return s;
-	}
-
-	std::string aseggdf_header_record(){
-		std::string fmtstr;
-		if (nbands > 1) fmtstr += strprint("%lu", nbands);
-		fmtstr += strprint("%c", ::toupper(fmtchar));
-		fmtstr += strprint("%zu", width);
-		if (fmtchar != 'I')fmtstr += strprint(".%zu", decimals);
-
-		std::string s;
-		s += strprint("DEFN %lu ST=RECD,RT=; %s : %s", fileorder + 1, name.c_str(), fmtstr.c_str());
-
-		char comma = ',';
-		char colon = ':';
-		std::string o = " :";
-		if (units.size() > 0){
-			if (o[o.size() - 1] != colon && o[o.size() - 1] != comma) o += comma;
-			o += strprint(" UNITS = %s ", units.c_str());
-		}
-
-		if (nullvaluestring.size() > 0){
-			if (o[o.size() - 1] != colon && o[o.size() - 1] != comma) o += comma;
-			o += strprint(" NULL = %s ", nullvaluestring.c_str());
-		}
-
-		if (description.size() > 0){
-			if (o[o.size() - 1] != colon && s[s.size() - 1] != comma) o += comma;
-			o += strprint(" DESC = %s", description.c_str());
-		}
-
-		if (o.size() > 2) s += o;
-		s += strprint("\n");
-		return s;
-	}
-
-	void print(){				
-		printf(" name=%s:", name.c_str());
-		printf(" order=%zu:", fileorder);
-		printf(" bands=%zu:", nbands);
-		printf(" startcol=%zu:", startcolumn);
-		printf(" startchar=%zu:", startchar);
-		printf(" endchar=%zu:", startchar);
-		printf(" type=%c:", fmtchar);
-		printf(" width=%zu:", width);
-		printf(" decimals=%zu:", decimals);
-		printf(" units=%s:", units.c_str());
-		printf(" nullvalue=%s:", nullvaluestring.c_str());
-		printf(" nullvalue=%lf:", nullvalue());
-		printf(" longname=%s:", longname.c_str());
-		printf(" description=%s:", description.c_str());		
-		for (const auto& [key, value] : atts) {
-			printf(" %s=%s:", key.c_str(),value.c_str());			
-		}					
-		printf("\n");
-	}
-
-	Type datatype() const {		
-		if (fmtchar == 'I' || fmtchar == 'i'){
-			return Type::INTEGER;
-		}
-		else if (fmtchar == 'F' || fmtchar == 'f'){
-			return Type::REAL;
-		}
-		else if (fmtchar == 'E' || fmtchar == 'e'){
-			return Type::REAL;
-		}
-		if (fmtchar == 'A' || fmtchar == 'a') {
-			return Type::CHAR;
-		}
-		else{						
-			std::string msg = strprint("Unknown data type <%c>\n%s\n", fmtchar,_SRC_.c_str());			
-			std::cerr << msg << std::endl;
-		}
-		return Type::REAL;
-	};
-
-	bool ischar() const {
-		if (datatype() == Type::CHAR) return true;
-		return false;
-	}
-
-	bool isinteger() const {
-		if ( datatype() == Type::INTEGER) return true;
-		return false;
-	}
-
-	bool isreal() const {
-		if (datatype() == Type::REAL) return true;
-		return false;
-	}
-
-	bool isnull(const double v) const {
-		if (hasnullvalue()){
-			if (v == nullvalue()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool set_variant_type(cVrnt& vnt) const {						
-		if (isreal()) {
-			if (nbands == 1) {
-				vnt = (double) 0.0;				
-			}
-			else {
-				std::vector<double> vec;
-				vnt = vec;
-			}
-		}
-		else if (isinteger()) {
-			if (nbands == 1) {
-				vnt = (int)0;
-			}
-			else {
-				std::vector<int> vec;
-				vnt = vec;
-			}
-		}
-		if (ischar()) {
-			if (nbands == 1) {
-				vnt = (char)0;
-			}
-			else {
-				std::vector<char> vec;
-				vnt = vec;
 			}
 		}
 		return true;

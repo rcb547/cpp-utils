@@ -13,6 +13,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <complex>
 #include <vector>
 #include <variant>
+#include <map>
+#include <optional>
 #include <iomanip>
 #include "undefinedvalues.h"
 
@@ -132,6 +134,13 @@ public:
 	ValType& cref(const KeyType& key) {
 		const int& i = keyindex(key);
 		return ((*this)[i]).second;		
+	}
+
+	std::optional<ValType> oget(const KeyType& key) {
+		const int& i = keyindex(key);
+		if (i < 0) return std::optional<ValType>{};
+		else return std::optional<ValType>(((*this)[i]).second);
+			
 	}
 	
 	cKeyVec preferred_sort(const std::vector<std::string>& order) const {				
