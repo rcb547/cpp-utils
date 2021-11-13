@@ -17,6 +17,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <optional>
 #include <iomanip>
 #include "undefinedvalues.h"
+#include "string_utils.h"
 
 //Short cut for setting std::fixed output witdh/decimals
 class ixd {

@@ -19,6 +19,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 #include "file_utils.h"
 #include "file_formats.h"
+#include "general_types.h"
 #include "fielddefinition.h"
 
 #if defined _MPI_ENABLED

@@ -6,8 +6,8 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef cfielddefinitionH
-#define cfielddefinitionH
+#ifndef _fielddefinition_H
+#define _fielddefinition_H
 
 #include <stdlib.h>
 #include <cstring>
@@ -18,7 +18,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "string_utils.h"
 #include "general_utils.h"
 #include "blocklanguage.h"
-#include "asciicolumnfile.h"
 
 class cFieldDefinition{
 
