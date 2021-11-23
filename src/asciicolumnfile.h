@@ -125,6 +125,7 @@ public:
 
 	bool goto_record(const size_t& n) {
 		std::streamoff p = n * RecordLength;
+		IFS.clear();
 		if (IFS.seekg(p, IFS.beg))return true;
 		return false;
 	}
@@ -137,9 +138,10 @@ public:
 	}
 
 	bool load_record(const size_t& n) {
-		goto_record(n);
-		if (std::getline(IFS, CurrentRecord)) {
-			return true;
+		if (goto_record(n)) {
+			if (std::getline(IFS, CurrentRecord)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -350,7 +352,7 @@ public:
 		return cs;
 	}
 
-	size_t parserecord() {
+	size_t parse_record() {
 		if (fields.size() > 0) {
 			colstrings = fixed_width_parse();
 		}
@@ -486,7 +488,7 @@ public:
 				load_next_record();//Put the first record in
 			}
 
-			if (parserecord() != numcolumns) {
+			if (parse_record() != numcolumns) {
 				continue;
 			}
 

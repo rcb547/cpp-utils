@@ -29,9 +29,8 @@ private:
 	{
 		std::vector<std::string> tokens = tokenise(rhs, " \t,");
 		if (tokens.size() == 0)return false;
-
 		char* str_end;
-		std::strtod(tokens[0].c_str(), &str_end);
+		double d = std::strtod(tokens[0].c_str(), &str_end);
 		if (*str_end) return false;
 		return true;
 	};

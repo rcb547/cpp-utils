@@ -31,4 +31,6 @@ constexpr auto R2D = 180.0 / PI; //Convert radians to degrees
 
 constexpr auto NLOG10 = 2.3025850929940459; //Natrural log(10)
 
+constexpr auto GOLDENRATIO = 0.38196601125010510;//Golden Ratio
+
 #endif

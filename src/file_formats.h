@@ -275,7 +275,7 @@ public:
 		char sep = ':';
 		std::ostringstream oss;
 		oss << "name=" << name << sep;
-		oss << " order=" << fileorder << sep;
+		oss << " insert_order=" << fileorder << sep;
 		oss << " bands=" << nbands << sep;
 		oss << " startcol=" << startcolumn << sep;
 		oss << " startchar=" << startchar << sep;
@@ -868,7 +868,7 @@ public:
 		return true;		
 	}
 
-	size_t parserecord(){
+	size_t parse_record(){
 		currentcolumns = parsestrings(currentrecord, " ,\t\r\n");
 		return currentcolumns.size();
 	}
@@ -945,7 +945,7 @@ public:
 		size_t count = 0;
 		do{
 			if (recordsreadsuccessfully == 0) readnextrecord();
-			if (parserecord() != ncolumns()){
+			if (parse_record() != ncolumns()){
 				continue;
 			}
 			int line;
