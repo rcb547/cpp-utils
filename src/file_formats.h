@@ -141,10 +141,6 @@ public:
 		return val;
 	};
 	
-	std::optional<std::string> oget_att(const std::string& key) {
-
-	}
-
 	bool hasnullvalue() const {
 		return has_att(NULLSTR);
 	};
@@ -154,6 +150,7 @@ public:
 		std::stringstream iss(nullstring());
 		T val = 0;
 		iss >> val;
+		return val;
 	}
 
 	std::string longname() const {

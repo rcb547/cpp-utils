@@ -224,7 +224,7 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 }
 
 inline void settolower(std::string& s){
-	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+	std::transform(s.begin(), s.end(), s.begin(), tolower);
 }
 
 inline std::string tolower(const std::string& s) {
@@ -236,7 +236,7 @@ inline std::string tolower(const std::string& s) {
 
 
 inline void settoupper(std::string& s) {	
-	std::transform(s.begin(), s.end(), s.begin(), std::toupper);
+	std::transform(s.begin(), s.end(), s.begin(), toupper);
 }
 
 inline std::string toupper(const std::string& s) {
@@ -284,5 +284,3 @@ template <class T> struct caseinsensetiveless {
 };
 
 #endif
-
-

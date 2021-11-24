@@ -89,7 +89,7 @@ public:
 
 	Compare compare;
 	int keyindex(const KeyType& key) const {
-		for (int i = 0; i < size(); i++) {			
+		for (int i = 0; i < this->size(); i++) {			
 			if (compare(key, (*this)[i].first)) return i;
 		}
 		return -1;
@@ -97,7 +97,7 @@ public:
 
 	bool add(const std::pair<KeyType, ValType>& p) {
 		if (keyindex(p.first) < 0) {
-			push_back(p);
+			this->push_back(p);
 			return true;
 		}
 		return false;
@@ -105,7 +105,7 @@ public:
 
 	bool add(const KeyType& key, const ValType& val) {
 		if (keyindex(key) < 0) {
-			push_back(std::pair(key, val));
+			this->push_back(std::pair(key, val));
 			return true;
 		}
 		return false;
