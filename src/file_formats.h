@@ -529,7 +529,7 @@ public:
 				std::string msg;
 				msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 				msg += strprint("\tSkipping DFN entry that does not begin with 'DEFN' or 'END DEFN'\n");
-				std::cerr << msg << std::endl;
+				if (my_rank()==0) std::cerr << msg << std::endl;				
 				processrecord = false;
 			}
 
@@ -554,7 +554,7 @@ public:
 					std::string msg;
 					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tSkipping DFN entry that does not have a record type 'RT=DATA;' or 'RT=;'\n");
-					std::cerr << msg << std::endl;
+					if (my_rank() == 0) std::cerr << msg << std::endl;
 					continue;
 				}
 
