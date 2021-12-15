@@ -210,6 +210,7 @@ bool makedirectory(std::string dirname)
 bool makedirectorydeep(std::string dirname)
 {
 	if (dirname.size() == 0)return true;
+	if (exists(dirname))return true;
 	bool status = false;
 	std::vector<std::string> h = directoryheirachy(dirname);
 	std::string p;

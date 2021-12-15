@@ -132,16 +132,20 @@ public:
 		return p;
 	}
 	
-	ValType& cref(const KeyType& key) {
+	ValType& ref(const KeyType& key) {
+		const int& i = keyindex(key);		
+		return ((*this)[i]).second;
+	}
+
+	const ValType& cref(const KeyType& key) const {
 		const int& i = keyindex(key);
-		return ((*this)[i]).second;		
+		return ((*this)[i]).second;
 	}
 
 	std::optional<ValType> oget(const KeyType& key) {
 		const int& i = keyindex(key);
 		if (i < 0) return std::optional<ValType>{};
-		else return std::optional<ValType>(((*this)[i]).second);
-			
+		else return std::optional<ValType>(((*this)[i]).second);			
 	}
 	
 	cKeyVec preferred_sort(const std::vector<std::string>& order) const {				
