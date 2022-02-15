@@ -55,18 +55,23 @@ private:
 
 	size_t determine_record_length() {
 		rewind();
-		size_t rl = determine_record_length_no_rewind();
+		size_t rl = determine_record_length_no_rewind();		
 		size_t k = 0;
-		while (k < 100 && IFS.eof() == false) {
+		while (k < 100) {
 			size_t n = determine_record_length_no_rewind();
-			if (n != rl) {
-				std::string msg;
-				msg += strprint("%s is not a fixed record length\n", FileName.c_str());
-				msg += strprint("\trecord 1 has length %zu\n", rl);
-				msg += strprint("\trecord %zu has length %zu\n", k + 1, n);
-				throw(std::runtime_error(msg));
+			if (IFS.eof()) {
+				break;
 			}
-			k++;
+			else {
+				if (n != rl) {
+					std::string msg;
+					msg += strprint("%s is not a fixed record length\n", FileName.c_str());
+					msg += strprint("\trecord 1 has length %zu\n", rl);
+					msg += strprint("\trecord %zu has length %zu\n", k + 1, n);
+					throw(std::runtime_error(msg));
+				}
+				k++;
+			}
 		}
 		return rl;
 	}
