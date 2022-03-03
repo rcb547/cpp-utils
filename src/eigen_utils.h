@@ -14,7 +14,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 typedef Eigen::VectorXd Vector;
 typedef Eigen::MatrixXd Matrix;
 
-//#include "random_utils.h"
+#include <random>
+#include <chrono>
 
 template<typename T>
 void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name)

@@ -121,7 +121,7 @@ public:
 	{
 		if (fp == (FILE*)NULL) return;
 		std::string s = get_as_string(n);
-		fprintf(fp, s.c_str());		
+		fprintf(fp, "%s", s.c_str());		
 		return;
 	}
 	

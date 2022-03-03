@@ -10,7 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cfloat>
 #include <cstring>
 #include <ctime>
-#include <sys/timeb.h>
+#include <chrono>
 #include <iterator>
 #include <sstream>
 
@@ -572,10 +572,10 @@ std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a
 	return o;
 }
 
-double gettime(){
-	struct timeb t;
-	ftime(&t);
-	return (double)t.time + 0.001*(double)t.millitm;
+double gettime(){	
+	auto tp = std::chrono::high_resolution_clock::now();	
+	auto t = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+	return (double)t / (double)1e3;
 }
 
 char* temppath(const char* s, int set)

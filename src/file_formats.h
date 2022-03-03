@@ -410,7 +410,7 @@ public:
 		FILE* fp = fileopen(pathname.c_str(), "w");
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].simple_header_record();
-			fprintf(fp, s.c_str());
+			fprintf(fp, "%s", s.c_str());
 		}
 		fclose(fp);
 	};
@@ -450,7 +450,7 @@ public:
 		fprintf(fp, "SKIPSTRING\t\"/\"\n");
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].i3_header_record();
-			fprintf(fp, s.c_str());
+			fprintf(fp, "%s", s.c_str());
 		}
 		fclose(fp);
 	};
@@ -736,7 +736,7 @@ public:
 		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
 		for (size_t i = 0; i < fields.size(); i++){
 			std::string s = fields[i].aseggdf_header_record();
-			fprintf(fp, s.c_str());
+			fprintf(fp, "%s", s.c_str());
 		}
 		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
 		fclose(fp);
