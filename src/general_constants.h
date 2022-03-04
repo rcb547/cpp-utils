@@ -26,11 +26,9 @@ constexpr auto ONEONTHREEPI = 0.1061032953945969;
 constexpr auto ONEONFOURPI = 0.0795774715459477;
 constexpr auto THREEONFOURPI = 0.2387324146378430;
 
-constexpr auto D2R = PI / 180.0; //Convert degrees to radians
-constexpr auto R2D = 180.0 / PI; //Convert radians to degrees
-
+constexpr auto D2R    =  0.017453292519943295;// PI/180 Convert degrees to radians
+constexpr auto R2D    = 57.295779513082322865;// 180/PI Convert radians to degrees
 constexpr auto NLOG10 = 2.3025850929940459; //Natrural log(10)
-
 constexpr auto GOLDENRATIO = 0.38196601125010510;//Golden Ratio
 
 #endif
