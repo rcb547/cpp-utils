@@ -194,11 +194,16 @@ public:
 			nbands = inbands;
 			width = iwidth;
 			decimals = idecimals;
-		}
+		}		
 		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmtchar, &iwidth, &idecimals) == 3) {
 			nbands = 1;
 			width = iwidth;
 			decimals = idecimals;
+		}
+		else if (std::sscanf(formatstr.c_str(), "%d%c%d", &inbands, &fmtchar, &iwidth) == 3) {
+			nbands = inbands;
+			width = iwidth;
+			decimals = 0;
 		}
 		else if (std::sscanf(formatstr.c_str(), "%c%d", &fmtchar, &iwidth) == 2) {
 			nbands = 1;
