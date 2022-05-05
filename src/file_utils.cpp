@@ -565,7 +565,7 @@ size_t countlines(const std::string filename)
 	size_t buffersize = 4194304;
 	std::vector<char> buffer(buffersize);
 	size_t n = 0;
-	size_t nread;
+	size_t nread = 0;
 	do{
 		nread = fread(buffer.data(), 1, buffersize, fp);
 		for (size_t k = 0; k < nread; k++){
