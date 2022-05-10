@@ -1349,12 +1349,11 @@ public:
 
 
 			///////////////////
-			size_t n = 40;
-			double x[40];
-			double y[40];
-
+			size_t n = 40;			
 			size_t validsamples = lastnonnull - firstnonnull + 1;
-			if (n>validsamples)n = validsamples;
+			if (n>validsamples) n = validsamples;
+			std::vector<double> x(n);
+			std::vector<double> y(n);
 			size_t di = validsamples / n;
 			for (s = 0; s<n; s++){
 				x[s] = sX.d(firstnonnull + s*di);
@@ -1364,15 +1363,15 @@ public:
 			cPnt p1, p2;
 			cLineSeg seg;
 			double gradient, intercept;
-			if (fabs(x[0] - x[n - 1]) > fabs(y[0] - y[n - 1])){
-				regression(x, y, n, &gradient, &intercept);
+			if (std::fabs(x[0] - x[n - 1]) > std::fabs(y[0] - y[n - 1])){
+				regression(x.data(), y.data(), x.size(), &gradient, &intercept);
 				p1.x = sX.d(firstnonnull);
 				p2.x = sX.d(lastnonnull);
 				p1.y = gradient * p1.x + intercept;
 				p2.y = gradient * p2.x + intercept;
 			}
 			else{
-				regression(y, x, n, &gradient, &intercept);
+				regression(y.data(), x.data(), x.size(), &gradient, &intercept);
 				p1.y = sY.d(firstnonnull);
 				p2.y = sY.d(lastnonnull);
 				p1.x = gradient * p1.y + intercept;
@@ -1458,7 +1457,7 @@ public:
 		lineindex = nearestbestfitline(p);
 		sampleindex = 0;
 
-		double mindistance;
+		double mindistance=0.0;
 
 		ILField& fX = getsurveyinfofield("X");
 		ILField& fY = getsurveyinfofield("Y");
@@ -1470,7 +1469,7 @@ public:
 			double dx = p.x - sX.d(si);
 			double dy = p.y - sY.d(si);
 			double d = sqrt(dx*dx + dy*dy);
-			if (si == 0)mindistance = d;
+			if (si == 0) mindistance = d;
 			if (d <= mindistance){
 				mindistance = d;
 				sampleindex = si;
