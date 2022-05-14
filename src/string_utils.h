@@ -10,6 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #define _string_utils_H
 
 #include <cfloat>
+#include <cctype>
 #include <cstring>
 #include <cstdarg>
 #include <string>
@@ -223,8 +224,8 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 	return fields;
 }
 
-inline void settolower(std::string& s){
-	std::transform(s.begin(), s.end(), s.begin(), tolower);
+inline void settolower(std::string& s){	
+	for(size_t i=0; i<s.size(); i++) std::tolower(s[i]);
 }
 
 inline std::string tolower(const std::string& s) {
@@ -233,10 +234,8 @@ inline std::string tolower(const std::string& s) {
 	return t;
 }
 
-
-
 inline void settoupper(std::string& s) {	
-	std::transform(s.begin(), s.end(), s.begin(), toupper);
+	for(size_t i=0; i<s.size(); i++) std::toupper(s[i]);
 }
 
 inline std::string toupper(const std::string& s) {
