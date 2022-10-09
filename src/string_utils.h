@@ -225,7 +225,7 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 }
 
 inline void settolower(std::string& s){	
-	for(size_t i=0; i<s.size(); i++) std::tolower(s[i]);
+	for(size_t i=0; i<s.size(); i++) s[i] = std::tolower(s[i]);
 }
 
 inline std::string tolower(const std::string& s) {
@@ -235,7 +235,7 @@ inline std::string tolower(const std::string& s) {
 }
 
 inline void settoupper(std::string& s) {	
-	for(size_t i=0; i<s.size(); i++) std::toupper(s[i]);
+	for(size_t i=0; i<s.size(); i++) s[i] = std::toupper(s[i]);
 }
 
 inline std::string toupper(const std::string& s) {

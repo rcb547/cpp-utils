@@ -672,7 +672,7 @@ public:
 						else if (tk_equal.size() == 2) {
 							std::string key = tk_equal[0];
 							const std::string& value = tk_equal[1];
-							key = toupper(key);
+							//key = toupper(key);
 							if (ciequal(key, "unit")) key = cAsciiColumnField::UNITS;
 							if (ciequal(key, "description")) key = cAsciiColumnField::UNITS;
 							if (ciequal(key, "nullvalue")) key = cAsciiColumnField::NULLSTR;
