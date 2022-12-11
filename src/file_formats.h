@@ -555,6 +555,11 @@ public:
 					throw(std::runtime_error(msg));
 				}
 
+				if (rt == "COMM" || rt == "comm") {
+					//don't warn about skipping comments
+					continue;
+				}
+
 				if (rt != "" && rt != "DATA") {
 					std::string msg;
 					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
