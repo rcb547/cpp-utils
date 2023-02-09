@@ -80,9 +80,9 @@ public:
 
 
 typedef std::variant<double, int, float, char, std::vector<double>, std::vector<int>, std::vector<float>, std::vector<char>> cVrnt;
-template <typename KeyType, typename ValType, typename Compare = std::equal_to<KeyType>>
 
 //Unsorted vector of unique-key key,value pairs
+template <typename KeyType, typename ValType, typename Compare = std::equal_to<KeyType>>
 class cKeyVec : public std::vector<std::pair<KeyType, ValType>> {
 
 public:
