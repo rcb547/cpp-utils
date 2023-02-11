@@ -407,12 +407,12 @@ template <typename T>
 class cBoundingBox {
 
 public:
-	T xmin = std::numeric_limits<T>::max();
-	T xmax = -std::numeric_limits<T>::max();
-	T ymin = std::numeric_limits<T>::max();
-	T ymax = -std::numeric_limits<T>::max();
-	T zmin = std::numeric_limits<T>::max();
-	T zmax = -std::numeric_limits<T>::max();
+	T xmin = (std::numeric_limits<T>::max)();
+	T xmax = (-std::numeric_limits<T>::max)();
+	T ymin = (std::numeric_limits<T>::max)();
+	T ymax = (-std::numeric_limits<T>::max)();
+	T zmin = (std::numeric_limits<T>::max)();
+	T zmax = (-std::numeric_limits<T>::max)();
 };
 
 class cPoint{
