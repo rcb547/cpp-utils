@@ -80,9 +80,9 @@ public:
 
 
 typedef std::variant<double, int, float, char, std::vector<double>, std::vector<int>, std::vector<float>, std::vector<char>> cVrnt;
-template <typename KeyType, typename ValType, typename Compare = std::equal_to<KeyType>>
 
 //Unsorted vector of unique-key key,value pairs
+template <typename KeyType, typename ValType, typename Compare = std::equal_to<KeyType>>
 class cKeyVec : public std::vector<std::pair<KeyType, ValType>> {
 
 public:
@@ -407,12 +407,26 @@ template <typename T>
 class cBoundingBox {
 
 public:
-	T xmin = std::numeric_limits<T>::max();
-	T xmax = -std::numeric_limits<T>::max();
-	T ymin = std::numeric_limits<T>::max();
-	T ymax = -std::numeric_limits<T>::max();
-	T zmin = std::numeric_limits<T>::max();
-	T zmax = -std::numeric_limits<T>::max();
+	T xmin = (std::numeric_limits<T>::max)();
+	T xmax = -(std::numeric_limits<T>::max)();
+	T ymin = (std::numeric_limits<T>::max)();
+	T ymax = -(std::numeric_limits<T>::max)();
+	T zmin = (std::numeric_limits<T>::max)();
+	T zmax = -(std::numeric_limits<T>::max)();
+
+	cBoundingBox() {};
+	cBoundingBox(const T& _xmin, const T& _xmax, const T& _ymin, const T& _ymax, const T& _zmin, const T& _zmax) {
+		xmin = _xmin; xmax = _xmax;
+		ymin = _ymin; ymax = _ymax;
+		zmin = _zmin; zmax = _zmax;
+	};
+
+	template <typename O>
+	cBoundingBox(const cBoundingBox<O>& other) {
+		xmin = other.xmin; xmax = other.xmax;
+		ymin = other.ymin; ymax = other.ymax;
+		zmin = other.zmin; zmax = other.zmax;
+	};
 };
 
 class cPoint{

@@ -149,8 +149,17 @@ public:
 		return key(Entries[eindex]);
 	}
 
-	std::string value(const std::string entry) const
+	static void strip_fromandafter(std::string& entry, const std::string& tag)
 	{
+		size_t index = entry.find(tag);
+		if (index != std::string::npos) {
+			entry = entry.substr(0,index);
+		}
+	}
+
+	std::string value(std::string entry) const
+	{
+		strip_fromandafter(entry, "//");
 		size_t index = entry.find("=");
 		size_t len = entry.size() - index - 1;
 		if (len == 0)return std::string("");
