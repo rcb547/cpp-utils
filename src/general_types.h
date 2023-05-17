@@ -420,6 +420,13 @@ public:
 		ymin = _ymin; ymax = _ymax;
 		zmin = _zmin; zmax = _zmax;
 	};
+
+	template <typename O>
+	cBoundingBox(const cBoundingBox<O>& other) {
+		xmin = other.xmin; xmax = other.xmax;
+		ymin = other.ymin; ymax = other.ymax;
+		zmin = other.zmin; zmax = other.zmax;
+	};
 };
 
 class cPoint{
