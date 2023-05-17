@@ -19,6 +19,29 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_utils.h"
 
 
+class cFmt {
+public:
+	char fmtchar=0;
+	size_t width=0;
+	size_t decimals=0;
+
+	cFmt(const char _fmtchar, const size_t _width, const size_t _decimals) {
+		fmtchar = _fmtchar;
+		width = _width;
+		decimals = _decimals;
+	}
+
+	bool operator==(const cFmt& rhs) const {
+		if (fmtchar == rhs.fmtchar && width == rhs.width && decimals == rhs.decimals) return true;
+		else return false;
+	}
+
+	bool operator!=(const cFmt& rhs) const {
+		if (fmtchar != rhs.fmtchar || width != rhs.width || decimals != rhs.decimals) return true;
+		else return false;
+	}
+};
+
 class cAsciiColumnFormat {
 
 public:
@@ -78,6 +101,16 @@ public:
 class cAsciiColumnField : public cAsciiColumnFormat {
 
 private:
+
+	static std::string space_free_field_name(const std::string& name) {
+		std::string newname = name;
+		for (size_t i = 0; i < newname.size(); i++) {
+			if (newname[i] == ' ') {
+				newname[i] = '_';
+			}
+		}
+		return newname;
+	};
 
 public:		
 	static constexpr const char* NULLSTR = "NULL";
@@ -220,59 +253,92 @@ public:
 	}
 
 	std::string simple_header_record() const {
-
-		std::string s;
+		std::string fixed_name = space_free_field_name(name);		
+		std::ostringstream s;
 		if (nbands == 1) {
-			s = strprint("%zu\t%s\n", startcolumn + 1, name.c_str());
+			s << startcolumn + 1 << "\t" << fixed_name << std::endl;
 		}
 		else {
-			s = strprint("%zu-%zu\t%s\n", startcolumn + 1, startcolumn + nbands, name.c_str());
-		}
-		return s;
-	}
-
-	std::string i3_header_record() const {
-
-		std::string channelname = name;
-		if (nbands > 1) {
-			channelname = strprint("%s{%lu}", name.c_str(), nbands);
-		}
-
-		std::string typestr;
-		if (fmtchar == 'I') {
-			typestr = "INTEGER";
-		}
-		else if (fmtchar == 'F') {
-			typestr = "DOUBLE";
-		}
-
-		std::string s;
-		s += strprint("DATA\t%lu, %lu, NORMAL, , , ,\n", startcolumn, width);
-		s += strprint("CHAN\t%s, %s, NORMAL, %lu, %lu, LABEL = \"%s\"\n", channelname.c_str(), typestr.c_str(), width, decimals, name.c_str());
-		return s;
-	}
-
-	std::string aseggdf_header_record() const {
-		
-		std::ostringstream s;
-		s << "DEFN " << fileorder + 1 << " ST=RECD,RT=; " << name << " : " ;		
-		s << fmtstr();		
-				
-		if (atts.size() > 0) {				
-			s << " :";			
-			int k = 0;
-			for (const auto& [key, value] : atts) {				
-				if (value.size() > 0) {										
-					if (k > 0) s << ',';
-					s << " " << key << "=" << value;
-					k++;
-				}				
-			}
-		}
-		s << std::endl;		
+			s << startcolumn + 1 << "-" << endcol() + 1 << "\t" << fixed_name << std::endl;
+		}		
 		return s.str();
 	}
 
+	std::string aseggdf_header_record() const {
+
+		std::string fixed_name = space_free_field_name(name);
+
+		std::ostringstream s;
+		s << "DEFN " << fileorder + 1 << " ST=RECD,RT=; " << fixed_name << " : ";
+		s << fmtstr();
+
+		if (atts.size() > 0) {
+			s << " :";
+			int k = 0;
+			for (const auto& [key, value] : atts) {
+				if (value.size() > 0) {
+					if (k > 0) s << ',';
+					s << " " << key << "=" << value;
+					k++;
+				}
+			}
+		}
+		s << std::endl;
+		return s.str();
+	}
+
+	std::string i3_header_record() const {
+		// https://my.seequent.com/support/search/help/oasismontaj--content_ss_import_data_import_file_types_template_files_i3_import_template_file.htm?page=0&types=&product=&keyword=i3&kbtypes=&language=en_US&name=I3%20Import%20Template%20File
+		std::string fixed_name = space_free_field_name(name);
+
+		double scale = 1.0;
+		double base = 0.0;
+		std::string dummystr = "";
+
+		std::ostringstream channelname;
+		channelname << fixed_name;
+		if (nbands > 1) channelname << "{" << nbands << "}";
+
+		std::string typestr;
+		std::string readformat;
+		if (std::tolower(fmtchar) == 'i') {
+			typestr = "LONG";
+			readformat = "NORMAL";
+		}
+		else if (std::tolower(fmtchar) == 'f') {
+			typestr = "DOUBLE";
+			readformat = "NORMAL";
+		}
+		else if (std::tolower(fmtchar) == 'e') {
+			typestr = "DOUBLE";
+			readformat = "EXP";
+		}
+
+		bool writechan = true;
+		std::string tag = "DATA";
+		std::ostringstream s;			
+		if (ciequal(fixed_name, "line") ||
+			ciequal(fixed_name, "linenumber") ||
+			ciequal(fixed_name, "line_number") ||
+			ciequal(fixed_name, "fltline")) {
+			tag = "LINENUMBER";
+			writechan = false;
+		}
+
+		std::ostringstream registry;
+		registry << "Label=" << fixed_name << ';';
+		for (const auto& [key, value] : atts) {
+			if(value.size() > 0) registry << key << "=" << value << ';';
+		}
+
+		s << tag << "\t" << startchar << ", " << width << ", " << readformat << ", " << scale << ", " << base << ", " << dummystr << ", " << std::endl;
+		if (writechan) {
+			//s << "CHAN\t" << channelname.str() << ", " << typestr << ", " << readformat << ", " << width << ", " << decimals << ", " << "LABEL=" << fixed_name << std::endl;
+			s << "CHAN\t" << channelname.str() << ", " << typestr << ", " << readformat << ", " << width << ", " << decimals << ", " << registry.str() << std::endl;
+		}
+		return s.str();
+	}
+	
 	std::string str() {
 		char sep = ':';
 		std::ostringstream oss;
@@ -285,11 +351,6 @@ public:
 		oss << " type=" << fmtchar << sep;
 		oss << " width=" << width << sep;
 		oss << " decimals=" << decimals << sep;
-
-		//oss << " units=" << units() << sep;
-		//oss << " nullvaluestring=" << nullstring() << sep;
-		//oss << " longname=" << longname << sep;
-		//oss << " description=" << description();
 
 		for (const auto& [key, value] : atts) {
 			oss << key << "=" << value << sep;
@@ -325,7 +386,7 @@ public:
 				vrnt = vec;
 			}
 		}
-		if (ischar()) {
+		else if (ischar()) {
 			if (nbands == 1) {
 				vrnt = (char)0;
 			}
@@ -345,8 +406,7 @@ class cOutputFileInfo {
 	bool   allowmorefields = true;
 
 public:
-
-	//std::vector<cOutputField> fields;
+	
 	std::vector<cAsciiColumnField> fields;
 
 	cOutputFileInfo() {	};
@@ -473,6 +533,64 @@ public:
 
 };
 
+class cHDRHeader {
+
+private:
+
+	std::vector<cAsciiColumnField> fields;
+public:
+
+	cHDRHeader(const std::string& hdrpath) {
+		read(hdrpath);
+	}
+
+	bool read(const std::string& hdrfile) {
+		fields.clear();
+
+		std::ifstream file(hdrfile);		
+		int k = 0;
+		while(!file.eof()){
+			std::string cstr;
+			std::string fstr;
+			file >> cstr;
+			file >> fstr;
+			if (cstr.size() == 0) {
+				break;
+			}
+			
+						
+			std::istringstream is(cstr);
+			int col1;
+			int col2;
+			is >> col1;
+			col2 = col1;
+			if (!is.eof()) {
+				is >> col2;
+				col2 = -col2;
+			}
+
+			const size_t order = k;
+			const size_t startcolumn = col1-1;//Zero based index
+			const int nbands = col2 - col1 + 1;
+			const std::string name = fstr;
+			const char fmttype = 0;
+			const int fmtwidth = 0;
+			const int fmtdecimals = 0;
+
+			cAsciiColumnField f(order, startcolumn, name, fmttype, fmtwidth, fmtdecimals, nbands);
+			fields.push_back(f);
+			k = k + 1;
+		}
+		return true;
+	};
+
+	const std::vector<cAsciiColumnField>& getfields() const {
+		return fields;
+	};
+
+
+};
+
 class cASEGGDF2Header {
 
 private:
@@ -523,7 +641,7 @@ public:
 
 			//Check for 'END DEFN' 
 			for (size_t i = 0; i < tk_semicolon.size(); i++) {
-				if (strcasecmp(tk_semicolon[i], "end defn") == 0) {
+				if (ciequal(tk_semicolon[i], "end defn")) {
 					if (i == 0) {
 						processrecord = false;
 					}
@@ -622,7 +740,7 @@ public:
 					throw(std::runtime_error(msg));
 				}
 								
-				if (strcasecmp(colon_tokens[0],"end defn")==0){
+				if (ciequal(colon_tokens[0],"end defn")){
 					std::string msg;
 					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\t'END DEFN' is out of place\n");
@@ -676,12 +794,12 @@ public:
 						}
 						else if (tk_equal.size() == 2) {
 							std::string key = tk_equal[0];
-							const std::string& value = tk_equal[1];
-							//key = toupper(key);
+							const std::string& value = tk_equal[1];							
 							if (ciequal(key, "unit")) key = cAsciiColumnField::UNITS;
-							if (ciequal(key, "description")) key = cAsciiColumnField::UNITS;
+							if (ciequal(key, "units")) key = cAsciiColumnField::UNITS;
+							if (ciequal(key, "description")) key = cAsciiColumnField::DESC;
 							if (ciequal(key, "nullvalue")) key = cAsciiColumnField::NULLSTR;
-							if (ciequal(key, "name")) key = cAsciiColumnField::LONGNAME;												
+							if (ciequal(key, "name")) key = cAsciiColumnField::LONGNAME;
 							F.add_att(key, value);														
 						}
 						else {
@@ -709,8 +827,7 @@ public:
 				if (datarec == 0 && rt == "DATA") {
 					if (!F.ischar() && F.width != 4) {
 						cAsciiColumnField R;
-						R.name = "RT";
-						//R.longname = "Record type";
+						R.name = "RT";						
 						R.fileorder = (size_t)0;
 						R.fmtchar = 'A';
 						R.width = 4;
@@ -783,7 +900,7 @@ public:
 	size_t fieldindexbyname(const std::string& fieldname) const
 	{
 		for (size_t fi = 0; fi < fields.size(); fi++){
-			if (strcasecmp(fields[fi].name, fieldname) == 0) return fi;
+			if (ciequal(fields[fi].name, fieldname)) return fi;
 		}
 		return nullfieldindex();
 	}
@@ -791,7 +908,7 @@ public:
 	bool fieldindexbyname(const std::string& fieldname, size_t& index) const
 	{
 		for (size_t fi = 0; fi < fields.size(); fi++){
-			if (strcasecmp(fields[fi].name, fieldname) == 0){
+			if (ciequal(fields[fi].name, fieldname)){
 				index = fi;
 				return true;
 			}

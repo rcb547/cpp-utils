@@ -14,6 +14,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <vector>
 #include <filesystem>
+#include <strstream>
+
 
 #include "csv.hpp"
 #include "general_utils.h"
@@ -56,7 +58,7 @@ private:
 	size_t determine_record_length() {
 		rewind();
 		size_t rl = determine_record_length_no_rewind();		
-		size_t k = 0;
+		size_t k = 1;
 		while (k < 100) {
 			size_t n = determine_record_length_no_rewind();
 			if (IFS.eof()) {
@@ -64,8 +66,8 @@ private:
 			}
 			else {
 				if (n != rl) {
-					std::string msg;
-					msg += strprint("%s is not a fixed record length\n", FileName.c_str());
+					std::string msg = _SRC_;
+					msg += strprint("\n%s is not a fixed record length\n", FileName.c_str());
 					msg += strprint("\trecord 1 has length %zu\n", rl);
 					msg += strprint("\trecord %zu has length %zu\n", k + 1, n);
 					throw(std::runtime_error(msg));
@@ -77,7 +79,7 @@ private:
 	}
 
 public:
-	enum class HeaderType { DFN, CSV, NONE } headertype = HeaderType::NONE;
+	enum class HeaderType { DFN, CSV, HDR, NONE } headertype = HeaderType::NONE;
 	enum class ParseType { FIXEDWIDTH, DELIMITED } parsetype = ParseType::FIXEDWIDTH;
 
 	const std::vector<std::string>& cref_colstrings() const
@@ -191,6 +193,30 @@ public:
 		return true;
 	};
 
+	std::vector<cFmt> check_formats(const size_t nrecords = 100) {
+
+		std::string s = get_record(0);
+		std::vector<cFmt> fmts0 = guess_column_formats(s);
+
+		int k = 1;
+		while (k < nrecords) {	
+			if (IFS.eof()) break;
+			s = get_record(k);
+			if (s.size() == 0)continue;
+
+			std::vector<cFmt> fmts1 = guess_column_formats(s);
+			if (fmts0 != fmts1) {
+				std::string msg = _SRC_;				
+				msg += strprint("\nIn file %s\n", FileName.c_str());
+				msg += strprint("\tField formats on record %d do not match those on record 1\n",k+1);
+				throw(std::runtime_error(msg));
+			}						
+			k++;			
+		}
+		rewind();
+		return fmts0;
+	}
+
 	static std::vector<std::string> tokenise(const std::string& str, const char delim) {
 		std::string s = trim(str);
 		std::vector<std::string> tokens;
@@ -208,13 +234,101 @@ public:
 		return INT_MAX;
 	};
 
-	void read_dfn(const std::string& dfnpath) {
-		cASEGGDF2Header H(dfnpath);
-		fields = H.getfields();
-		ST_string = H.get_ST_string();
-		RT_string = H.get_RT_string();
+	static std::vector<size_t> get_field_breaks(const std::string& str) {		
+		//returns char indices of field ends+1 
+		char delim = ' ';
+		std::vector<size_t> breaks;
+		for (size_t i = 0; i < str.size(); i++) {
+			if (str[i] == newline || str[i] == carriagereturn) {
+				breaks.push_back(i);
+			}
+			else if (i > 0 && str[i - 1] != delim && str[i] == delim) {
+				breaks.push_back(i);
+			}
+		}
+		if (breaks.back() < str.size() - 1) {
+			breaks.push_back(str.size());
+		}
+		return breaks;
 	}
+
+	static std::vector<cFmt> guess_column_formats(const std::string& str) {						
+		std::vector<size_t> breaks = get_field_breaks(str);
+		std::vector<cFmt> fmts;
+		size_t last = 0;
+		for (size_t i = 0; i < breaks.size(); i++) {		
+			size_t width = breaks[i] - last;
+			std::string field = str.substr(last,width);
+			size_t p = field.find('.');
+			size_t e = field.find_first_of("eE");
+			last = breaks[i];
+
+			char fmtchar;
+			int decimals;
+			if (p == std::string::npos) {
+				fmtchar = 'I';
+				decimals = 0;
+			}
+			else if (e == std::string::npos) {
+				fmtchar = 'F';
+				decimals = field.size() - p - 1;
+			}
+			else {
+				fmtchar = 'E';
+				decimals = e - p - 1;
+			}			
+			cFmt c(fmtchar, width, decimals);
+			fmts.push_back(c);
+		}
+		return fmts;
+	}
+		
+	bool set_hdr_formats(const std::vector<cFmt>& fmts) {
+		size_t ncol = fields.back().endcol();
+		size_t k = 0;
+		size_t startchar = 0;
+		for (size_t i = 0; i < fields.size(); i++) {			
+			cAsciiColumnField& c = fields[i];
+			const cFmt& fmt = fmts[k];
+			c.startchar = startchar;
+			c.fmtchar = fmt.fmtchar;
+			c.width = fmt.width;
+			c.decimals = fmt.decimals;
+			for (size_t b = 1; b < c.nbands-1; b++){
+				if (fmt != fmts[k+b]) {
+					std::string msg = _SRC_;
+					msg += strprint("\nInconsistend formats in multiband field %s\n", c.name.c_str());					
+					throw(std::runtime_error(msg));
+				}
+			}			
+			k += c.nbands;
+			startchar += c.nbands * c.width;
+		}
+		return true;
+	};
 	
+	bool set_fields_noheader() {		
+		std::vector<cFmt> fmts = check_formats(100);
+		size_t startchar = 0;
+		for (size_t i = 0; i < fmts.size(); i++) {
+			std::string name = strprint("Column %d", i+1);
+			const cFmt& fmt = fmts[i];
+			cAsciiColumnField f(i, i, name, fmt.fmtchar,fmt.width,fmt.decimals,1);
+			f.startchar = startchar;
+			fields.push_back(f);
+			startchar += f.width * f.nbands;
+		}		
+		return true;
+	};
+
+	bool parse_hdr_header(const std::string& hdrpath) {
+		cHDRHeader H(hdrpath);
+		fields = H.getfields();
+		std::vector<cFmt> fmts = check_formats(100);
+		set_hdr_formats(fmts);
+		return true;
+	};
+
 	bool parse_csv_header(const std::string& csvfile) {
 		fields.clear();
 		csv::CSVFormat csvfm;
@@ -225,7 +339,6 @@ public:
 		csvfm.header_row(0);
 		csv::CSVReader R(csvfile, csvfm);
 		csv::CSVRow row;
-
 
 		std::vector<std::string> cnames = R.get_col_names();
 		size_t iname = R.index_of("Name");
@@ -245,6 +358,9 @@ public:
 			for (int i = 0; i < cnames.size(); i++) {
 				std::string key = cnames[i];
 				std::string value = row[key].get<std::string>();
+				if(ciequal(cnames[i],"name")) continue;
+				if (ciequal(cnames[i], "format")) continue;
+				if (ciequal(cnames[i], "bands")) continue;
 				if (value.size() > 0) {
 					F.add_att(key, value);
 				}
@@ -264,7 +380,13 @@ public:
 		}
 		return true;
 	};
-	
+
+	void parse_dfn_header(const std::string& dfnpath) {
+		cASEGGDF2Header H(dfnpath);
+		fields = H.getfields();
+		ST_string = H.get_ST_string();
+		RT_string = H.get_RT_string();
+	}
 
 	bool contains_non_numeric_characters(const std::string& str, size_t startpos)
 	{
@@ -357,8 +479,8 @@ public:
 		return cs;
 	}
 
-	size_t parse_record() {
-		if (fields.size() > 0) {
+	size_t parse_record() {		
+		if(parsetype == cAsciiColumnFile::ParseType::FIXEDWIDTH){
 			colstrings = fixed_width_parse();
 		}
 		else {
