@@ -137,8 +137,9 @@ public:
 
 	}
 	
-	std::string key(const std::string entry) const
+	std::string key(std::string entry) const
 	{
+		strip_fromandafter(entry, "//");
 		size_t index = entry.find("=");
 		std::string id = entry.substr(0, index - 1);
 		return trim(id);
