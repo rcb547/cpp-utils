@@ -14,7 +14,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <vector>
 #include <filesystem>
-#include <strstream>
+#include <sstream>
 
 
 #include "csv.hpp"
