@@ -13,7 +13,7 @@ constexpr auto MUZERO = 12.56637061435917295384e-7; //Magnetic permeability of f
 constexpr auto EZERO = 8.854e-12;  //Electrical permitivity of free space
 constexpr auto UGC = 6.67384e-11; //Universal gravitational constant
 
-constexpr double PI = 3.1415926535897931;
+constexpr auto PI = 3.1415926535897931;
 constexpr auto TWOPI = 6.2831853071795862;
 constexpr auto THREEPI = 9.4247779607693793;
 constexpr auto FOURPI = 12.5663706143591720;
