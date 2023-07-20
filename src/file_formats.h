@@ -132,7 +132,7 @@ public:
 	
 	cAsciiColumnField() {};
 	
-	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const int _fmtwidth, const int _fmtdecimals, const int _nbands = 1) {
+	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1) {
 		fileorder = _order;
 		startcolumn = _startcolumn;
 		name = _name;
@@ -570,7 +570,7 @@ public:
 			}
 
 			const size_t order = k;
-			const size_t startcolumn = col1-1;//Zero based index
+			const size_t startcolumn = (size_t)col1-1;//Zero based index
 			const int nbands = col2 - col1 + 1;
 			const std::string name = fstr;
 			const char fmttype = 0;

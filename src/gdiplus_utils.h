@@ -40,7 +40,7 @@ public:
 		wchar_t* p = new wchar_t[len];
 		mbstowcs_s(&len, p, len, bstr.c_str(), _TRUNCATE);
 		std::wstring wstr(p);
-		delete p;
+		delete []p;
 		return wstr;
 	}
 
@@ -49,22 +49,16 @@ public:
 		UINT  num = 0;          // number of image encoders
 		UINT  size = 0;         // size of the image encoder array in bytes
 
-		ImageCodecInfo* pImageCodecInfo = NULL;
-
 		GetImageEncodersSize(&num, &size);
-		if (size == 0)
-			return -1;  // Failure
+		if (size == 0) return -1;  // Failure
 
-		pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-		if (pImageCodecInfo == NULL)
-			return -1;  // Failure
+		ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+		if (pImageCodecInfo == NULL) return -1;  // Failure
 
 		GetImageEncoders(num, size, pImageCodecInfo);
 
-		for (UINT j = 0; j < num; ++j)
-		{
-			if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
-			{
+		for (UINT j = 0; j < num; j++){
+			if (wcscmp((pImageCodecInfo[j]).MimeType, format) == 0){
 				*pClsid = pImageCodecInfo[j].Clsid;
 				free(pImageCodecInfo);
 				return j;  // Success

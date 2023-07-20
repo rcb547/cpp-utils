@@ -387,8 +387,8 @@ public:
 	T to;
 
 	cRange(){
-		from = undefinedvalue(from);
-		to   = undefinedvalue(to);
+		from = undefinedvalue<T>();
+		to   = undefinedvalue<T>();
 	}
 
 	cRange(const T& _from, const T& _to){

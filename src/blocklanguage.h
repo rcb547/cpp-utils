@@ -248,7 +248,7 @@ public:
 				return i;
 			}
 		}		
-		return ud_size_t();
+		return undefinedvalue<size_t>();
 	}
 
 	std::string findkey(const std::string id) const
@@ -258,7 +258,7 @@ public:
 				return Entries[i];
 			}
 		}
-		return ud_string();
+		return undefinedvalue<std::string>();
 	}
 
 	std::string getstringvalue(const std::string id) const
@@ -271,15 +271,15 @@ public:
 		short v;
 		int status;
 		std::string entry = getentry(id);
-		if (strcasecmp(entry, ud_string()) == 0){
-			return ud_short();
+		if (strcasecmp(entry, undefinedvalue<std::string>()) == 0){
+			return undefinedvalue<short>();
 		}
 		else{
 			status = sscanf(value(entry).c_str(), "%hd", &v);
 		}
 
 		if (status == 1) return v;
-		else return ud_short();
+		else return undefinedvalue<short>();
 	}
 	
 	int getintvalue(const std::string id) const
@@ -287,15 +287,15 @@ public:
 		int v;
 		int status;
 		std::string entry = getentry(id);
-		if (strcasecmp(entry, ud_string()) == 0){
-			return ud_int();
+		if (strcasecmp(entry, undefinedvalue<std::string>()) == 0){
+			return undefinedvalue<int>();
 		}
 		else{
 			status = sscanf(value(entry).c_str(), "%d", &v);
 		}
 
 		if (status == 1) return v;
-		else return ud_int();
+		else return undefinedvalue<int>();
 	}
 	
 	size_t getsizetvalue(const std::string id) const
@@ -303,8 +303,8 @@ public:
 		size_t v;
 		int status;
 		std::string entry = getentry(id);
-		if (strcasecmp(entry, ud_string()) == 0){
-			return ud_size_t();
+		if (strcasecmp(entry, undefinedvalue<std::string>()) == 0){
+			return undefinedvalue<size_t>();
 		}
 		else{
 			long tmp;
@@ -313,7 +313,7 @@ public:
 		}
 
 		if (status == 1) return v;
-		else return ud_size_t();
+		return undefinedvalue<size_t>();
 	}
 	
 	float getfloatvalue(const std::string id) const
@@ -321,15 +321,15 @@ public:
 		float v;
 		int status;
 		std::string entry = getentry(id);
-		if (strcasecmp(entry, ud_string()) == 0){
-			return ud_float();
+		if (strcasecmp(entry, undefinedvalue<std::string>()) == 0){
+			return undefinedvalue<float>();
 		}
 		else{
 			status = sscanf(value(entry).c_str(), "%f", &v);
 		}
 
 		if (status == 1) return v;
-		else return ud_float();
+		else return undefinedvalue<float>();
 	}
 	
 	double getdoublevalue(const std::string id) const
@@ -337,15 +337,15 @@ public:
 		double v;
 		int status;
 		std::string entry = getentry(id);
-		if (strcasecmp(entry, ud_string()) == 0){
-			return ud_double();
+		if (strcasecmp(entry, undefinedvalue<std::string>()) == 0){
+			return undefinedvalue<double>();
 		}
 		else{
 			status = sscanf(value(entry).c_str(), "%lf", &v);
 		}
 
 		if (status == 1) return v;
-		else return ud_double();
+		else return undefinedvalue<double>();
 	}
 
 	std::vector<int> getintvector(const std::string id) const
@@ -353,7 +353,7 @@ public:
 		std::vector<int> vec;
 		std::string s = getstringvalue(id);
 
-		if (strcasecmp(s, ud_string()) == 0){
+		if (strcasecmp(s, undefinedvalue<std::string>()) == 0){
 			return vec;
 		}
 
@@ -369,7 +369,7 @@ public:
 	{		
 		std::vector<double> vec;
 		std::string s = getstringvalue(id);
-		if (strcasecmp(s, ud_string()) == 0){
+		if (strcasecmp(s, undefinedvalue<std::string>()) == 0){
 			return vec;
 		}
 
@@ -386,7 +386,7 @@ public:
 		std::vector<std::string> fields;
 		std::string s = getstringvalue(id);
 
-		if (strcasecmp(s, ud_string()) == 0){
+		if (strcasecmp(s, undefinedvalue<std::string>()) == 0){
 			return fields;
 		}
 
@@ -432,7 +432,7 @@ public:
 
 	bool getvalue(const std::string id, bool& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			//value = false;
 			return false;
 		}
@@ -441,7 +441,7 @@ public:
 	}
 	bool getvalue(const std::string id, short& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			//value = ud_short();
 			return false;
 		}
@@ -450,8 +450,8 @@ public:
 	}
 	bool getvalue(const std::string id, int& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
-			//value = ud_int();
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+			//value = undefinedvalue<int>();
 			return false;
 		}
 		value = getintvalue(id);
@@ -459,7 +459,7 @@ public:
 	}
 	bool getvalue(const std::string id, size_t& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			//value = ud_size_t();
 			return false;
 		}
@@ -468,7 +468,7 @@ public:
 	}
 	bool getvalue(const std::string id, float& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			//value = ud_float();
 			return false;
 		}
@@ -477,7 +477,7 @@ public:
 	}
 	bool getvalue(const std::string id, double& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			//value = ud_double();
 			return false;
 		}
@@ -486,8 +486,8 @@ public:
 	}
 	bool getvalue(const std::string id, std::string& value) const
 	{
-		if (getentry(id).compare(ud_string()) == 0){
-			//value = ud_string();
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+			//value = undefinedvalue<std::string>();
 			return false;
 		}
 		value = getstringvalue(id);
@@ -499,7 +499,7 @@ public:
 	bool get(const std::string id, T& value, const T& defaultvalue) const
 	{
 		std::string e = getentry(id);
-		if (e.compare(ud_string()) == 0) {
+		if (e.compare(undefinedvalue<std::string>()) == 0) {
 			value = defaultvalue;
 			return false;
 		}
@@ -535,7 +535,7 @@ public:
 		std::vector<std::string> result;
 
 		std::string str = getstringvalue(id);
-		if (str.length() > 0 && strcasecmp(str, ud_string()) != 0){
+		if (str.length() > 0 && strcasecmp(str, undefinedvalue<std::string>()) != 0){
 			result.push_back(str);
 		}
 		for (i = 0; i < 100; i++){
@@ -543,7 +543,7 @@ public:
 			token += strprint("%d", i);
 
 			str = getstringvalue(token);
-			if (strcasecmp(str, ud_string()) != 0){
+			if (strcasecmp(str, undefinedvalue<std::string>()) != 0){
 				result.push_back(str);
 			}
 		}

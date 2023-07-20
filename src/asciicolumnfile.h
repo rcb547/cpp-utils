@@ -264,7 +264,7 @@ public:
 			last = breaks[i];
 
 			char fmtchar;
-			int decimals;
+			size_t decimals;
 			if (p == std::string::npos) {
 				fmtchar = 'I';
 				decimals = 0;
@@ -307,7 +307,7 @@ public:
 		return true;
 	};
 	
-	bool set_fields_noheader() {		
+	bool set_fields_noheader() {
 		std::vector<cFmt> fmts = check_formats(100);
 		size_t startchar = 0;
 		for (size_t i = 0; i < fmts.size(); i++) {
@@ -317,7 +317,7 @@ public:
 			f.startchar = startchar;
 			fields.push_back(f);
 			startchar += f.width * f.nbands;
-		}		
+		}
 		return true;
 	};
 
@@ -507,7 +507,7 @@ public:
 		}
 		else {
 			if (colstrings[columnnumber].size() == 0) {
-				v = undefinedvalue(v);
+				v = undefinedvalue<T>();
 			}
 			else {
 				std::istringstream(colstrings[columnnumber]) >> v;
@@ -558,7 +558,7 @@ public:
 	bool getvec_fielddefinition(const cFieldDefinition& fd, std::vector<T>& vec, const size_t& n) const
 	{
 		bool readstatus = false;
-		const T udval = undefinedvalue((T)0);
+		const T udval = undefinedvalue<T>();
 		vec.resize(n);
 		if (fd.type == cFieldDefinition::TYPE::NUMERIC) {
 			size_t deflen = fd.numericvalue.size();
