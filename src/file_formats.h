@@ -21,9 +21,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 class cFmt {
 public:
-	char fmtchar=0;
-	size_t width=0;
-	size_t decimals=0;
+	char fmtchar = 0;
+	size_t width = 0;
+	size_t decimals = 0;
 
 	cFmt(const char _fmtchar, const size_t _width, const size_t _decimals) {
 		fmtchar = _fmtchar;
@@ -51,8 +51,8 @@ private:
 
 
 public:
-	
-	inline const static std::string validfmttypes = "aAiIeEfF";	
+
+	inline const static std::string validfmttypes = "aAiIeEfF";
 	char fmtchar = 'E';//Field type notation
 	size_t width = 15;//Total width of field
 	size_t decimals = 6;//Nuber of places after the decimal point	
@@ -95,7 +95,7 @@ public:
 	bool valid_fmttype() {
 		return instring(validfmttypes, fmtchar);
 	};
-	
+
 };
 
 class cAsciiColumnField : public cAsciiColumnFormat {
@@ -112,14 +112,14 @@ private:
 		return newname;
 	};
 
-public:		
+public:
 	static constexpr const char* NULLSTR = "NULL";
 	static constexpr const char* UNITS = "UNITS";
 	static constexpr const char* DATUM = "DATUM";
 	static constexpr const char* PROJECTION = "PROJECTION";
 	static constexpr const char* LONGNAME = "LONGNAME";
 	static constexpr const char* DESC = "DESC";
-	
+
 
 	std::string name;//String used as the shorthand name of the field
 	size_t fileorder = 0;//Zero based order of field in the file
@@ -129,9 +129,9 @@ public:
 
 	cKeyVecCiStr atts;//Additional key=value pairs
 	using KeyVal = std::pair<std::string, std::string>;
-	
+
 	cAsciiColumnField() {};
-	
+
 	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1) {
 		fileorder = _order;
 		startcolumn = _startcolumn;
@@ -158,22 +158,22 @@ public:
 	};
 
 	bool add_att(const std::string& key, const std::string& value) {
-		return atts.add(key, value);		
+		return atts.add(key, value);
 	};
 
 	bool has_att(const std::string& key) const {
 		if (atts.keyindex(key) < 0) {
 			return false;
 		}
-		else return true;		
+		else return true;
 	};
 
-	std::string get_att(const std::string& key) const {		
+	std::string get_att(const std::string& key) const {
 		std::string val;
-		atts.get(key,val);
+		atts.get(key, val);
 		return val;
 	};
-	
+
 	bool hasnullvalue() const {
 		return has_att(NULLSTR);
 	};
@@ -227,7 +227,7 @@ public:
 			nbands = inbands;
 			width = iwidth;
 			decimals = idecimals;
-		}		
+		}
 		else if (std::sscanf(formatstr.c_str(), "%c%d.%d", &fmtchar, &iwidth, &idecimals) == 3) {
 			nbands = 1;
 			width = iwidth;
@@ -253,14 +253,14 @@ public:
 	}
 
 	std::string simple_header_record() const {
-		std::string fixed_name = space_free_field_name(name);		
+		std::string fixed_name = space_free_field_name(name);
 		std::ostringstream s;
 		if (nbands == 1) {
 			s << startcolumn + 1 << "\t" << fixed_name << std::endl;
 		}
 		else {
 			s << startcolumn + 1 << "-" << endcol() + 1 << "\t" << fixed_name << std::endl;
-		}		
+		}
 		return s.str();
 	}
 
@@ -316,7 +316,7 @@ public:
 
 		bool writechan = true;
 		std::string tag = "DATA";
-		std::ostringstream s;			
+		std::ostringstream s;
 		if (ciequal(fixed_name, "line") ||
 			ciequal(fixed_name, "linenumber") ||
 			ciequal(fixed_name, "line_number") ||
@@ -328,7 +328,7 @@ public:
 		std::ostringstream registry;
 		registry << "Label=" << fixed_name << ';';
 		for (const auto& [key, value] : atts) {
-			if(value.size() > 0) registry << key << "=" << value << ';';
+			if (value.size() > 0) registry << key << "=" << value << ';';
 		}
 
 		s << tag << "\t" << startchar << ", " << width << ", " << readformat << ", " << scale << ", " << base << ", " << dummystr << ", " << std::endl;
@@ -338,7 +338,7 @@ public:
 		}
 		return s.str();
 	}
-	
+
 	std::string str() {
 		char sep = ':';
 		std::ostringstream oss;
@@ -406,7 +406,7 @@ class cOutputFileInfo {
 	bool   allowmorefields = true;
 
 public:
-	
+
 	std::vector<cAsciiColumnField> fields;
 
 	cOutputFileInfo() {	};
@@ -479,7 +479,7 @@ public:
 		}
 		fclose(fp);
 	};
-	
+
 	void write_csv_header(const std::string pathname) {
 
 		cKeyVecCiStr v = collect_all_att_names();
@@ -547,9 +547,9 @@ public:
 	bool read(const std::string& hdrfile) {
 		fields.clear();
 
-		std::ifstream file(hdrfile);		
+		std::ifstream file(hdrfile);
 		int k = 0;
-		while(!file.eof()){
+		while (!file.eof()) {
 			std::string cstr;
 			std::string fstr;
 			file >> cstr;
@@ -557,8 +557,8 @@ public:
 			if (cstr.size() == 0) {
 				break;
 			}
-			
-						
+
+
 			std::istringstream is(cstr);
 			int col1;
 			int col2;
@@ -570,7 +570,7 @@ public:
 			}
 
 			const size_t order = k;
-			const size_t startcolumn = (size_t)col1-1;//Zero based index
+			const size_t startcolumn = (size_t)col1 - 1;//Zero based index
 			const int nbands = col2 - col1 + 1;
 			const std::string name = fstr;
 			const char fmttype = 0;
@@ -595,13 +595,13 @@ class cASEGGDF2Header {
 
 private:
 
-	std::vector<cAsciiColumnField> fields;	
+	std::vector<cAsciiColumnField> fields;
 	std::string ST_string;
 	std::string RT_string;
 
 	static bool detect_geosoft_error(std::string s1, std::string s2) {
 		s1.erase(remove_if(s1.begin(), s1.end(), isspace), s1.end());
-		s2.erase(remove_if(s2.begin(), s2.end(), isspace), s2.end());		
+		s2.erase(remove_if(s2.begin(), s2.end(), isspace), s2.end());
 		toupper(s1);
 
 		if (s1 == "RT:A4") {
@@ -615,7 +615,7 @@ private:
 
 public:
 
-	cASEGGDF2Header(const std::string& dfnpath){		
+	cASEGGDF2Header(const std::string& dfnpath) {
 		read(dfnpath);
 	}
 
@@ -648,17 +648,17 @@ public:
 				}
 			}
 
-			if (strncasecmp(tk_space[0], "defn",4) != 0) {
+			if (strncasecmp(tk_space[0], "defn", 4) != 0) {
 				std::string msg;
 				msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 				msg += strprint("\tSkipping DFN entry that does not begin with 'DEFN' or 'END DEFN'\n");
-				if (my_rank()==0) std::cerr << msg << std::endl;				
+				if (my_rank() == 0) std::cerr << msg << std::endl;
 				processrecord = false;
 			}
 
 			if (processrecord) {
 				cAsciiColumnField F;
-								
+
 				auto t1 = tokenise(tk_semicolon[0], ',');
 				auto t2 = tokenise(t1[0], '=');
 				auto t3 = tokenise(t1[1], '=');
@@ -667,9 +667,9 @@ public:
 				std::string rt = t3[1];
 
 				if (ST_string != "RECD") {
-					std::string msg;					
+					std::string msg;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
-					msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");					
+					msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");
 					throw(std::runtime_error(msg));
 				}
 
@@ -697,7 +697,7 @@ public:
 						msg += strprint("\tDetected Geosoft style DFN with two format specifiers (%s and %s) in the one entry ", tmp1[1].c_str(), tmp2[1].c_str());
 						msg += strprint("\tRemoving %s.\n", tk_semicolon[1].c_str());
 						std::cerr << msg << std::endl;
-						reported_geosoft = true;						
+						reported_geosoft = true;
 						for (size_t i = 1; i < tk_semicolon.size() - 1; i++) {
 							tk_semicolon[i] = tk_semicolon[i + 1];
 						}
@@ -730,8 +730,8 @@ public:
 					}
 				}
 
-				
-				//Data DEFN				
+
+				//Data DEFN
 				auto colon_tokens = tokenise(tk_semicolon[1], ':');
 				if (colon_tokens.size() < 1) {
 					std::string msg;
@@ -739,19 +739,20 @@ public:
 					msg += strprint("\tNo name or format provided\n");
 					throw(std::runtime_error(msg));
 				}
-								
-				if (ciequal(colon_tokens[0],"end defn")){
-					std::string msg;
-					msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
-					msg += strprint("\t'END DEFN' is out of place\n");
-					std::cerr << msg << std::endl;
-					continue;					
+
+				if (ciequal(colon_tokens[0], "end defn")) {
+					//forget warning about this - it seems pretty common/standard
+					//std::string msg;
+					//msg += strprint("Warning: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
+					//msg += strprint("\t'END DEFN' is out of place\n");
+					//std::cerr << msg << std::endl;
+					continue;
 				}
 
 				F.name = colon_tokens[0];
 
 				if (colon_tokens.size() < 2) {
-					std::string msg;					
+					std::string msg;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tNo format provided\n");
 					throw(std::runtime_error(msg));
@@ -760,14 +761,14 @@ public:
 				std::string formatstr = colon_tokens[1];
 				F.parse_format_string(formatstr);
 				if (F.valid_fmttype() == false) {
-					std::string msg;					
+					std::string msg;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tFormat %s must start with one of '%s'\n", formatstr.c_str(), F.validfmttypes.c_str());
 					throw(std::runtime_error(msg));
 				}
 
 				if (F.nbands < 1 || F.width < 1 || F.decimals < 0) {
-					std::string msg = _SRC_;					
+					std::string msg = _SRC_;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
 					throw(std::runtime_error(msg));
@@ -789,21 +790,21 @@ public:
 						if (tk_equal.size() == 1) {
 							nea++;
 							std::string key = strprint("extra%d", nea);
-							std::string& value = tk_comma[i];							
+							std::string& value = tk_comma[i];
 							F.atts.add(key, value);
 						}
 						else if (tk_equal.size() == 2) {
 							std::string key = tk_equal[0];
-							const std::string& value = tk_equal[1];							
+							const std::string& value = tk_equal[1];
 							if (ciequal(key, "unit")) key = cAsciiColumnField::UNITS;
 							if (ciequal(key, "units")) key = cAsciiColumnField::UNITS;
 							if (ciequal(key, "description")) key = cAsciiColumnField::DESC;
 							if (ciequal(key, "nullvalue")) key = cAsciiColumnField::NULLSTR;
 							if (ciequal(key, "name")) key = cAsciiColumnField::LONGNAME;
-							F.add_att(key, value);														
+							F.add_att(key, value);
 						}
 						else {
-							std::string msg;							
+							std::string msg;
 							msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 							msg += strprint("\tunknown erroe\n");
 							throw(std::runtime_error(msg));
@@ -814,7 +815,7 @@ public:
 				if (datarec == 0) {
 					RT_string = rt;
 				}
-				else {					
+				else {
 					if (reported_mixing == false && rt != RT_string) {
 						std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
 						msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
@@ -827,7 +828,7 @@ public:
 				if (datarec == 0 && rt == "DATA") {
 					if (!F.ischar() && F.width != 4) {
 						cAsciiColumnField R;
-						R.name = "RT";						
+						R.name = "RT";
 						R.fileorder = (size_t)0;
 						R.fmtchar = 'A';
 						R.width = 4;
@@ -858,10 +859,10 @@ public:
 		return true;
 	};
 
-	void write(const std::string& dfnpath){
+	void write(const std::string& dfnpath) {
 		FILE* fp = fileopen(dfnpath, "w");
 		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
-		for (size_t i = 0; i < fields.size(); i++){
+		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].aseggdf_header_record();
 			fprintf(fp, "%s", s.c_str());
 		}
@@ -882,24 +883,24 @@ public:
 	};
 };
 
-class cFieldManager{
+class cFieldManager {
 
 private:
 
 public:
 	std::vector<cAsciiColumnField> fields;
 
-	cFieldManager(){};
+	cFieldManager() {};
 
-	cFieldManager(const std::vector<cAsciiColumnField> _fields){
+	cFieldManager(const std::vector<cAsciiColumnField> _fields) {
 		fields = _fields;
 	};
 
-	static size_t nullfieldindex(){ return UINT64_MAX; };
+	static size_t nullfieldindex() { return UINT64_MAX; };
 
 	size_t fieldindexbyname(const std::string& fieldname) const
 	{
-		for (size_t fi = 0; fi < fields.size(); fi++){
+		for (size_t fi = 0; fi < fields.size(); fi++) {
 			if (ciequal(fields[fi].name, fieldname)) return fi;
 		}
 		return nullfieldindex();
@@ -907,8 +908,8 @@ public:
 
 	bool fieldindexbyname(const std::string& fieldname, size_t& index) const
 	{
-		for (size_t fi = 0; fi < fields.size(); fi++){
-			if (ciequal(fields[fi].name, fieldname)){
+		for (size_t fi = 0; fi < fields.size(); fi++) {
+			if (ciequal(fields[fi].name, fieldname)) {
 				index = fi;
 				return true;
 			}
@@ -919,7 +920,7 @@ public:
 
 	size_t ncolumns() const {
 		size_t n = 0;
-		for (size_t i = 0; i < fields.size(); i++){
+		for (size_t i = 0; i < fields.size(); i++) {
 			n += fields[i].nbands;
 		}
 		return n;
@@ -935,27 +936,27 @@ private:
 	size_t recordsreadsuccessfully;
 
 public:
-	
+
 	cFieldManager F;
 
-	cColumnFile(){ initialise(); };
+	cColumnFile() { initialise(); };
 
-	cColumnFile(const std::string& datafile, const std::string& headerfile){
+	cColumnFile(const std::string& datafile, const std::string& headerfile) {
 		initialise();
 		openread(datafile);
 		cASEGGDF2Header A(headerfile);
 		F = cFieldManager(A.getfields());
 	};
 
-	~cColumnFile(){
-		if (file.is_open())file.close();		
+	~cColumnFile() {
+		if (file.is_open())file.close();
 	};
 
-	void initialise(){		
+	void initialise() {
 		recordsreadsuccessfully = 0;
 	};
 
-	const cAsciiColumnField& fields(const size_t fi){
+	const cAsciiColumnField& fields(const size_t fi) {
 		return F.fields[fi];
 	}
 
@@ -967,88 +968,88 @@ public:
 		return F.ncolumns();
 	}
 
-	const char* currentrecord_cstr(){ return currentrecord.c_str(); };
+	const char* currentrecord_cstr() { return currentrecord.c_str(); };
 
-	const std::string& currentrecordstring(){ return currentrecord; };
+	const std::string& currentrecordstring() { return currentrecord; };
 
-	bool openread(const std::string& datafilename){
+	bool openread(const std::string& datafilename) {
 		std::string path = datafilename;
 		fixseparator(path);
 		file.open(path, std::fstream::in);
 		if (file.is_open())return true;
-		else{
+		else {
 			std::string msg = _SRC_ + strprint("Could not open file (%s)\n", path.c_str());
 			throw(std::runtime_error(msg));
 		}
 		return false;
 	};
 
-	void close(){ file.close(); };
+	void close() { file.close(); };
 
-	bool readnextrecord(){
+	bool readnextrecord() {
 		if (file.eof())return false;
-		std::getline(file,currentrecord);
+		std::getline(file, currentrecord);
 		recordsreadsuccessfully++;
-		return true;		
+		return true;
 	}
 
-	size_t parse_record(){
+	size_t parse_record() {
 		currentcolumns = parsestrings(currentrecord, " ,\t\r\n");
 		return currentcolumns.size();
 	}
 
-	bool getcolumn(const size_t columnnumber, int& v){
+	bool getcolumn(const size_t columnnumber, int& v) {
 		v = atoi(currentcolumns[columnnumber].c_str());
 		return true;
 	}
 
-	bool getcolumn(const size_t columnnumber, double& v){
+	bool getcolumn(const size_t columnnumber, double& v) {
 		v = atof(currentcolumns[columnnumber].c_str());
 		return true;
 	}
 
-	bool getfield(const size_t findex, int& v){
+	bool getfield(const size_t findex, int& v) {
 		size_t base = fields(findex).startcol();
 		v = atoi(currentcolumns[base].c_str());
 		return true;
 	}
 
-	bool getfield(const size_t findex, double& v){
+	bool getfield(const size_t findex, double& v) {
 		size_t base = fields(findex).startcol();
 		v = atof(currentcolumns[base].c_str());
 		return true;
 	}
 
-	bool getfield(const size_t findex, std::vector<int>& v){
+	bool getfield(const size_t findex, std::vector<int>& v) {
 		size_t base = fields(findex).startcol();
 		size_t nb = fields(findex).nbands;
 		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){
+		for (size_t bi = 0; bi < nb; bi++) {
 			v[bi] = atoi(currentcolumns[base].c_str());
 			base++;
 		}
 		return true;
 	}
 
-	bool getfield(const size_t findex, std::vector<double>& v){
+	bool getfield(const size_t findex, std::vector<double>& v) {
 		size_t base = fields(findex).startcol();
 		size_t nb = fields(findex).nbands;
 		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){
+		for (size_t bi = 0; bi < nb; bi++) {
 			v[bi] = atof(currentcolumns[base].c_str());
 			base++;
 		}
 		return true;
 	}
 
-	bool getfieldlog10(const size_t findex, std::vector<double>& v){
+	bool getfieldlog10(const size_t findex, std::vector<double>& v) {
 		size_t base = fields(findex).startcol();
-		size_t nb   = fields(findex).nbands;
+		size_t nb = fields(findex).nbands;
 
 		v.resize(nb);
-		for (size_t bi = 0; bi < nb; bi++){
+		for (size_t bi = 0; bi < nb; bi++) {
 			v[bi] = atof(currentcolumns[base].c_str());
-			if (fields(findex).isnull(v[bi]) == false){
+			if (fields(findex).isnull(v[bi]) == false) {
 				v[bi] = log10(v[bi]);
 			}
 			base++;
@@ -1056,8 +1057,8 @@ public:
 		return true;
 	}
 
-	size_t readnextgroup(const size_t fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields){
-		
+	size_t readnextgroup(const size_t fgroupindex, std::vector<std::vector<int>>& intfields, std::vector<std::vector<double>>& doublefields) {
+
 		if (file.eof())return 0;
 
 		intfields.clear();
@@ -1067,9 +1068,9 @@ public:
 
 		int lastline;
 		size_t count = 0;
-		do{
+		do {
 			if (recordsreadsuccessfully == 0) readnextrecord();
-			if (parse_record() != ncolumns()){
+			if (parse_record() != ncolumns()) {
 				continue;
 			}
 			int line;
@@ -1077,23 +1078,23 @@ public:
 
 			if (count == 0)lastline = line;
 
-			if (line != lastline){
+			if (line != lastline) {
 				return count;
 			}
 
-			for (size_t fi = 0; fi < nfields(); fi++){
+			for (size_t fi = 0; fi < nfields(); fi++) {
 				size_t nbands = fields(fi).nbands;
-				if (fields(fi).datatype() == cAsciiColumnField::Type::INTEGER){
+				if (fields(fi).datatype() == cAsciiColumnField::Type::INTEGER) {
 					std::vector<int> v;
 					getfield(fi, v);
-					for (size_t bi = 0; bi < nbands; bi++){
+					for (size_t bi = 0; bi < nbands; bi++) {
 						intfields[fi].push_back(v[bi]);
 					}
 				}
-				else{
+				else {
 					std::vector<double> v;
 					getfield(fi, v);
-					for (size_t bi = 0; bi < nbands; bi++){
+					for (size_t bi = 0; bi < nbands; bi++) {
 						doublefields[fi].push_back(v[bi]);
 					}
 				}
@@ -1106,4 +1107,3 @@ public:
 
 #endif
 
- 
