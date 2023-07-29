@@ -896,7 +896,7 @@ public:
 		fields = _fields;
 	};
 
-	static size_t nullfieldindex() { return UINT64_MAX; };
+	static size_t nullfieldindex() { return std::numeric_limits<size_t>::max(); };
 
 	size_t fieldindexbyname(const std::string& fieldname) const
 	{

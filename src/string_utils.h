@@ -18,6 +18,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <sstream>
 #include <iterator>
 #include <algorithm>
+#include "undefinedvalues.h"
 
 template<typename T>
 void str2num(const std::string str, T& v)
@@ -35,18 +36,18 @@ void str2num(const char* str, T& v)
 
 inline std::string strprint_va(const char* fmt, va_list vargs)
 {
-	va_list vargscopy;	
+	va_list vargscopy;
 	va_copy(vargscopy, vargs);
 	const int len = 1 + std::vsnprintf(nullptr, 0, fmt, vargscopy);
 	va_end(vargscopy);
 
 	std::string s(len, '\0');
-	std::vsnprintf(&(s.front()), len, fmt, vargs);	
+	std::vsnprintf(&(s.front()), len, fmt, vargs);
 	return std::string(s.c_str());
 }
 
 inline std::string strprint(const char* fmt, ...)
-{		
+{
 	va_list vargs;
 	va_start(vargs, fmt);
 	std::string s = strprint_va(fmt, vargs);
@@ -58,7 +59,7 @@ inline std::string strprint(const char* fmt, ...)
 inline bool instring(const char* str, const char& c)
 {
 	const char* p = str;
-	while (*p != 0){
+	while (*p != 0) {
 		if (*p == c) return true;
 		p++;
 	}
@@ -67,12 +68,12 @@ inline bool instring(const char* str, const char& c)
 
 inline bool instring(const std::string& str, const char& c)
 {
-	return instring(str.c_str(), c);	
+	return instring(str.c_str(), c);
 }
 
 inline std::string stringvalue(const double value, const char* fmt)
 {
-	if (value == -DBL_MAX)return std::string("Undefined");
+	if (value == undefinedvalue<double>())return std::string("Undefined");
 	if (fmt == NULL) return strprint("%lf", value);
 	return strprint(fmt, value);
 }
@@ -224,8 +225,8 @@ inline std::vector<std::string> fieldparsestring(const char* s, const char* deli
 	return fields;
 }
 
-inline void settolower(std::string& s){	
-	for(size_t i=0; i<s.size(); i++) s[i] = std::tolower(s[i]);
+inline void settolower(std::string& s) {
+	for (size_t i = 0; i < s.size(); i++) s[i] = std::tolower(s[i]);
 }
 
 inline std::string tolower(const std::string& s) {
@@ -234,8 +235,8 @@ inline std::string tolower(const std::string& s) {
 	return t;
 }
 
-inline void settoupper(std::string& s) {	
-	for(size_t i=0; i<s.size(); i++) s[i] = std::toupper(s[i]);
+inline void settoupper(std::string& s) {
+	for (size_t i = 0; i < s.size(); i++) s[i] = std::toupper(s[i]);
 }
 
 inline std::string toupper(const std::string& s) {
