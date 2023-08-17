@@ -423,9 +423,9 @@ public:
 
 	template <typename O>
 	cBoundingBox(const cBoundingBox<O>& other) {
-		xmin = other.xmin; xmax = other.xmax;
-		ymin = other.ymin; ymax = other.ymax;
-		zmin = other.zmin; zmax = other.zmax;
+		xmin = (T)other.xmin; xmax = (T)other.xmax;
+		ymin = (T)other.ymin; ymax = (T)other.ymax;
+		zmin = (T)other.zmin; zmax = (T)other.zmax;
 	};
 };
 
