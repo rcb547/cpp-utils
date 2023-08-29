@@ -222,7 +222,7 @@ void deallocate1darray(int*& a);
 void allocate2darray(double**& a, const size_t nrows, const size_t ncols);
 void deallocate2darray(double**& a, const size_t nrows);
 
-double median(double* v,size_t n);
+double median(const double* v,size_t n);
 std::vector<cRange<int>> parserangelist(std::string& str);
 std::vector<double> getdoublevector(const char* str, const char* delims);
 
