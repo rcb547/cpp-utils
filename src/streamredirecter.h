@@ -17,23 +17,10 @@ public:
 private:
 
 	std::ostream& src;
-	std::streambuf* const sbuf;
+	std::streambuf* sbuf;
 	// Prevent copying.                        
 	cStreamRedirecter(const cStreamRedirecter&) = delete;
 	cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
 };
-
-/*
-std::streambuf* open_cerr(std::ofstream& wlog, const std::string& logfilepath) {
-	wlog = std::ofstream(logfilepath, std::ios::app);
-	std::streambuf* cerrbuf = std::cerr.rdbuf();
-	std::cerr.rdbuf(wlog.rdbuf());
-	return cerrbuf;
-}
-
-void close_cerr(std::streambuf* cerrbuf) {
-	std::cerr.rdbuf(cerrbuf);
-}
-*/
 
 #endif

@@ -25,6 +25,18 @@ class cBlock{
 private:
 	std::string delimiters = " ,\t";
 
+	static std::string strip_fromandafter1(const std::string& entry, const std::string& tag) {
+		size_t index = entry.find(tag);
+		if (index != std::string::npos) {
+			return entry.substr(0, index);
+		}
+		else return entry;
+	};
+
+	static std::string strip_comments(const std::string& entry) {
+		return strip_fromandafter1(entry, "//");
+	};
+
 public:
 
 	std::string Filename;
@@ -137,11 +149,11 @@ public:
 
 	}
 	
-	std::string key(std::string entry) const
+	std::string key(const std::string& entry) const
 	{
-		strip_fromandafter(entry, "//");
-		size_t index = entry.find("=");
-		std::string id = entry.substr(0, index - 1);
+		std::string s = strip_comments(entry);
+		size_t index = s.find("=");
+		std::string id = s.substr(0, index - 1);
 		return trim(id);
 	}
 	
@@ -150,22 +162,14 @@ public:
 		return key(Entries[eindex]);
 	}
 
-	static void strip_fromandafter(std::string& entry, const std::string& tag)
+	std::string value(const std::string entry) const
 	{
-		size_t index = entry.find(tag);
-		if (index != std::string::npos) {
-			entry = entry.substr(0,index);
-		}
-	}
-
-	std::string value(std::string entry) const
-	{
-		strip_fromandafter(entry, "//");
-		size_t index = entry.find("=");
-		size_t len = entry.size() - index - 1;
-		if (len == 0)return std::string("");
-		std::string s = entry.substr(index + 1, len);
-		return trim(s);
+		std::string s = strip_comments(entry);
+		size_t index = s.find("=");
+		size_t len = s.size() - index - 1;
+		if (len == 0) return std::string("");
+		std::string v = s.substr(index + 1, len);
+		return trim(v);
 	}
 
 	std::string value(const size_t eindex) const
@@ -255,7 +259,8 @@ public:
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
 			if (strcasecmp(key(Entries[i]), id) == 0){
-				return Entries[i];
+				std::string e = strip_comments(Entries[i]);
+				return e;
 			}
 		}
 		return undefinedvalue<std::string>();
@@ -403,7 +408,8 @@ public:
 		cBlock b = findblock(id);
 		for (size_t i = 0; i < b.Entries.size(); i++){			
 			std::vector<double> vec;
-			std::string s = b.Entries[i];
+			std::string s = strip_comments(b.Entries[i]);
+			if (s.size() == 0) continue;
 			std::vector<std::string> fields = fieldparsestring(s.c_str(), delimiters.c_str());
 			for (size_t j = 0; j < fields.size(); j++){
 				double v = std::atof(fields[j].c_str());
@@ -433,7 +439,6 @@ public:
 	bool getvalue(const std::string id, bool& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = false;
 			return false;
 		}
 		value = getboolvalue(id);
@@ -442,7 +447,6 @@ public:
 	bool getvalue(const std::string id, short& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = ud_short();
 			return false;
 		}
 		value = getshortvalue(id);
@@ -451,7 +455,6 @@ public:
 	bool getvalue(const std::string id, int& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = undefinedvalue<int>();
 			return false;
 		}
 		value = getintvalue(id);
@@ -460,7 +463,6 @@ public:
 	bool getvalue(const std::string id, size_t& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = ud_size_t();
 			return false;
 		}
 		value = getsizetvalue(id);
@@ -469,7 +471,6 @@ public:
 	bool getvalue(const std::string id, float& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = ud_float();
 			return false;
 		}
 		value = getfloatvalue(id);
@@ -478,7 +479,6 @@ public:
 	bool getvalue(const std::string id, double& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = ud_double();
 			return false;
 		}
 		value = getdoublevalue(id);
@@ -487,7 +487,6 @@ public:
 	bool getvalue(const std::string id, std::string& value) const
 	{
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
-			//value = undefinedvalue<std::string>();
 			return false;
 		}
 		value = getstringvalue(id);
@@ -554,7 +553,7 @@ public:
 		std::vector<std::string> result;
 		cBlock b = findblock(id);
 		for (size_t i = 0; i < b.Entries.size(); i++){
-			std::string s = b.Entries[i];
+			std::string s = strip_comments(b.Entries[i]);
 			result.push_back(s);
 		}
 		return result;

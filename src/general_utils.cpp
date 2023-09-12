@@ -15,14 +15,14 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <sstream>
 
 #if defined _WIN32
-	#define NOMINMAX 
-	#include <windows.h>
-	#include <conio.h>
+#define NOMINMAX 
+#include <windows.h>
+#include <conio.h>
 #else
-	#include <unistd.h>	
-	#include <sys/types.h>	
-	#include <sys/resource.h>	
-	#include <errno.h>
+#include <unistd.h>	
+#include <sys/types.h>	
+#include <sys/resource.h>	
+#include <errno.h>
 #endif
 
 #if defined _MPI_ENABLED
@@ -41,22 +41,22 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_utils.h"
 #include "file_utils.h"
 
-std::string commandlinestring(int argc, char** argv){
+std::string commandlinestring(int argc, char** argv) {
 	std::string str = "Executing:";
-	for (int i = 0; i < argc; i++){
+	for (int i = 0; i < argc; i++) {
 		str += strprint(" %s", argv[i]);
 	}
 	return str;
 };
 
-std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate){
+std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate) {
 	std::string s = strprint("Version: %s Compiled at %s on %s", version.c_str(), compiletime.c_str(), compiledate.c_str());
 	return s;
 };
 
-int my_size(){
+int my_size() {
 #if defined _MPI_ENABLED			
-	if (cMpiEnv::isinitialised()){		
+	if (cMpiEnv::isinitialised()) {
 		return cMpiEnv::world_size();
 	}
 	else return 1;
@@ -65,7 +65,7 @@ int my_size(){
 #endif
 };
 
-int my_rank(){
+int my_rank() {
 
 	int threadnum = 0;
 
@@ -74,29 +74,29 @@ int my_rank(){
 #endif
 
 #if defined _MPI_ENABLED
-	if (cMpiEnv::isinitialised()){
+	if (cMpiEnv::isinitialised()) {
 		return cMpiEnv::world_rank();
-	}	
+	}
 	else return threadnum;
 #else
 	return threadnum;
 #endif
 }
 
-int mpi_openmp_rank(){
+int mpi_openmp_rank() {
 	int rank = 0;
 
-	#if defined _OPENMP
-		rank = omp_get_thread_num();
-		if (rank > 0)return rank;
-	#endif
+#if defined _OPENMP
+	rank = omp_get_thread_num();
+	if (rank > 0)return rank;
+#endif
 
-	#if defined _MPI_ENABLED
-		if (cMpiEnv::isinitialised()) {
-			rank = cMpiEnv::world_rank();
-			return rank;
-		}
-	#endif
+#if defined _MPI_ENABLED
+	if (cMpiEnv::isinitialised()) {
+		rank = cMpiEnv::world_rank();
+		return rank;
+	}
+#endif
 	return rank;
 }
 
@@ -121,7 +121,7 @@ void prompttocontinue()
 {
 
 #if defined MATLAB_MEX_FILE
-	
+
 #else
 	std::printf("Press enter to continue...\n");
 	std::getchar();
@@ -132,7 +132,7 @@ void prompttocontinue()
 void prompttoexit()
 {
 #if defined MATLAB_MEX_FILE		
-	mexErrMsgTxt("Error");	
+	mexErrMsgTxt("Error");
 #else
 	std::printf("Press enter to exit...\n");
 	std::getchar();
@@ -162,8 +162,8 @@ bool wildcmp(const char* wildpattern, const char* stringpattern)
 		str++;
 	}
 
-	char *cp = (char*)NULL;
-	char *mp = (char*)NULL;
+	char* cp = (char*)NULL;
+	char* mp = (char*)NULL;
 	while (*str) {
 		if (*wild == '*') {
 			if (!*++wild) {
@@ -201,18 +201,18 @@ double correlation_coefficient(std::vector<double>x, std::vector<double>y)
 	double sumxx = 0.0;
 	double sumyy = 0.0;
 	double sumxy = 0.0;
-	for (size_t i = 0; i < N; i++){
+	for (size_t i = 0; i < N; i++) {
 		sumx += x[i];
 		sumy += y[i];
 		sumxx += x[i] * x[i];
 		sumyy += y[i] * y[i];
 		sumxy += x[i] * y[i];
 	}
-	return (N*sumxy - sumx*sumy) / sqrt((N*sumxx - sumx*sumx)*(N*sumyy - sumy*sumy));
+	return (N * sumxy - sumx * sumy) / sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
 
 }
 
-bool regression(double* x, double*y, size_t n, double* gradient, double* intercept)
+bool regression(double* x, double* y, size_t n, double* gradient, double* intercept)
 {
 	//regression line y=mx + b // Thomas/Finney pp887
 	//user must ensure line is not vertical	
@@ -220,17 +220,17 @@ bool regression(double* x, double*y, size_t n, double* gradient, double* interce
 	double sy = 0.0;
 	double sxy = 0.0;
 	double sxx = 0.0;
-	for (size_t i = 0; i < n; i++){
+	for (size_t i = 0; i < n; i++) {
 		sx += x[i];
 		sy += y[i];
 		sxy += x[i] * y[i];
 		sxx += x[i] * x[i];
 	}
 
-	if ((sx*sx - n*sxx) == 0.0)return false;
+	if ((sx * sx - n * sxx) == 0.0)return false;
 
-	double m = (sx*sy - n*sxy) / (sx*sx - n*sxx);
-	double b = (sy - m*sx) / (double)n;
+	double m = (sx * sy - n * sxy) / (sx * sx - n * sxx);
+	double b = (sy - m * sx) / (double)n;
 
 	*gradient = m;
 	*intercept = b;
@@ -248,17 +248,17 @@ bool regression(const std::vector<double>& x, const std::vector<double>& y, doub
 	double sy = 0.0;
 	double sxy = 0.0;
 	double sxx = 0.0;
-	for (size_t i = 0; i < x.size(); i++){
+	for (size_t i = 0; i < x.size(); i++) {
 		sx += x[i];
 		sy += y[i];
 		sxy += x[i] * y[i];
 		sxx += x[i] * x[i];
 	}
 
-	if ((sx*sx - n*sxx) == 0.0)return false;
+	if ((sx * sx - n * sxx) == 0.0)return false;
 
-	gradient = (sx*sy - n*sxy) / (sx*sx - n*sxx);
-	intercept = (sy - gradient*sx) / (double)n;
+	gradient = (sx * sy - n * sxy) / (sx * sx - n * sxx);
+	intercept = (sy - gradient * sx) / (double)n;
 
 	return true;
 }
@@ -267,27 +267,27 @@ bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double
 {
 	size_t n = x.size();
 	double m = 0, c = 0;
-	if (fabs(x[n - 1] - x[0]) > fabs(y[n - 1] - y[0])){
+	if (fabs(x[n - 1] - x[0]) > fabs(y[n - 1] - y[0])) {
 		//predominantly EW line
 		regression(x, y, m, c);
-		x1 = (x[0] + m*(y[0] - c)) / (m*m + 1);
-		x2 = (x[n - 1] + m*(y[n - 1] - c)) / (m*m + 1);
-		y1 = x1*m + c;
-		y2 = x2*m + c;
+		x1 = (x[0] + m * (y[0] - c)) / (m * m + 1);
+		x2 = (x[n - 1] + m * (y[n - 1] - c)) / (m * m + 1);
+		y1 = x1 * m + c;
+		y2 = x2 * m + c;
 	}
-	else{
+	else {
 		//predominantly NS line
 		regression(y, x, m, c);
-		y1 = (y[0] + m*(x[0] - c)) / (m*m + 1);
-		y2 = (y[n - 1] + m*(x[n - 1] - c)) / (m*m + 1);
-		x1 = y1*m + c;
-		x2 = y2*m + c;
+		y1 = (y[0] + m * (x[0] - c)) / (m * m + 1);
+		y2 = (y[n - 1] + m * (x[n - 1] - c)) / (m * m + 1);
+		x1 = y1 * m + c;
+		x2 = y2 * m + c;
 	}
 	return true;
 }
 
 const std::string timestamp()
-{	
+{
 	time_t ltime;
 	time(&ltime);
 	std::string str = std::string(ctime(&ltime));
@@ -295,17 +295,17 @@ const std::string timestamp()
 	return str;
 }
 
-const std::string timestring(const std::string format,  std::time_t t){
-	
+const std::string timestring(const std::string format, std::time_t t) {
+
 	if (t == 0) t = std::time(NULL);
 	//"%Y%m%d";
-	char str[100];	
+	char str[100];
 	std::strftime(str, sizeof(str), format.c_str(), std::localtime(&t));
 	return std::string(str);
 
 }
 
-int isinsidepolygon(int npol, double *xp, double *yp, double x, double y)
+int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
 {
 	//The following code is by Randolph Franklin, it returns 1 for interior points and 0 for exterior points. 
 	int i, j, c = 0;
@@ -360,10 +360,10 @@ void planeequation(const double& x1, const double& y1, const double& z1, const d
 	by = y3 - y1;
 	bz = z3 - z1;
 
-	A = ay*bz - by*az;
-	B = az*bx - bz*ax;
-	C = ax*by - bx*ay;
-	D = -(A*x1 + B*y1 + C*z1);
+	A = ay * bz - by * az;
+	B = az * bx - bz * ax;
+	C = ax * by - bx * ay;
+	D = -(A * x1 + B * y1 + C * z1);
 }
 
 bool interplineline(const std::vector<double>& xin, const std::vector<double>& yin, std::vector<double>& xout, std::vector<double>& yout, double& dl)
@@ -374,12 +374,12 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 
 	gradient = 0.0;
 	intercept = 0.0;
-	if (fabs(xin[n - 1] - xin[0]) > fabs(yin[n - 1] - yin[0])){
+	if (fabs(xin[n - 1] - xin[0]) > fabs(yin[n - 1] - yin[0])) {
 		regression(xin, yin, gradient, intercept);
 		x1 = xin[0];
-		y1 = x1*gradient + intercept;
+		y1 = x1 * gradient + intercept;
 		x2 = xin[n - 1];
-		y2 = x2*gradient + intercept;
+		y2 = x2 * gradient + intercept;
 
 		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
 
@@ -388,17 +388,17 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 		yout.resize(nl);
 
 		dx = (x2 - x1) / (double)(nl - 1);
-		for (size_t i = 0; i < nl; i++){
-			xout[i] = x1 + (double)i*dx;
-			yout[i] = xout[i] + gradient*intercept;
+		for (size_t i = 0; i < nl; i++) {
+			xout[i] = x1 + (double)i * dx;
+			yout[i] = xout[i] + gradient * intercept;
 		}
 	}
-	else{
+	else {
 		regression(yin, xin, gradient, intercept);
 		y1 = yin[0];
-		x1 = y1*gradient + intercept;
+		x1 = y1 * gradient + intercept;
 		y2 = yin[n - 1];
-		x2 = y2*gradient + intercept;
+		x2 = y2 * gradient + intercept;
 
 		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
 
@@ -407,9 +407,9 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 		yout.resize(nl);
 
 		dy = (y2 - y1) / (double)(nl - 1);
-		for (size_t i = 0; i < nl; i++){
-			yout[i] = y1 + (double)i*dy;
-			xout[i] = yout[i] + gradient*intercept;
+		for (size_t i = 0; i < nl; i++) {
+			yout[i] = y1 + (double)i * dy;
+			xout[i] = yout[i] + gradient * intercept;
 		}
 	}
 
@@ -426,12 +426,12 @@ int findindex(const size_t n, const double* x, const double& xtarget)
 	int lo = 0;
 	int hi = N - 1;
 
-	while (lo <= hi){
+	while (lo <= hi) {
 
 		if (hi == lo + 1)return lo;
 
 		int mid = (lo + hi) / 2;
-		if (xtarget <= x[mid]){
+		if (xtarget <= x[mid]) {
 			hi = mid;
 		}
 		else {
@@ -466,7 +466,7 @@ double linearinterp(const std::vector<double>& x, const std::vector<double>& y, 
 
 void   linearinterp(const size_t n, const double* x, const double* y, size_t ni, const double* xi, double* yi)
 {
-	for (size_t i = 0; i < ni; i++){
+	for (size_t i = 0; i < ni; i++) {
 		yi[i] = linearinterp(n, x, y, xi[i]);
 	}
 }
@@ -474,7 +474,7 @@ void   linearinterp(const size_t n, const double* x, const double* y, size_t ni,
 std::vector<double> linearinterp(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& xi)
 {
 	std::vector<double> yi(xi.size());
-	for (size_t i = 0; i < xi.size(); i++){
+	for (size_t i = 0; i < xi.size(); i++) {
 		yi[i] = linearinterp(x, y, xi[i]);
 	}
 	return yi;
@@ -482,12 +482,12 @@ std::vector<double> linearinterp(const std::vector<double>& x, const std::vector
 
 size_t bytesallocated(const std::vector<int>& v)
 {
-	return v.capacity()*sizeof(int);
+	return v.capacity() * sizeof(int);
 }
 
 size_t bytesallocated(const std::vector<double>& v)
 {
-	return v.capacity()*sizeof(double);
+	return v.capacity() * sizeof(double);
 }
 
 bool isreportable(int rec)
@@ -499,7 +499,7 @@ bool isreportable(int rec)
 
 	interval = (int)pow(10.0, (double)k);
 
-	if (rec%interval == 0) return true;
+	if (rec % interval == 0) return true;
 	else return false;
 }
 
@@ -513,14 +513,14 @@ double overlap(const double al, const double ah, const double bl, const double b
 {
 	//this returns the amount of overlap between the ranges al-ah with bl-bh
 	if (al >= bh || ah <= bl)return 0;//no overlap 
-	else if (al <= bl){
+	else if (al <= bl) {
 		if (ah >= bh)return bh - bl;//a overlaps all of b
 		else return ah - bl;//a overlaps low end of b 
 	}
-	else{
+	else {
 		if (ah <= bh)return ah - al;//a is all inside b
 		else return bh - al;//a overlaps high end of b
-	}		
+	}
 }
 
 double fractionaloverlap(const double al, const double ah, const double bl, const double bh)
@@ -531,11 +531,11 @@ double fractionaloverlap(const double al, const double ah, const double bl, cons
 
 std::vector<double> overlaps(const double& a1, const double& a2, const std::vector<double>& b)
 {
-	std::vector<double> o(b.size() - 1);	
+	std::vector<double> o(b.size() - 1);
 	o.resize(b.size() - 1);
-	for (size_t bi = 0; bi < b.size() - 1; bi++){
-		o[bi] = overlap(a1,a2, b[bi], b[bi + 1]);
-	}	
+	for (size_t bi = 0; bi < b.size() - 1; bi++) {
+		o[bi] = overlap(a1, a2, b[bi], b[bi + 1]);
+	}
 	return o;
 }
 
@@ -543,7 +543,7 @@ std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const
 {
 	std::vector<double> o(b.size() - 1);
 	o.resize(b.size() - 1);
-	for (size_t bi = 0; bi < b.size() - 1; bi++){
+	for (size_t bi = 0; bi < b.size() - 1; bi++) {
 		o[bi] = fractionaloverlap(a1, a2, b[bi], b[bi + 1]);
 	}
 	return o;
@@ -552,28 +552,28 @@ std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const
 std::vector<std::vector<double>> overlaps(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<std::vector<double>> o(a.size() - 1);
-	for(size_t ai = 0; ai < a.size()-1; ai++){
+	for (size_t ai = 0; ai < a.size() - 1; ai++) {
 		o[ai].resize(b.size() - 1);
-		for (size_t bi = 0; bi < b.size()-1; bi++){
+		for (size_t bi = 0; bi < b.size() - 1; bi++) {
 			o[ai][bi] = overlap(a[ai], a[ai + 1], b[bi], b[bi + 1]);
-		}	
+		}
 	}
 	return o;
 }
 std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<std::vector<double>> o(a.size() - 1);
-	for (size_t ai = 0; ai < a.size() - 1; ai++){
+	for (size_t ai = 0; ai < a.size() - 1; ai++) {
 		o[ai].resize(b.size() - 1);
-		for (size_t bi = 0; bi < b.size() - 1; bi++){
+		for (size_t bi = 0; bi < b.size() - 1; bi++) {
 			o[ai][bi] = overlap(a[ai], a[ai + 1], b[bi], b[bi + 1]);
 		}
 	}
 	return o;
 }
 
-double gettime(){	
-	auto tp = std::chrono::high_resolution_clock::now();	
+double gettime() {
+	auto tp = std::chrono::high_resolution_clock::now();
 	auto t = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
 	return (double)t / (double)1e3;
 }
@@ -581,7 +581,7 @@ double gettime(){
 char* temppath(const char* s, int set)
 {
 	static char* p = (char*)NULL;
-	if (set == 1){
+	if (set == 1) {
 		if (p)delete[]p;
 		p = new char[strlen(s) + 1];
 		strcpy(p, s);
@@ -602,7 +602,7 @@ std::string gettemppath()
 	return std::string(p);
 }
 
-int floatcompare(const void *pa, const void *pb)
+int floatcompare(const void* pa, const void* pb)
 {
 	float& a = *(float*)pa; float& b = *(float*)pb;
 	if (a < b)return -1;
@@ -615,7 +615,7 @@ void sort(float* x, const size_t n)
 	qsort(x, n, sizeof(float), floatcompare);
 }
 
-int doublecompare(const void *pa, const void *pb)
+int doublecompare(const void* pa, const void* pb)
 {
 	double& a = *(double*)pa; double& b = *(double*)pb;
 	if (a < b)return -1;
@@ -628,7 +628,7 @@ void sort(double* x, const size_t n)
 	qsort(x, n, sizeof(double), doublecompare);
 }
 
-int stringcompare(const void *pa, const void *pb)
+int stringcompare(const void* pa, const void* pb)
 {
 	char** a = (char**)pa;
 	char** b = (char**)pb;
@@ -640,7 +640,7 @@ void sort(char** strings, const size_t n)
 	qsort(strings, n, sizeof(char*), stringcompare);
 }
 
-int intcompare(const void *pa, const void *pb)
+int intcompare(const void* pa, const void* pb)
 {
 	int& a = *(int*)pa; int& b = *(int*)pb;
 	return a - b;
@@ -660,22 +660,22 @@ double reportusage()
 }
 #else
 double reportusage()
-{	
-	int pid = getpid();	
-	double vsize,pcpu,pmem;	
-	std::string tmpfile = strprint("ps.%d.tmp",pid);
-	std::string cmd     = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n",pid,tmpfile.c_str());
+{
+	int pid = getpid();
+	double vsize, pcpu, pmem;
+	std::string tmpfile = strprint("ps.%d.tmp", pid);
+	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
 	system(cmd.c_str());
-	FILE* fp=fileopen(tmpfile,"r");
+	FILE* fp = fileopen(tmpfile, "r");
 	char buf[201];
-	fgets(buf,200,fp);
-	fgets(buf,200,fp);
-	sscanf(buf,"%lf %lf %lf",&pcpu,&vsize,&pmem);
+	fgets(buf, 200, fp);
+	fgets(buf, 200, fp);
+	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
 	deletefile(tmpfile);
-	glog.logmsg("Percent CPU used: %.2lf\n",pcpu);
-	glog.logmsg("Percent memory used: %.2lf\n",pmem);
-	glog.logmsg("Virtual memory used (Mb): %.2lf\n",vsize/1000.0);	
+	glog.logmsg("Percent CPU used: %.2lf\n", pcpu);
+	glog.logmsg("Percent memory used: %.2lf\n", pmem);
+	glog.logmsg("Virtual memory used (Mb): %.2lf\n", vsize / 1000.0);
 	return pmem;
 }
 #endif
@@ -689,38 +689,38 @@ double percentmemoryused()
 }
 #else
 double percentmemoryused()
-{	
-	int pid = getpid();	
-	double vsize,pcpu,pmem;	
-	std::string tmpfile = strprint("ps.%d.tmp",pid);
-	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n",pid,tmpfile.c_str());
+{
+	int pid = getpid();
+	double vsize, pcpu, pmem;
+	std::string tmpfile = strprint("ps.%d.tmp", pid);
+	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
 	system(cmd.c_str());
-	FILE* fp=fileopen(tmpfile.c_str(),"r");
+	FILE* fp = fileopen(tmpfile.c_str(), "r");
 	char buf[201];
-	fgets(buf,200,fp);
-	fgets(buf,200,fp);
-	sscanf(buf,"%lf %lf %lf",&pcpu,&vsize,&pmem);
+	fgets(buf, 200, fp);
+	fgets(buf, 200, fp);
+	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
-	deletefile(tmpfile.c_str());	
+	deletefile(tmpfile.c_str());
 	return pmem;
 }
 #endif
 
 void guage(int ntot, int n, int pdiv1, int pdiv2)
 {
-	double d1 = ceil(((double)pdiv1 / 100.0)*(double)ntot);
-	double d2 = ceil(((double)pdiv2 / 100.0)*d1);
+	double d1 = ceil(((double)pdiv1 / 100.0) * (double)ntot);
+	double d2 = ceil(((double)pdiv2 / 100.0) * d1);
 
-	if (n == 0){
+	if (n == 0) {
 		printf("<");
 	}
-	else if (n >= ntot - 1){
+	else if (n >= ntot - 1) {
 		printf(">");
 	}
-	else if (n % (int)d1 == 0){
+	else if (n % (int)d1 == 0) {
 		printf("+");
 	}
-	else if (n % (int)d2 == 0){
+	else if (n % (int)d2 == 0) {
 		printf(".");
 	}
 }
@@ -728,7 +728,7 @@ void guage(int ntot, int n, int pdiv1, int pdiv2)
 void allocate1darray(int*& a, const size_t n)
 {
 	a = new int[n];
-	if (a == (int*)NULL){
+	if (a == (int*)NULL) {
 		printf("allocate1darray(int*& a, int n) returned NULL\n");
 		prompttocontinue();
 	}
@@ -737,7 +737,7 @@ void allocate1darray(int*& a, const size_t n)
 void allocate1darray(double*& a, const size_t n)
 {
 	a = new double[n];
-	if (a == (double*)NULL){
+	if (a == (double*)NULL) {
 		printf("allocate1darray(double*& a, int n) returned NULL\n");
 		prompttocontinue();
 	}
@@ -745,14 +745,14 @@ void allocate1darray(double*& a, const size_t n)
 
 void allocate2darray(double**& a, const size_t nrows, const size_t ncols)
 {
-	a = new double*[nrows];
+	a = new double* [nrows];
 	for (size_t i = 0; i < nrows; i++)a[i] = new double[ncols];
 }
 
 void deallocate2darray(double**& a, const size_t nrows)
 {
-	if (a){
-		for (size_t i = 0; i < nrows; i++){
+	if (a) {
+		for (size_t i = 0; i < nrows; i++) {
 			if (a[i])delete[]a[i];
 		}
 		delete[]a;
@@ -762,7 +762,7 @@ void deallocate2darray(double**& a, const size_t nrows)
 
 void deallocate1darray(double*& a)
 {
-	if (a){
+	if (a) {
 		delete[]a;
 		a = (double*)NULL;
 	}
@@ -770,16 +770,16 @@ void deallocate1darray(double*& a)
 
 void deallocate1darray(int*& a)
 {
-	if (a){
+	if (a) {
 		delete[]a;
 		a = (int*)NULL;
 	}
 }
 
-double median(double* v, const size_t n)
+double median(const double* v, const size_t n)
 {
 	double* d = new double[n];
-	for (size_t i = 0; i < n; i++)d[i] = v[i];
+	for (size_t i = 0; i < n; i++) d[i] = v[i];
 
 	sort(d, n);
 
@@ -796,16 +796,16 @@ std::vector<cRange<int>> parserangelist(std::string& str)
 	std::vector<cRange<int>> list;
 	cRange<int> r;
 
-	for (size_t i = 0; i < items.size(); i++){
+	for (size_t i = 0; i < items.size(); i++) {
 		int f, t;
 		int n = sscanf(items[i].c_str(), "%d to %d", &f, &t);
 		//printf("%s\n",items[i].c_str());
-		if (n == 1){
+		if (n == 1) {
 			r.from = f;
 			r.to = f;
 			list.push_back(r);
 		}
-		else if (n == 2){
+		else if (n == 2) {
 			r.from = f;
 			r.to = t;
 			list.push_back(r);
@@ -819,11 +819,11 @@ std::vector<double> getdoublevector(const char* str, const char* delims)
 	double v;
 	std::vector<double> vec;
 	std::vector<std::string> fields = fieldparsestring(str, delims);
-	for (size_t i = 0; i < fields.size(); i++){
+	for (size_t i = 0; i < fields.size(); i++) {
 		int n = sscanf(fields[i].c_str(), "%lf", &v);
-		if(n == 1) vec.push_back(v);
-		else{
-			glog.warningmsg(_SRC_,"Could not parse field %zu from string\n",i);
+		if (n == 1) vec.push_back(v);
+		else {
+			glog.warningmsg(_SRC_, "Could not parse field %zu from string\n", i);
 		}
 	}
 	return vec;
@@ -836,10 +836,10 @@ std::vector<float> dvec2fvec(std::vector<double>& vd)
 	return vf;
 }
 
-unsigned int factorial(unsigned int n){
+unsigned int factorial(unsigned int n) {
 	if (n <= 1) return 1;
 	unsigned int fact = 1;
-	for (unsigned int i = 2; i <= n; i++){
+	for (unsigned int i = 2; i <= n; i++) {
 		fact *= i;
 	}
 	return fact;

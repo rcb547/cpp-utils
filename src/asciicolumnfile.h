@@ -127,6 +127,7 @@ public:
 		}
 		if (gc == 0) nr--;//In case of blank last line (newline after last line)
 		IFS.clear();
+		rewind();
 		return nr;
 	}
 
@@ -230,9 +231,10 @@ public:
 		return tokens;
 	}
 
-	static int nullfieldindex() {
-		return std::numeric_limits<int>::max();
-	};
+	//static int nullfieldindex() {
+	//	return -1;
+	//	//return std::numeric_limits<int>::max();
+	//};
 
 	static std::vector<size_t> get_field_breaks(const std::string& str) {
 		//returns char indices of field ends+1 
@@ -443,7 +445,7 @@ public:
 
 	int fieldindexbyname(const std::string& fieldname) const
 	{
-		for (size_t fi = 0; fi < fields.size(); fi++) {
+		for (int fi = 0; fi < (int) fields.size(); fi++) {
 			if (strcasecmp(fields[fi].name, fieldname) == 0) return (int)fi;
 		}
 		return -1;
@@ -522,6 +524,14 @@ public:
 		for (size_t i = 0; i < n; i++) {
 			getcolumn(i + columnnumber, vec[i]);
 		}
+	};
+
+	template<typename T>
+	inline void getcolumns(const cRange<int>& columrange, std::vector<T>& vec) const
+	{
+		int n = columrange.to - columrange.from + 1;
+		vec.resize(n);
+		getcolumns(columrange.from, vec, n);
 	};
 
 	template<typename T>

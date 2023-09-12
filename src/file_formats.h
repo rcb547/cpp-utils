@@ -14,6 +14,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <fstream>
 
 #include "stacktrace.h"
+#include "undefinedvalues.h"
 #include "string_utils.h"
 #include "general_utils.h"
 #include "file_utils.h"
@@ -142,19 +143,19 @@ public:
 		nbands = _nbands;
 	};
 
-	const size_t& startcol() const //Zero based start column index
+	int startcol() const //Zero based start column index
 	{
-		return startcolumn;
+		return (int)startcolumn;
 	};
 
-	size_t endcol() const //Zero based end column index
+	int endcol() const //Zero based end column index
 	{
-		return startcolumn - 1 + nbands;
+		return (int)(startcolumn + nbands - 1);
 	};
 
-	size_t endchar() const
+	int endchar() const
 	{
-		return startchar - 1 + (nbands * width);
+		return (int)(startchar + (nbands * width) -1);
 	};
 
 	bool add_att(const std::string& key, const std::string& value) {
@@ -533,19 +534,74 @@ public:
 
 };
 
+int field_index_by_name_impl(const std::vector<cAsciiColumnField>& fields, const std::string& fieldname) {
+	int index = -1;
+	for (int fi = 0; fi < fields.size(); fi++) {
+		if (ciequal(fields[fi].name, fieldname)) {
+			index = fi;
+			break;
+		}
+	}
+	return index;
+}
+
 class cHDRHeader {
 
 private:
-
+	bool valid = false;
 	std::vector<cAsciiColumnField> fields;
+
 public:
 
 	cHDRHeader(const std::string& hdrpath) {
-		read(hdrpath);
+		valid = read(hdrpath);
+	};
+
+	const bool& isvalid() const {
+		return valid;
 	}
 
+	int field_index_by_name(const std::string& fieldname) const {
+		int index = field_index_by_name_impl(fields, fieldname);
+		if (isvalid()) return index;
+		else return -1;
+	};
+
+	cRange<int> column_range(const int& fieldindex) const {
+		cRange<int> r(-1, -1);
+		if (fieldindex >= 0 && fieldindex < fields.size()) {
+			r.from = (int) fields[fieldindex].startcol();
+			r.to = (int) fields[fieldindex].endcol();
+		}
+		return r;
+	};
+
+	cRange<int> column_range_by_name(const std::string& fieldname) const {
+		int fieldindex = field_index_by_name(fieldname);
+		return column_range(fieldindex);
+	};
+
+	const std::vector<cAsciiColumnField>& getfields() const {
+		return fields;
+	};
+
+	static bool is_of_format(const std::string& filepath) {
+		std::vector<cAsciiColumnField> fvec;
+		bool status = read_static(filepath, fvec);
+		return status;
+	};
+
 	bool read(const std::string& hdrfile) {
-		fields.clear();
+		std::vector<cAsciiColumnField> _fields;
+		bool status = read_static(hdrfile, _fields);
+		if (status) {
+			fields = _fields;
+		}
+		return status;
+	};
+
+	static bool read_static(const std::string& hdrfile, std::vector<cAsciiColumnField>& fvec) {
+		fvec.clear();
 
 		std::ifstream file(hdrfile);
 		int k = 0;
@@ -558,10 +614,16 @@ public:
 				break;
 			}
 
+			for (size_t i = 0; i < cstr.size(); i++) {
+				if (std::isdigit(cstr[i]) == false && cstr[i] != '-') {
+					return false;
+				}
+			}
+
 
 			std::istringstream is(cstr);
-			int col1;
-			int col2;
+			int col1 = -1;
+			int col2 = -1;
 			is >> col1;
 			col2 = col1;
 			if (!is.eof()) {
@@ -578,23 +640,18 @@ public:
 			const int fmtdecimals = 0;
 
 			cAsciiColumnField f(order, startcolumn, name, fmttype, fmtwidth, fmtdecimals, nbands);
-			fields.push_back(f);
+			fvec.push_back(f);
 			k = k + 1;
 		}
 		return true;
 	};
-
-	const std::vector<cAsciiColumnField>& getfields() const {
-		return fields;
-	};
-
-
 };
 
 class cASEGGDF2Header {
 
 private:
 
+	bool valid = false;
 	std::vector<cAsciiColumnField> fields;
 	std::string ST_string;
 	std::string RT_string;
@@ -616,11 +673,56 @@ private:
 public:
 
 	cASEGGDF2Header(const std::string& dfnpath) {
-		read(dfnpath);
-	}
+		valid = read(dfnpath);
+	};
+
+	const bool& isvalid() const {
+		return valid;
+	};
+
+	int field_index_by_name(const std::string& fieldname) const {
+		if (isvalid()) return field_index_by_name_impl(fields, fieldname);
+		else return -1;
+	};
+
+	cRange<int> column_range(const int& fieldindex) const {
+		cRange<int> r(-1, -1);
+		if (fieldindex >= 0 && fieldindex < fields.size()) {
+			r.from = (int)fields[fieldindex].startcol();
+			r.to = (int)fields[fieldindex].endcol();
+		}
+		return r;//invalid;
+	};
+
+	cRange<int> column_range_by_name(const std::string& fieldname) const {
+		int fieldindex = field_index_by_name(fieldname);
+		return column_range(fieldindex);
+	};
+
+	static bool is_of_format(const std::string& filepath) {
+		std::vector<cAsciiColumnField> _fields;
+		std::string _ST_string;
+		std::string _RT_string;
+		bool status = read_static(filepath, _fields, _ST_string, _RT_string);
+		return status;
+	};
 
 	bool read(const std::string& dfnfile) {
-		fields.clear();
+		std::vector<cAsciiColumnField> _fields;
+		std::string _ST_string;
+		std::string _RT_string;
+		valid = read_static(dfnfile, _fields, _ST_string, _RT_string);
+		if (valid) {
+			fields = _fields;
+			ST_string = _ST_string;
+			RT_string = _RT_string;
+		}
+		return valid;
+	}
+
+	static bool read_static(const std::string& dfnfile, std::vector<cAsciiColumnField>& _fields, std::string& _ST_string, std::string& _RT_string) {
+		bool status = false;
+		_fields.clear();
 
 		FILE* fp = fileopen(dfnfile, "r");
 		std::string dfnrecord;
@@ -663,10 +765,10 @@ public:
 				auto t2 = tokenise(t1[0], '=');
 				auto t3 = tokenise(t1[1], '=');
 
-				ST_string = t2[1];
+				_ST_string = t2[1];
 				std::string rt = t3[1];
 
-				if (ST_string != "RECD") {
+				if (_ST_string != "RECD") {
 					std::string msg;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tThe key 'ST' should be 'ST=RECD,'\n");
@@ -813,13 +915,13 @@ public:
 				}
 
 				if (datarec == 0) {
-					RT_string = rt;
+					_RT_string = rt;
 				}
 				else {
-					if (reported_mixing == false && rt != RT_string) {
+					if (reported_mixing == false && rt != _RT_string) {
 						std::string msg = strprint("\tDetected mixing of RT=; and RT=DATA; ");
 						msg += strprint("at line %d of DFN file %s. ", dfnlinenum, dfnfile.c_str());
-						msg += strprint("Making all data record types RT=%s;.\n", RT_string.c_str());
+						msg += strprint("Making all data record types RT=%s;.\n", _RT_string.c_str());
 						std::cerr << msg << std::endl;
 						reported_mixing = true;
 					}
@@ -834,13 +936,14 @@ public:
 						R.width = 4;
 						R.decimals = 0;
 						R.nbands = 1;
-						fields.push_back(R);
+						_fields.push_back(R);
 						datarec++;
 					}
 				}
 				//F.print();
 				lastfileorder = (int)F.fileorder;
-				fields.push_back(F);
+				_fields.push_back(F);
+				status = true;
 				datarec++;
 			}
 		};
@@ -849,14 +952,14 @@ public:
 
 		size_t startchar = 0;
 		size_t startcolumn = 0;
-		for (size_t i = 0; i < fields.size(); i++) {
-			fields[i].startchar = startchar;
-			startchar = fields[i].endchar() + 1;
+		for (size_t i = 0; i < _fields.size(); i++) {
+			_fields[i].startchar = startchar;
+			startchar = _fields[i].endchar() + 1;
 
-			fields[i].startcolumn = startcolumn;
-			startcolumn += fields[i].nbands;
+			_fields[i].startcolumn = startcolumn;
+			startcolumn += _fields[i].nbands;
 		}
-		return true;
+		return status;
 	};
 
 	void write(const std::string& dfnpath) {
@@ -883,6 +986,7 @@ public:
 	};
 };
 
+
 class cFieldManager {
 
 private:
@@ -896,27 +1000,9 @@ public:
 		fields = _fields;
 	};
 
-	static size_t nullfieldindex() { return std::numeric_limits<size_t>::max(); };
-
-	size_t fieldindexbyname(const std::string& fieldname) const
-	{
-		for (size_t fi = 0; fi < fields.size(); fi++) {
-			if (ciequal(fields[fi].name, fieldname)) return fi;
-		}
-		return nullfieldindex();
-	}
-
-	bool fieldindexbyname(const std::string& fieldname, size_t& index) const
-	{
-		for (size_t fi = 0; fi < fields.size(); fi++) {
-			if (ciequal(fields[fi].name, fieldname)) {
-				index = fi;
-				return true;
-			}
-		}
-		index = nullfieldindex();
-		return false;
-	}
+	int field_index_by_name(const std::string& fieldname) const {
+		return field_index_by_name_impl(fields, fieldname);
+	};
 
 	size_t ncolumns() const {
 		size_t n = 0;
