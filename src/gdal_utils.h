@@ -9,11 +9,11 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifndef _gdal_utils_H
 #define _gdal_utils_H
 
-#pragma warning( push )  
+#pragma warning( push )
 #pragma warning (disable: 4251)
 #include "ogr_spatialref.h"
 #include "gdal_priv.h"
-#pragma warning( pop )   
+#pragma warning( pop )
 
 #include <valarray>
 #include "stopwatch.h"
@@ -32,7 +32,6 @@ OGRSpatialReference getsrs(
 
 OGRSpatialReference getsrs(const int& epsgcode);
 
-
 bool transform(
 	const int& epsgcodein,
 	const std::vector<double>& xin,
@@ -44,7 +43,7 @@ bool transform(
 
 std::string WellKnownText(const int epsgcode);
 
-std::ostream& operator<<(std::ostream& os, GDALDataset* dataset) {
+inline std::ostream& operator<<(std::ostream& os, GDALDataset* dataset) {
 
 	os << "Driver: " <<
 		dataset->GetDriver()->GetDescription() << "/" <<
@@ -64,107 +63,102 @@ std::ostream& operator<<(std::ostream& os, GDALDataset* dataset) {
 		std::cout << "Projection is not NULL" << std::endl;
 	}
 	return os;
-}
-
-class PixelSubset {
-public:
-	int nXOff;
-	int nYOff;
-	int nXSize;
-	int nYSize;
-	int nBufXSize;
-	int nBufYSize;
 };
 
-class GDALHelper {
+namespace GDALHelper {
 
-private:
+	enum class PixelPacking {BSQ, BIL, BIP};
 
-public:
+	inline void register_drivers() {
+			GDALAllRegister();
+		};
 
-	GDALHelper() {
-		GDALAllRegister();
-	};
-
-	static void report_basic_envs() {
-		report_env("GDAL_CONFIG_FILE");
-		report_env("GDAL_ROOT");
-		report_env("GDAL_DATA");
-		report_env("GDAL_CACHEMAX");
-		report_env("GDAL_NUM_THREADS");
-		report_env("GDAL_FORCE_CACHING");
-		report_env("GDAL_MAX_DATASET_POOL_RAM_USAGE");
-		report_env("GDAL_DEFAULT_WMS_CACHE_PATH");
-	};
-
-	static void report_env(const std::string& key) {
-		std::cout << key << " = " << get_env(key) << std::endl;
-	};
-
-	static std::string get_env(const std::string& key) {
+	inline std::string get_env(const std::string& key) {
 		std::string value(CPLGetConfigOption(key.c_str(), ""));
 		return value;
 	}
 
-	void set_env(const std::string& key, const std::string& value) {
-		CPLSetConfigOption(key.c_str(), value.c_str());
+	inline void report_env(const std::string& key) {
+		std::cout << key << " = " << get_env(key) << std::endl;
+	};
+
+	inline void report_basic_envs() {
+			report_env("GDAL_CONFIG_FILE");
+			report_env("GDAL_ROOT");
+			report_env("GDAL_DATA");
+			report_env("GDAL_CACHEMAX");
+			report_env("GDAL_NUM_THREADS");
+			report_env("GDAL_FORCE_CACHING");
+			report_env("GDAL_MAX_DATASET_POOL_RAM_USAGE");
+			report_env("GDAL_DEFAULT_WMS_CACHE_PATH");
+		};
+
+	inline void set_env(const std::string& key, const std::string& value) {
+			CPLSetConfigOption(key.c_str(), value.c_str());
 	};
 
 	template <class T, std::enable_if_t<std::is_same_v<T, std::uint8_t>, bool> = false>
 	GDALDataType GetGDALDataType(const T& x) {
-		return GDALDataType::GDT_Byte;
-	}
+			return GDALDataType::GDT_Byte;
+		}
 
 	template <class T, std::enable_if_t<std::is_same_v<T, int>, bool> = false>
 	GDALDataType GetGDALDataType(const T& x) {
-		return GDALDataType::GDT_Int32;
-	}
-
-	const PixelSubset get_pixelsubset(GDALDataset* dataset, double x1, double y1, double x2, double y2, const int& nxsize, const int& nysize) {
-
-		PixelSubset ps;
-		ps.nBufXSize = nxsize;
-		ps.nBufYSize = nysize;
-
-		const OGRSpatialReference* pInSRS = dataset->GetSpatialRef();
-
-		OGRSpatialReference OutSRS;
-		OGRErr err = OutSRS.importFromEPSG(7843);
-		OutSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
-
-		OGRCoordinateTransformation* pCT = OGRCreateCoordinateTransformation(&OutSRS, pInSRS);
-		if (pCT == NULL) {
-			std::cout << "Transformation creation failed." << std::endl;
-			return ps;
+			return GDALDataType::GDT_Int32;
 		}
 
-		pCT->Transform(1, &x1, &y1);
-		pCT->Transform(1, &x2, &y2);
-
-		double pixeltogeo[6];
-		double geotopixel[6];
-		dataset->GetGeoTransform(pixeltogeo);
-		GDALInvGeoTransform(pixeltogeo, geotopixel);
-
-		double px1, px2, py1, py2;
-		GDALApplyGeoTransform(geotopixel, x1, y1, &px1, &py1);
-		GDALApplyGeoTransform(geotopixel, x2, y2, &px2, &py2);
-		ps.nXOff = px1;
-		ps.nYOff = py1;
-		ps.nXSize = px2 - px1;
-		ps.nYSize = py2 - py1;
-		return ps;
+	struct PixelSubset {
+	public:
+		int nXOff;
+		int nYOff;
+		int nXSize;
+		int nYSize;
+		int nBufXSize;
+		int nBufYSize;
 	};
 
+	const static PixelSubset get_pixelsubset(GDALDataset* dataset, double x1, double y1, double x2, double y2, const int& nxsize, const int& nysize) {
+
+			PixelSubset ps;
+			ps.nBufXSize = nxsize;
+			ps.nBufYSize = nysize;
+
+			const OGRSpatialReference* pInSRS = dataset->GetSpatialRef();
+
+			OGRSpatialReference OutSRS;
+			OGRErr err = OutSRS.importFromEPSG(7843);
+			OutSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+
+			OGRCoordinateTransformation* pCT = OGRCreateCoordinateTransformation(&OutSRS, pInSRS);
+			if (pCT == NULL) {
+				std::cout << "Transformation creation failed." << std::endl;
+				return ps;
+			}
+
+			pCT->Transform(1, &x1, &y1);
+			pCT->Transform(1, &x2, &y2);
+
+			double pixeltogeo[6];
+			double geotopixel[6];
+			dataset->GetGeoTransform(pixeltogeo);
+			GDALInvGeoTransform(pixeltogeo, geotopixel);
+
+			double px1, px2, py1, py2;
+			GDALApplyGeoTransform(geotopixel, x1, y1, &px1, &py1);
+			GDALApplyGeoTransform(geotopixel, x2, y2, &px2, &py2);
+			ps.nXOff = px1;
+			ps.nYOff = py1;
+			ps.nXSize = px2 - px1;
+			ps.nYSize = py2 - py1;
+			return ps;
+		};
+
 	template <typename T>
-	bool get_subset(GDALDataset* dataset, const PixelSubset& ps, std::valarray<T>& buffer) {
+	static bool get_subset(GDALDataset* dataset, const PixelSubset& ps, const PixelPacking& packing, std::valarray<T>& buffer) {
 
 		const GDALDataType eBufType = GDALDataType::GDT_Byte;
 
 		const GDALRWFlag eRWFlag = GDALRWFlag::GF_Read;
-		const GSpacing nPixelSpace = 0;
-		const GSpacing nLineSpace = 0;
-		const GSpacing nBandSpace = 0;
 		const int nBandCount = 3;
 		int panBandMap[3] = { -1, -1, -1 };
 
@@ -188,6 +182,28 @@ public:
 			buffer.resize(len);
 		}
 
+		GSpacing nPixelSpace = 0;
+		GSpacing nLineSpace = 0;
+		GSpacing nBandSpace = 0;
+		if (packing == PixelPacking::BSQ) {
+			nPixelSpace = sizeof(T);
+			nLineSpace = sizeof(T) * ps.nBufXSize;
+			nBandSpace = sizeof(T) * ps.nBufXSize * ps.nBufYSize;
+		}
+		else if (packing == PixelPacking::BIP) {
+			nPixelSpace = sizeof(T) * nBandCount;
+			nLineSpace  = sizeof(T) * nBandCount * ps.nBufXSize;
+			nBandSpace  = sizeof(T);
+		}
+		else if (packing == PixelPacking::BIL) {
+			nPixelSpace = sizeof(T);
+			nLineSpace  = sizeof(T) * nBandCount * ps.nBufXSize;
+			nBandSpace  = sizeof(T) * ps.nBufXSize;
+		}
+		else {
+			std::cout << "Unknown PixelPacking type" << std::endl;
+		}
+
 		CPLErr err = dataset->RasterIO(eRWFlag, ps.nXOff, ps.nYOff, ps.nXSize, ps.nYSize, &(buffer[0]), ps.nBufXSize, ps.nBufYSize, eBufType, nBandCount, panBandMap, nPixelSpace, nLineSpace, nBandSpace, nullptr);
 		if (err != CE_None) {
 			std::string msg(CPLGetLastErrorMsg());
@@ -197,8 +213,89 @@ public:
 		return true;
 	};
 
-	int test_wmts_subset()
-	{
+	class WMTS {
+
+	private:
+		std::string url;
+		std::shared_ptr<GDALDataset*> dataset;
+
+		static size_t bip_index(const size_t& nr, const size_t& nc, const size_t& nb, const size_t& ri, const size_t& ci, const size_t& bi) {
+			size_t i = ri * nc * nb + ci * nb + bi;
+			return i;
+		}
+
+		static size_t bil_index(const size_t& nr, const size_t& nc, const size_t& nb, const size_t& ri, const size_t& ci, const size_t& bi) {
+			size_t i = ri * nc * nb + bi * nc + ci;
+			return i;
+		}
+
+		static size_t bsq_index(const size_t& nr, const size_t& nc, const size_t& nb, const size_t& ri, const size_t& ci, const size_t& bi) {
+			size_t i = bi * nc * nr + ri * nc + ci;
+			return i;
+		}
+
+	public:
+		WMTS(const std::string& url) : url(url) {
+			bool status = open(url);
+		};
+
+		bool open(const std::string& url) {
+			GDALDataset* p = (GDALDataset*)GDALOpen(url.c_str(), GA_ReadOnly);
+			if (p == nullptr) {
+				std::cout << "Null dataset returned" << std::endl;
+				return false;
+			}
+			dataset = std::make_shared<GDALDataset*>(p);
+			return true;
+		};
+
+		std::valarray<std::uint8_t> get_data_bsq(double x1, double y1, double x2, double y2, const int& nx, const int& ny) const {
+			PixelSubset ps = get_pixelsubset(*dataset, x1, y1, x2, y2, nx, ny);
+			std::valarray<std::uint8_t> buffer;
+			get_subset(*dataset, ps, PixelPacking::BSQ, buffer);
+			return buffer;
+		}
+
+		std::valarray<std::uint8_t> get_data_bip(double x1, double y1, double x2, double y2, const int& nx, const int& ny) const {
+			PixelSubset ps = get_pixelsubset(*dataset, x1, y1, x2, y2, nx, ny);
+			std::valarray<std::uint8_t> buffer;
+			get_subset(*dataset, ps, PixelPacking::BIP, buffer);
+			return buffer;
+		}
+
+		std::valarray<std::uint8_t> get_data_bil(double x1, double y1, double x2, double y2, const int& nx, const int& ny) const {
+			PixelSubset ps = get_pixelsubset(*dataset, x1, y1, x2, y2, nx, ny);
+			std::valarray<std::uint8_t> buffer;
+			get_subset(*dataset, ps, PixelPacking::BIL, buffer);
+			return buffer;
+		}
+
+		std::valarray<std::uint8_t> get_data_bip1(double x1, double y1, double x2, double y2, const int& nx, const int& ny) const {
+
+			cStopWatch sw;
+			PixelSubset ps = get_pixelsubset(*dataset, x1, y1, x2, y2, nx, ny);
+			std::valarray<std::uint8_t> bsq_buffer;
+			get_subset(*dataset, ps, PixelPacking::BSQ, bsq_buffer);
+			sw.reportnow();
+
+			sw.reset();
+			const size_t nb = 3;
+			std::valarray<uint8_t> buffer(bsq_buffer.size());
+			for (size_t bi = 0; bi < nb; bi++) {
+				for (size_t ri = 0; ri < ny; ri++) {
+					for (size_t ci = 0; ci < nx; ci++) {
+						size_t ii = bsq_index(ny, nx, nb, ri, ci, bi);
+						size_t oi = bip_index(ny, nx, nb, ri, ci, bi);
+						buffer[oi] = bsq_buffer[ii];
+					}
+				}
+			}
+			sw.reportnow();
+			return buffer;
+		}
+	};
+
+	inline int test_wmts_subset(){
 
 		// See index https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer
 
@@ -235,7 +332,7 @@ public:
 
 		cStopWatch sw;
 		sw.reset();
-		get_subset(dataset, ps, buffer);
+		get_subset(dataset, ps, GDALHelper::PixelPacking::BSQ, buffer);
 		sw.reportnow();
 
 		std::ofstream ostrm("g:\\wmts\\wmts1.txt");
@@ -246,7 +343,19 @@ public:
 		return 0;
 	};
 
+	inline void test_wmts_class() {
+		std::string url = "g:\\wmts\\world_imagery.xml";
+		WMTS wmts(url);
+		double x1, x2, y1, y2;
+		x1 = 141; x2 = 142;
+		y1 = -34; y2 = -35;
+		int nx = 512;
+		int ny = 512;
+		cStopWatch sw;
+		sw.reset();
+		std::valarray<uint8_t> data = wmts.get_data_bsq(x1, y1, x2, y2, nx, ny);
+		sw.reportnow();
+	};
 };
+
 #endif
-
-
