@@ -435,6 +435,19 @@ public:
 		ymin = (T)other.ymin; ymax = (T)other.ymax;
 		zmin = (T)other.zmin; zmax = (T)other.zmax;
 	};
+
+	T dx() { return xmax - xmin; };
+	T dy() { return ymax - ymin; };
+	T dz() { return zmax - zmin; };
+
+	T diagonal_size() const {
+		T x = xmax - xmin;
+		T y = ymax - ymin;
+		T z = zmax - zmin;
+		T d = std::sqrt(x*x + y*y + z*z);
+		return d;
+	};
+
 };
 
 class cPoint{
