@@ -203,7 +203,7 @@ public:
 			mexErrMsgTxt(msg.c_str());
 		#else
 			logmsg(msg);
-			throw(std::runtime_error(strprint("Exception throw from %s\n", srccodeloc.c_str())));
+			throw(std::runtime_error(strprint("Exception thrown from %s\n", srccodeloc.c_str())));
 		#endif
 	}
 

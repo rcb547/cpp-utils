@@ -17,30 +17,30 @@ using namespace Gdiplus;
 #include "colormap.h"
 #include "stretch.h"
 
-class cGDIplusHelper{
+class cGDIplusHelper {
 
 public:
-	
-	cGDIplusHelper(){};
 
-	static ULONG_PTR start(){
+	cGDIplusHelper() {};
+
+	static ULONG_PTR start() {
 		GdiplusStartupInput gdiplusStartupInput;
 		ULONG_PTR token;
 		GdiplusStartup(&token, &gdiplusStartupInput, NULL);
 		return token;
 	}
 
-	static void stop(ULONG_PTR token){
+	static void stop(ULONG_PTR token) {
 		GdiplusShutdown(token);
 	}
 
 	static std::wstring ws(const std::string& bstr)
 	{
-		size_t len = bstr.length()+1;
+		size_t len = bstr.length() + 1;
 		wchar_t* p = new wchar_t[len];
 		mbstowcs_s(&len, p, len, bstr.c_str(), _TRUNCATE);
 		std::wstring wstr(p);
-		delete p;
+		delete[]p;
 		return wstr;
 	}
 
@@ -49,22 +49,16 @@ public:
 		UINT  num = 0;          // number of image encoders
 		UINT  size = 0;         // size of the image encoder array in bytes
 
-		ImageCodecInfo* pImageCodecInfo = NULL;
-
 		GetImageEncodersSize(&num, &size);
-		if (size == 0)
-			return -1;  // Failure
+		if (size == 0) return -1;  // Failure
 
-		pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-		if (pImageCodecInfo == NULL)
-			return -1;  // Failure
+		ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+		if (pImageCodecInfo == NULL) return -1;  // Failure
 
 		GetImageEncoders(num, size, pImageCodecInfo);
 
-		for (UINT j = 0; j < num; ++j)
-		{
-			if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
-			{
+		for (UINT j = 0; j < num; j++) {
+			if (wcscmp((pImageCodecInfo[j]).MimeType, format) == 0) {
 				*pClsid = pImageCodecInfo[j].Clsid;
 				free(pImageCodecInfo);
 				return j;  // Success
@@ -80,16 +74,16 @@ public:
 		int status = -1;
 		CLSID id;
 		std::string ext = extractfileextension(filename);
-		if (strcasecmp(ext, ".jpg") == 0){
+		if (strcasecmp(ext, ".jpg") == 0) {
 			status = GetEncoderClsid(L"image/jpeg", &id);
 		}
-		else if (strcasecmp(ext, ".png") == 0){
+		else if (strcasecmp(ext, ".png") == 0) {
 			status = GetEncoderClsid(L"image/png", &id);
 		}
-		else if (strcasecmp(ext, ".bmp") == 0){
+		else if (strcasecmp(ext, ".bmp") == 0) {
 			status = GetEncoderClsid(L"image/bmp", &id);
 		}
-		else if (strcasecmp(ext, ".emf") == 0){
+		else if (strcasecmp(ext, ".emf") == 0) {
 			status = GetEncoderClsid(L"image/emf", &id);
 		}
 		return id;
@@ -97,13 +91,13 @@ public:
 
 	static Status saveimage(Bitmap* bm, const std::string& filename)
 	{
-		makedirectorydeep(extractfiledirectory(filename));		
+		makedirectorydeep(extractfiledirectory(filename));
 		CLSID id = getencoderid(filename);
-		std::wstring wpath(ws(filename.c_str()));		
+		std::wstring wpath(ws(filename.c_str()));
 		return bm->Save(wpath.c_str(), &id, NULL);
 	}
 
-	static Bitmap* colorbar(const cColorMap& cmap, const cStretch& stretch, const std::string title, std::vector<double> ticks){
+	static Bitmap* colorbar(const cColorMap& cmap, const cStretch& stretch, const std::string title, std::vector<double> ticks) {
 
 		REAL fontsize = 12;
 		FontStyle fontstyle = FontStyleBold;
@@ -122,10 +116,10 @@ public:
 		int pvbot = height - margin;
 		int ticklength = 10;
 
-		Bitmap* bm = new Bitmap(width, height, PixelFormat32bppARGB);		
+		Bitmap* bm = new Bitmap(width, height, PixelFormat32bppARGB);
 		bm->SetResolution(dpi, dpi);
-		for (int i = 0; i<width; i++){
-			for (int j = 0; j<height; j++){
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
 				bm->SetPixel(i, j, Color(255, 255, 255, 255));
 			}
 		}
@@ -136,22 +130,22 @@ public:
 		Graphics gr(bm);
 		gr.SetPageUnit(UnitPixel);
 		gr.SetTextRenderingHint(TextRenderingHintAntiAlias);
-		
-		for (int j = pvtop; j <= pvbot; j++){
+
+		for (int j = pvtop; j <= pvbot; j++) {
 			int ind = 255 * (j - pvbot) / (pvtop - pvbot);
-			for (int i = ph1; i <= ph2; i++){
+			for (int i = ph1; i <= ph2; i++) {
 				bm->SetPixel(i, j, Color(255, cmap.r[ind], cmap.g[ind], cmap.b[ind]));
 			}
 		}
 		gr.DrawRectangle(&blackpen, ph1, pvtop, ph2 - ph1, pvbot - pvtop);
 
-		for (int i = 0; i<ticks.size(); i++){
+		for (int i = 0; i < ticks.size(); i++) {
 			if (ticks[i] < stretch.lowclip)continue;
 			if (ticks[i] > stretch.highclip)continue;
 
 			int ind = stretch.index(ticks[i]);
 			int tickv = (int)(pvbot + (double)(pvtop - pvbot) * (double)ind / (double)stretch.nbins);
-			
+
 			std::string s = strprint("%5.3lf", ticks[i]);
 
 			PointF p;
@@ -171,7 +165,7 @@ public:
 		gr.RotateTransform(-90);
 		gr.DrawString(ws(title).c_str(), -1, &font, PointF(0, 0), &textformat, &blackbrush);
 
-		return bm;		
+		return bm;
 	}
 
 

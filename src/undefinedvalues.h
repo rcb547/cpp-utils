@@ -13,56 +13,51 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <limits>
 #include <string>
 
-inline size_t ud_size_t(){
-	return (std::numeric_limits<size_t>::max)();	
-}
-inline short  ud_short(){
-	return (std::numeric_limits<short>::min)();
-}
-inline int    ud_int(){
-	return (std::numeric_limits<int>::min)();
-}
-inline float  ud_float(){
-	return (std::numeric_limits<float>::lowest)();
-}
-inline double ud_double(){ 
-	return (std::numeric_limits<double>::lowest)();
-}
-inline std::string ud_string(){
-	return std::string("Undefined std::string");	
+constexpr short _undefined_short_ = std::numeric_limits<short>::lowest();
+constexpr int _undefined_int_ = std::numeric_limits<int>::lowest();
+constexpr size_t _undefined_size_t_ = (std::numeric_limits<size_t>::max)();
+constexpr float _undefined_float_ = std::numeric_limits<float>::lowest();
+constexpr double _undefined_double_ = std::numeric_limits<double>::lowest();
+constexpr char _undefined_stdstring_[] = "Undefined std::string";
+
+const inline short _undefinedvalue(const short&){
+	return _undefined_short_;
 }
 
-inline short undefinedvalue(const short&){
-	return ud_short();
+const inline int _undefinedvalue(const int&){
+	return _undefined_int_;
 }
 
-inline int undefinedvalue(const int&){
-	return ud_int();
+const inline size_t _undefinedvalue(const size_t&){
+	return _undefined_size_t_;
 }
 
-inline size_t undefinedvalue(const size_t&){
-	return ud_size_t();
+const inline float _undefinedvalue(const float&) {
+	return _undefined_float_;
 }
 
-inline float undefinedvalue(const float&){
-	return ud_float();
+const inline double _undefinedvalue(const double&){
+	return _undefined_double_;
 }
 
-inline double undefinedvalue(const double&){
-	return ud_double();
+inline std::string _undefinedvalue(const std::string&){
+	return _undefined_stdstring_;
 }
 
-inline std::string undefinedvalue(const std::string&){
-	return ud_string();
-}
+//Does not make sense to have an undefined char really
+//inline char _undefinedvalue(const char&) {
+//	return 0;
+//}
 
-inline char undefinedvalue(const char&) {
-	return 0;
+template <class T>
+inline T undefinedvalue(){
+	static T v;
+	return _undefinedvalue(v);
 }
 
 template <class T>
-bool isdefined(const T& v){	
-	if (v == undefinedvalue(v)) return false;
+bool isdefined(const T& v) {
+	if (v == undefinedvalue<T>()) return false;
 	return true;
 }
 

@@ -72,27 +72,29 @@ template<typename T, typename S> std::vector<T> operator/(const std::vector<T>& 
 
 template<typename T, typename S> std::vector<T> operator+(const S& s, const std::vector<T>& a)
 {
-	std::vector<T> b = a;
-	return b += s;
+	std::vector<T> b(a.size());
+	for (size_t i = 0; i < b.size(); i++) b[i] = s + a[i];
+	return b;
 }
 
 template<typename T, typename S> std::vector<T> operator-(const S& s, const std::vector<T>& a)
 {
-	std::vector<T> b(a.size(),s);	
-	return b -= a;
+	std::vector<T> b(a.size());
+	for (size_t i = 0; i < b.size(); i++) b[i] = s - a[i];
+	return b;
 }
 
-template<typename T, typename S>
-std::vector<T> operator*(const S& s, const std::vector<T>& a)
+template<typename T, typename S> std::vector<T> operator*(const S& s, const std::vector<T>& a)
 {
-	std::vector<T> b = a;
-	return b *= s;
+	std::vector<T> b(a.size());
+	for (size_t i = 0; i < b.size(); i++) b[i] = s * a[i];
+	return b;
 }
 
 template<typename T, typename S> std::vector<T> operator/(const S& s, const std::vector<T>& a)
 {	
 	std::vector<T> b(a.size());
-	for (size_t i = 0; i < b.size(); i++) b[i] = s/a[i];
+	for (size_t i = 0; i < b.size(); i++) b[i] = s / a[i];
 	return b;	
 }
 
