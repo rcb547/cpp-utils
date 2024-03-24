@@ -25,12 +25,56 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "logger.h"
 #include "stacktrace.h"
 
+#if defined _MPI_ENABLED
+#include "mpi_wrapper.h"
+#endif
+
 std::string commandlinestring(int argc, char** argv);
 std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate);
 
-int my_size();
-int my_rank();
-int mpi_openmp_rank();
+inline int my_size() {
+#if defined _MPI_ENABLED
+	if (cMpiEnv::isinitialised()) {
+		return cMpiEnv::world_size();
+	}
+	else return 1;
+#else
+	return 1;
+#endif
+};
+
+inline int my_rank() {
+	int threadnum = 0;
+#if defined _OPENMP
+	threadnum = omp_get_thread_num();
+#endif
+
+#if defined _MPI_ENABLED
+	if (cMpiEnv::isinitialised()) {
+		return cMpiEnv::world_rank();
+	}
+	else return threadnum;
+#else
+	return threadnum;
+#endif
+}
+
+inline int mpi_openmp_rank() {
+	int rank = 0;
+
+#if defined _OPENMP
+	rank = omp_get_thread_num();
+	if (rank > 0)return rank;
+#endif
+
+#if defined _MPI_ENABLED
+	if (cMpiEnv::isinitialised()) {
+		rank = cMpiEnv::world_rank();
+		return rank;
+	}
+#endif
+	return rank;
+}
 
 void prompttocontinue();
 void prompttoexit();

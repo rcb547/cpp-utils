@@ -189,6 +189,7 @@ public:
 		cMpiEnv::world_barrier();
 #else
 		RecordLength = determine_record_length();
+		rewind();
 #endif		
 
 		return true;

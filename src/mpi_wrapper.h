@@ -12,8 +12,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <stdint.h>
 #include <vector>
 #include <mpi.h>
-#include <general_utils.h>
 
+#include "logger.h"
 
 class cMpiComm;
 class cMpiEnv;

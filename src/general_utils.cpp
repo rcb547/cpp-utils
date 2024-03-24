@@ -25,10 +25,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <errno.h>
 #endif
 
-#if defined _MPI_ENABLED
-#include "mpi_wrapper.h"
-#endif
-
 #if defined _OPENMP
 #include <omp.h>
 #endif
@@ -39,7 +35,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include "logger.h"
 #include "general_utils.h"
-#include "file_utils.h"
 
 std::string commandlinestring(int argc, char** argv) {
 	std::string str = "Executing:";
@@ -53,52 +48,6 @@ std::string versionstring(const std::string& version, const std::string& compile
 	std::string s = strprint("Version: %s Compiled at %s on %s", version.c_str(), compiletime.c_str(), compiledate.c_str());
 	return s;
 };
-
-int my_size() {
-#if defined _MPI_ENABLED			
-	if (cMpiEnv::isinitialised()) {
-		return cMpiEnv::world_size();
-	}
-	else return 1;
-#else
-	return 1;
-#endif
-};
-
-int my_rank() {
-
-	int threadnum = 0;
-
-#if defined _OPENMP
-	threadnum = omp_get_thread_num();
-#endif
-
-#if defined _MPI_ENABLED
-	if (cMpiEnv::isinitialised()) {
-		return cMpiEnv::world_rank();
-	}
-	else return threadnum;
-#else
-	return threadnum;
-#endif
-}
-
-int mpi_openmp_rank() {
-	int rank = 0;
-
-#if defined _OPENMP
-	rank = omp_get_thread_num();
-	if (rank > 0)return rank;
-#endif
-
-#if defined _MPI_ENABLED
-	if (cMpiEnv::isinitialised()) {
-		rank = cMpiEnv::world_rank();
-		return rank;
-	}
-#endif
-	return rank;
-}
 
 void rb_sleep(double secs)
 {
