@@ -1,7 +1,8 @@
 #File patterns that are ignored
 
-# Executables on raijin
-bin/raijin/
+# Ignore build and install directories
+build*/
+install*/
 
 # Compiled Object files
 *.slo
