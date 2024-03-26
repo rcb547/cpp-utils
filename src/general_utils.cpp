@@ -34,6 +34,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #endif
 
 #include "logger.h"
+#include "file_utils.h"
 #include "general_utils.h"
 
 std::string commandlinestring(int argc, char** argv) {
@@ -614,11 +615,12 @@ double reportusage()
 	double vsize, pcpu, pmem;
 	std::string tmpfile = strprint("ps.%d.tmp", pid);
 	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	system(cmd.c_str());
+	int status = system(cmd.c_str());
 	FILE* fp = fileopen(tmpfile, "r");
 	char buf[201];
-	fgets(buf, 200, fp);
-	fgets(buf, 200, fp);
+	char* dummy;
+	dummy = fgets(buf, 200, fp);
+	dummy = fgets(buf, 200, fp);
 	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
 	deletefile(tmpfile);
@@ -643,11 +645,12 @@ double percentmemoryused()
 	double vsize, pcpu, pmem;
 	std::string tmpfile = strprint("ps.%d.tmp", pid);
 	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	system(cmd.c_str());
+	int status = system(cmd.c_str());
 	FILE* fp = fileopen(tmpfile.c_str(), "r");
 	char buf[201];
-	fgets(buf, 200, fp);
-	fgets(buf, 200, fp);
+	char* dummy;
+	dummy = fgets(buf, 200, fp);
+	dummy = fgets(buf, 200, fp);
 	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
 	deletefile(tmpfile.c_str());
