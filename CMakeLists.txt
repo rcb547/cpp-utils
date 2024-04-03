@@ -36,7 +36,7 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
 	add_compile_options(-Wno-unused-result -Wno-date-time -Wno-error=date-time)
-	#On GCC, even with -Wno-date-time, still get warings of the form: warning: macro "__DATE__" might prevent reproducible builds [-Wdate-time]	
+	#On GCC, even with -Wno-date-time, still get warings of the form: warning: macro "__DATE__" might prevent reproducible builds [-Wdate-time]
 endif()
 
 # Find PkgConfig
@@ -94,7 +94,7 @@ if(${WITH_GDAL})
 	endif()
 endif()
 
-set(sources ${sources} 
+set(sources ${sources}
 	src/file_utils.cpp
 	src/general_utils.cpp
 	src/RamerDouglasPeucker.cpp
@@ -116,7 +116,9 @@ add_library(${target} STATIC ${sources} )
 #set_target_properties(${target} PROPERTIES OUTPUT_NAME cpp-utils)
 set_target_properties(${target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(${target} PRIVATE src/)
+target_include_directories(${target} PRIVATE submodules/csv-parser/single_include)
 target_include_directories(${target} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>")
+target_include_directories(${target} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/submodules/csv-parser/single_include/>")
 if(GDAL_FOUND)
 	target_include_directories(${target} PRIVATE GDAL::GDAL)
 	target_link_libraries(${target} PRIVATE GDAL::GDAL)
