@@ -1,3 +1,3 @@
 [submodule "submodules/csv-parser"]
 	path = submodules/csv-parser
-	url = git@github.com:vincentlaucsb/csv-parser.git
+	url  = https://github.com/vincentlaucsb/csv-parser.git
