@@ -1,21 +1,21 @@
+#ifndef _RamerDouglasPeucker_H
+#define _RamerDouglasPeucker_H
+
 //2D implementation of the Ramer-Douglas-Peucker algorithm
 //By Tim Sheerman-Chase, 2016
 //Released under CC0
 //https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm
 
 //Downloaded from https://gist.github.com/TimSC/0813573d77734bcb6f2cd2cf6cc7aa51
-//Modified to split into .cpp and .h files
 
 #include <cmath>
 #include <utility>
 #include <vector>
 #include <stdexcept>
 
-#include "RamerDouglasPeucker.h"
-
-namespace RDP{
-
-	double PerpendicularDistance(const Point &pt, const Point &lineStart, const Point &lineEnd)
+namespace RDP {
+	typedef std::pair<double, double> Point;
+	double PerpendicularDistance(const Point& pt, const Point& lineStart, const Point& lineEnd)
 	{
 		double dx = lineEnd.first - lineStart.first;
 		double dy = lineEnd.second - lineStart.second;
@@ -44,7 +44,7 @@ namespace RDP{
 		return std::pow(std::pow(ax, 2.0) + std::pow(ay, 2.0), 0.5);
 	}
 
-	void RamerDouglasPeucker(const std::vector<Point> &pointList, double epsilon, std::vector<Point> &out)
+	void RamerDouglasPeucker(const std::vector<Point>& pointList, double epsilon, std::vector<Point>& out)
 	{
 		if (pointList.size() < 2)
 			throw std::invalid_argument("Not enough points to simplify");
@@ -88,34 +88,5 @@ namespace RDP{
 			out.push_back(pointList[end]);
 		}
 	}
-
 };
-
-	/*
-	int main()
-	{
-	vector<Point> pointList;
-	vector<Point> pointListOut;
-
-	pointList.push_back(Point(0.0, 0.0));
-	pointList.push_back(Point(1.0, 0.1));
-	pointList.push_back(Point(2.0, -0.1));
-	pointList.push_back(Point(3.0, 5.0));
-	pointList.push_back(Point(4.0, 6.0));
-	pointList.push_back(Point(5.0, 7.0));
-	pointList.push_back(Point(6.0, 8.1));
-	pointList.push_back(Point(7.0, 9.0));
-	pointList.push_back(Point(8.0, 9.0));
-	pointList.push_back(Point(9.0, 9.0));
-
-	RamerDouglasPeucker(pointList, 1.0, pointListOut);
-
-	cout << "result" << endl;
-	for(size_t i=0;i< pointListOut.size();i++)
-	{
-	cout << pointListOut[i].first << "," << pointListOut[i].second << endl;
-	}
-
-	return 0;
-	}
-	*/
+#endif

@@ -6,6 +6,9 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
+#ifndef _cgal_utils_H
+#define _cgal_utils_H
+
 #if defined _WIN32
 #pragma warning (push)
 #pragma warning (disable : 4127)
@@ -41,7 +44,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <vector>
 #include <list>
-#include "cgal_utils.h"
 #include "general_utils.h"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
@@ -179,8 +181,6 @@ bool line_data_alpha_shape_polygon_ch(
 	return true;
 }
 
-
-
-
+#endif
 
 

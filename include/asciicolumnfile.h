@@ -24,7 +24,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "general_types.h"
 #include "fielddefinition.h"
 
-#if defined _MPI_ENABLED
+#ifdef ENABLE_MPI
 #include "mpi_wrapper.h"
 #endif
 
@@ -179,7 +179,7 @@ public:
 		}
 		FileSize = std::filesystem::file_size(FileName);
 
-#if defined _MPI_ENABLED
+#ifdef ENABLE_MPI
 		if (cMpiEnv::world_rank() == 0) {
 			RecordLength = determine_record_length();
 			rewind();

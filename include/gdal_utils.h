@@ -6,17 +6,25 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#include "gdal_utils.h"
+#ifndef _gdal_utils_H
+#define _gdal_utils_H
 
-void checkogrerror(const OGRErr& err)
+#pragma warning(push)
+#pragma warning (disable: 4251)
+#include <ogr_spatialref.h>
+#include <gdal_priv.h>
+#pragma warning(pop)
+
+
+
+inline void checkogrerror(const OGRErr& err)
 {
 	if(err != OGRERR_NONE){
 		std::printf("Warning OGRErr %d\n",err);
 	}
 }
 
-int erm2epsgcode(const std::string& datum, const std::string& projection)
-{	
+inline int erm2epsgcode(const std::string& datum, const std::string& projection = "GEODETIC"){	
 	if (datum == "GDA94" && projection == "GEODETIC") return 4283;
 	else if (datum == "WGS84" && projection == "GEODETIC") return 4326;	
 	else if (datum == "AGD66" && projection == "GEODETIC") return 4202;
@@ -32,8 +40,7 @@ int erm2epsgcode(const std::string& datum, const std::string& projection)
 	else return -1;
 }
 
-int getepsgcode(const std::string& datum, const std::string& projection, const std::string& units)
-{
+inline int getepsgcode(const std::string& datum, const std::string& projection = "GEODETIC", const std::string& units = "METERS"){
 	OGRSpatialReference srs;	
 	//OGRErr err   = srs.importFromERM(projection.c_str(), datum.c_str(), units.c_str());
 	//This seem to not work
@@ -42,7 +49,7 @@ int getepsgcode(const std::string& datum, const std::string& projection, const s
 	return epsgcode;
 }
 
-OGRSpatialReference getsrs(const std::string& datum, const std::string& projection, const std::string& units)
+inline OGRSpatialReference getsrs(const std::string& datum, const std::string& projection, const std::string& units)
 {
 	OGRSpatialReference srs;	
 	OGRErr err = srs.importFromERM(projection.c_str(), datum.c_str(), units.c_str());
@@ -50,7 +57,7 @@ OGRSpatialReference getsrs(const std::string& datum, const std::string& projecti
 	return srs;
 }
 
-OGRSpatialReference getsrs(const int& epsgcode)
+inline OGRSpatialReference getsrs(const int& epsgcode)
 {
 	OGRSpatialReference srs;
 	OGRErr err = srs.importFromEPSG(epsgcode);	
@@ -58,7 +65,7 @@ OGRSpatialReference getsrs(const int& epsgcode)
 	return srs;
 }
 
-std::string WellKnownText(const int epsgcode)
+inline std::string WellKnownText(const int epsgcode)
 {
 	OGRSpatialReference srs;
 	OGRErr err = srs.importFromEPSG(epsgcode);
@@ -70,7 +77,7 @@ std::string WellKnownText(const int epsgcode)
 }
 
 
-bool transform(
+inline bool transform(
 	const int& epsgcodein,
 	const std::vector<double>& xin,
 	const std::vector<double>& yin,
@@ -105,3 +112,5 @@ bool transform(
 
 	return true;
 }
+
+#endif
