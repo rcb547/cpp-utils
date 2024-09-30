@@ -585,6 +585,14 @@ inline std::vector<std::vector<double>> fractionaloverlaps(const std::vector<dou
 	return o;
 }
 
+inline std::chrono::high_resolution_clock::time_point gettime_hr() {
+	return std::chrono::high_resolution_clock::now();
+}
+
+inline double time_diff_hr(const std::chrono::high_resolution_clock::time_point& t1, const std::chrono::high_resolution_clock::time_point& t2){
+	return (double)1.0e-6 * (double)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+}
+
 inline double gettime() {
 	auto tp = std::chrono::high_resolution_clock::now();
 	auto t = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
