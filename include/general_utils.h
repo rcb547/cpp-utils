@@ -220,7 +220,7 @@ inline double correlation_coefficient(std::vector<double>x, std::vector<double>y
 		sumyy += y[i] * y[i];
 		sumxy += x[i] * y[i];
 	}
-	return (N * sumxy - sumx * sumy) / sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
+	return (N * sumxy - sumx * sumy) /std::sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
 
 }
 
@@ -279,7 +279,7 @@ inline bool bestfitlineendpoints(const std::vector<double>& x, const std::vector
 {
 	size_t n = x.size();
 	double m = 0, c = 0;
-	if (fabs(x[n - 1] - x[0]) > fabs(y[n - 1] - y[0])) {
+	if (std::fabs(x[n - 1] - x[0]) > std::fabs(y[n - 1] - y[0])) {
 		//predominantly EW line
 		regression(x, y, m, c);
 		x1 = (x[0] + m * (y[0] - c)) / (m * m + 1);
@@ -332,7 +332,7 @@ inline int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
 
 inline bool eq(double& a, double& b)
 {
-	if (fabs(a - b) < DBL_EPSILON)return true;
+	if (std::fabs(a - b) < DBL_EPSILON)return true;
 	else return false;
 }
 
@@ -386,16 +386,16 @@ inline bool interplineline(const std::vector<double>& xin, const std::vector<dou
 
 	gradient = 0.0;
 	intercept = 0.0;
-	if (fabs(xin[n - 1] - xin[0]) > fabs(yin[n - 1] - yin[0])) {
+	if (std::fabs(xin[n - 1] - xin[0]) > std::fabs(yin[n - 1] - yin[0])) {
 		regression(xin, yin, gradient, intercept);
 		x1 = xin[0];
 		y1 = x1 * gradient + intercept;
 		x2 = xin[n - 1];
 		y2 = x2 * gradient + intercept;
 
-		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
+		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
-		size_t nl = (size_t)floor(0.5 + d / dl);
+		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
 		yout.resize(nl);
 
@@ -412,9 +412,9 @@ inline bool interplineline(const std::vector<double>& xin, const std::vector<dou
 		y2 = yin[n - 1];
 		x2 = y2 * gradient + intercept;
 
-		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
+		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
-		size_t nl = (size_t)floor(0.5 + d / dl);
+		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
 		yout.resize(nl);
 
@@ -507,9 +507,9 @@ inline bool isreportable(int rec)
 	int k, interval;
 
 	if (rec < 1000)k = 2;
-	else        k = (int)log10((double)rec);
+	else        k = (int)std::log10((double)rec);
 
-	interval = (int)pow(10.0, (double)k);
+	interval = (int)std::pow(10.0, (double)k);
 
 	if (rec % interval == 0) return true;
 	else return false;
@@ -731,8 +731,8 @@ inline double percentmemoryused()
 
 inline void guage(int ntot, int n, int pdiv1, int pdiv2)
 {
-	double d1 = ceil(((double)pdiv1 / 100.0) * (double)ntot);
-	double d2 = ceil(((double)pdiv2 / 100.0) * d1);
+	double d1 = std::ceil(((double)pdiv1 / 100.0) * (double)ntot);
+	double d2 = std::ceil(((double)pdiv2 / 100.0) * d1);
 
 	if (n == 0) {
 		printf("<");
@@ -916,7 +916,7 @@ T rounddownnearest(const T& x, const double& nearest)
 	return v;
 }
 
-template <typename T> 
+template <typename T>
 T pow10(const T& x)
 {
 	return std::pow((T)10.0, x);
@@ -1005,9 +1005,9 @@ double correlation(const std::vector<T>& x, const std::vector<T>& y)
 		sy  += y[i];
 		sxx += x[i] * x[i];
 		syy += y[i] * y[i];
-		sxy += x[i] * y[i];		
+		sxy += x[i] * y[i];
 	}	
-	double r = (n*sxy - sx*sy) / sqrt(n*sxx - sx*sx) / sqrt(n*syy - sy*sy);
+	double r = (n*sxy - sx*sy) /std::sqrt(n*sxx - sx*sx) /std::sqrt(n*syy - sy*sy);
 	return r;
 }
 
