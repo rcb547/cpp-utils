@@ -21,132 +21,132 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <fstream> 
 
 //Vector scalar unary op
-template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a,  const S& s)
-{				
-	std::for_each(a.begin(), a.end(), [&s](T& item){ item += s; });
+template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a, const S& s)
+{
+	std::for_each(a.begin(), a.end(), [&s](T& item) { item += s; });
 	return a;
-}
+};
 
 template<typename T, typename S> std::vector<T>& operator-=(std::vector<T>& a, const S& s)
 {
-	std::for_each(a.begin(), a.end(), [&s](T& item){ item -= s; });	
+	std::for_each(a.begin(), a.end(), [&s](T& item) { item -= s; });
 	return a;
-}
+};
 
 template<typename T, typename S> std::vector<T>& operator*=(std::vector<T>& a, const S& s)
-{	
-	std::for_each(a.begin(), a.end(), [&s](T& item){ item *= s;});
+{
+	std::for_each(a.begin(), a.end(), [&s](T& item) { item *= s; });
 	return a;
-}
+};
 
 template<typename T, typename S> std::vector<T>& operator/=(std::vector<T>& a, const S& s)
 {
-	std::for_each(a.begin(), a.end(), [&s](T& item){ item /= s; });	
+	std::for_each(a.begin(), a.end(), [&s](T& item) { item /= s; });
 	return a;
-}
+};
 
 //Vector scalar binary op
 template<typename T, typename S> std::vector<T> operator+(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b += s;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator-(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b -= s;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator*(const std::vector<T>& a, const S& s)
 {
-	std::vector<T> b=a;
-	return b *= s;	
-}
+	std::vector<T> b = a;
+	return b *= s;
+};
 
 template<typename T, typename S> std::vector<T> operator/(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b /= s;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator+(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s + a[i];
 	return b;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator-(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s - a[i];
 	return b;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator*(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s * a[i];
 	return b;
-}
+};
 
 template<typename T, typename S> std::vector<T> operator/(const S& s, const std::vector<T>& a)
-{	
+{
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s / a[i];
-	return b;	
-}
+	return b;
+};
 
 //Vector vector unary op
 template<typename T> std::vector<T>& operator+=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] += b[i];
 	return a;
-}
+};
 
 template<typename T> std::vector<T>& operator-=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] -= b[i];
 	return a;
-}
+};
 
 template<typename T> std::vector<T>& operator*=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (auto i = 0; i < b.size(); i++) a[i] *= b[i];
 	return a;
-}
+};
 
 template<typename T> std::vector<T>& operator/=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] /= b[i];
 	return a;
-}
+};
 
 //vector vector binary op
 template<typename T> std::vector<T> operator*(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
 	return c *= b;
-}
+};
 
 template<typename T> std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
-	return c += b;	
-}
+	return c += b;
+};
 
 template<typename T> std::vector<T> operator-(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
-	return c -= b;	
-}
+	return c -= b;
+};
 
 template<typename T> std::vector<T> operator/(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
 	return c /= b;
-}
+};
 
 
 //Functions
@@ -207,24 +207,24 @@ template<typename T> T stddev(const std::vector<T>& v)
 };
 
 template<typename T>
-void append(std::vector<T>& a, const std::vector<T>& b){	
+void append(std::vector<T>& a, const std::vector<T>& b) {
 	//This does not work for Intel: a.insert(std::end(a), std::begin(b), std::end(b));	
 	a.insert(a.end(), b.begin(), b.end());
-}
+};
 
 template<typename T>
-void prepend(std::vector<T>& a, const std::vector<T>& b){
+void prepend(std::vector<T>& a, const std::vector<T>& b) {
 	//This does not work for Intel: a.insert(std::begin(a), std::begin(b), std::end(b));
 	a.insert(a.begin(), b.begin(), b.end());
-}
+};
 
 template<typename T>
-std::vector<T> concaternate(const std::vector<T>& a, const std::vector<T>& b){
-	std::vector<T> c=a;
+std::vector<T> concaternate(const std::vector<T>& a, const std::vector<T>& b) {
+	std::vector<T> c = a;
 	//This does not work for Intel: c.insert(std::end(c), std::begin(b), std::end(b));
 	c.insert(c.end(), b.begin(), b.end());
 	return c;
-}
+};
 
 //Resize 2d array
 template<typename T> void resize(std::vector<std::vector<T>>& m, size_t nrows, size_t ncols)
@@ -239,14 +239,14 @@ template<typename TA, typename TB> void cast(const std::vector< std::vector<TA> 
 {
 	size_t nr = a.size();
 	b.resize(nr);
-	for (size_t i = 0; i<nr; i++){
+	for (size_t i = 0; i < nr; i++) {
 		size_t nc = a[i].size();
 		b[i].resize(nc);
-		for (size_t j = 0; j<nc; j++){
+		for (size_t j = 0; j < nc; j++) {
 			b[i][j] = a[i][j];
 		}
 	}
-}
+};
 
 //Stats on raw pointer
 template<typename T> T min(const size_t n, const T* v)
@@ -300,11 +300,11 @@ template<typename T>
 void write(const std::string filename, const std::vector<T>& x)
 {
 	std::ofstream of(filename);
-	of.setf(std::ios_base::scientific);	
-	for (size_t i = 0; i < x.size(); i++) {				
-		of << x[i] << std::endl;		
-	}	
-}
+	of.setf(std::ios_base::scientific);
+	for (size_t i = 0; i < x.size(); i++) {
+		of << x[i] << std::endl;
+	}
+};
 
 template<typename T>
 void write(const std::string filename, const std::vector<std::complex<T>>& x)
@@ -320,9 +320,19 @@ template<typename T>
 void write(std::string filename, const T& x)
 {
 	std::ofstream of(filename);
-	of.setf(std::ios_base::scientific);	
-	of << x << std::endl;	
-}
+	of.setf(std::ios_base::scientific);
+	of << x << std::endl;
+};
+
+template<typename T>
+std::vector<T> evenspace(const T& x1, const T& dx, const size_t& n)
+{
+	std::vector<T> xi(n);
+	for (size_t i = 0; i < n; i++) {
+		xi[i] = x1 + (T)(i)*dx;
+	}
+	return xi;
+};
 
 template<typename T>
 std::vector<T> linspace(const T& x1, const T& x2, const size_t n)
