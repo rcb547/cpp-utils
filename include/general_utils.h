@@ -6,42 +6,56 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#include <cstdio>
+#ifndef _general_utils_H
+#define _general_utils_H
+
+#include <algorithm>
 #include <cfloat>
+#include <chrono>
+#include <climits>
+#include <cmath>
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <cstring>
 #include <ctime>
-#include <chrono>
 #include <iterator>
 #include <sstream>
+#include <vector>
+#include <filesystem>
+
+#include "logger.h"
+#include "stacktrace.h"
+#include "general_constants.h"
+#include "general_types.h"
+#include "string_utils.h"
 
 #if defined _WIN32
 #define NOMINMAX 
 #include <windows.h>
 #include <conio.h>
 #else
-#include <unistd.h>	
-#include <sys/types.h>	
-#include <sys/resource.h>	
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/resource.h>
 #include <errno.h>
 #endif
 
-#if defined _MPI_ENABLED
-#include "mpi_wrapper.h"
-#endif
-
-#if defined _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#if defined MATLAB_MEX_FILE
+#ifdef ENABLE_MPI
+#include "mpi_wrapper.h"
+#endif
+
+#ifdef MATLAB_MEX_FILE
 #include "mex.h"
 #endif
 
-#include "logger.h"
-#include "general_utils.h"
-#include "file_utils.h"
-
-std::string commandlinestring(int argc, char** argv) {
+inline std::string commandlinestring(int argc, char** argv) {
 	std::string str = "Executing:";
 	for (int i = 0; i < argc; i++) {
 		str += strprint(" %s", argv[i]);
@@ -49,13 +63,13 @@ std::string commandlinestring(int argc, char** argv) {
 	return str;
 };
 
-std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate) {
+inline std::string versionstring(const std::string& version, const std::string& compiletime, const std::string& compiledate) {
 	std::string s = strprint("Version: %s Compiled at %s on %s", version.c_str(), compiletime.c_str(), compiledate.c_str());
 	return s;
 };
 
-int my_size() {
-#if defined _MPI_ENABLED			
+inline int my_size() {
+#ifdef ENABLE_MPI
 	if (cMpiEnv::isinitialised()) {
 		return cMpiEnv::world_size();
 	}
@@ -65,15 +79,13 @@ int my_size() {
 #endif
 };
 
-int my_rank() {
-
+inline int my_rank() {
 	int threadnum = 0;
-
 #if defined _OPENMP
 	threadnum = omp_get_thread_num();
 #endif
 
-#if defined _MPI_ENABLED
+#ifdef ENABLE_MPI
 	if (cMpiEnv::isinitialised()) {
 		return cMpiEnv::world_rank();
 	}
@@ -83,7 +95,7 @@ int my_rank() {
 #endif
 }
 
-int mpi_openmp_rank() {
+inline int mpi_openmp_rank() {
 	int rank = 0;
 
 #if defined _OPENMP
@@ -91,7 +103,7 @@ int mpi_openmp_rank() {
 	if (rank > 0)return rank;
 #endif
 
-#if defined _MPI_ENABLED
+#ifdef ENABLE_MPI
 	if (cMpiEnv::isinitialised()) {
 		rank = cMpiEnv::world_rank();
 		return rank;
@@ -100,7 +112,7 @@ int mpi_openmp_rank() {
 	return rank;
 }
 
-void rb_sleep(double secs)
+inline void rb_sleep(double secs)
 {
 
 #if defined _WIN32
@@ -112,12 +124,12 @@ void rb_sleep(double secs)
 #endif
 }
 
-void debug(const char* msg)
+inline void debug(const char* msg)
 {
 	glog.logmsg("Debug: %s\n", msg);
 }
 
-void prompttocontinue()
+inline void prompttocontinue()
 {
 
 #if defined MATLAB_MEX_FILE
@@ -129,7 +141,7 @@ void prompttocontinue()
 	return;
 }
 
-void prompttoexit()
+inline void prompttoexit()
 {
 #if defined MATLAB_MEX_FILE		
 	mexErrMsgTxt("Error");
@@ -141,7 +153,7 @@ void prompttoexit()
 	return;
 }
 
-bool wildcmp(const char* wildpattern, const char* stringpattern)
+inline bool wildcmp(const char* wildpattern, const char* stringpattern)
 {
 	char* wild = new char[strlen(wildpattern) + 1];
 	strcpy(wild, wildpattern);
@@ -193,7 +205,7 @@ bool wildcmp(const char* wildpattern, const char* stringpattern)
 	return rval;
 }
 
-double correlation_coefficient(std::vector<double>x, std::vector<double>y)
+inline double correlation_coefficient(std::vector<double>x, std::vector<double>y)
 {
 	double N = (double)x.size();
 	double sumx = 0.0;
@@ -208,11 +220,11 @@ double correlation_coefficient(std::vector<double>x, std::vector<double>y)
 		sumyy += y[i] * y[i];
 		sumxy += x[i] * y[i];
 	}
-	return (N * sumxy - sumx * sumy) / sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
+	return (N * sumxy - sumx * sumy) /std::sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
 
 }
 
-bool regression(double* x, double* y, size_t n, double* gradient, double* intercept)
+inline bool regression(double* x, double* y, size_t n, double* gradient, double* intercept)
 {
 	//regression line y=mx + b // Thomas/Finney pp887
 	//user must ensure line is not vertical	
@@ -237,7 +249,7 @@ bool regression(double* x, double* y, size_t n, double* gradient, double* interc
 	return true;
 }
 
-bool regression(const std::vector<double>& x, const std::vector<double>& y, double& gradient, double& intercept)
+inline bool regression(const std::vector<double>& x, const std::vector<double>& y, double& gradient, double& intercept)
 {
 	//regression line y=mx + b // Thomas/Finney pp887
 	//user must ensure line is not vertical
@@ -263,11 +275,11 @@ bool regression(const std::vector<double>& x, const std::vector<double>& y, doub
 	return true;
 }
 
-bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double>& y, double& x1, double& y1, double& x2, double& y2)
+inline bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double>& y, double& x1, double& y1, double& x2, double& y2)
 {
 	size_t n = x.size();
 	double m = 0, c = 0;
-	if (fabs(x[n - 1] - x[0]) > fabs(y[n - 1] - y[0])) {
+	if (std::fabs(x[n - 1] - x[0]) > std::fabs(y[n - 1] - y[0])) {
 		//predominantly EW line
 		regression(x, y, m, c);
 		x1 = (x[0] + m * (y[0] - c)) / (m * m + 1);
@@ -286,7 +298,7 @@ bool bestfitlineendpoints(const std::vector<double>& x, const std::vector<double
 	return true;
 }
 
-const std::string timestamp()
+inline const std::string timestamp()
 {
 	time_t ltime;
 	time(&ltime);
@@ -295,7 +307,7 @@ const std::string timestamp()
 	return str;
 }
 
-const std::string timestring(const std::string format, std::time_t t) {
+inline const std::string timestring(const std::string format, std::time_t t = 0) {
 
 	if (t == 0) t = std::time(NULL);
 	//"%Y%m%d";
@@ -305,7 +317,7 @@ const std::string timestring(const std::string format, std::time_t t) {
 
 }
 
-int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
+inline int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
 {
 	//The following code is by Randolph Franklin, it returns 1 for interior points and 0 for exterior points. 
 	int i, j, c = 0;
@@ -318,37 +330,37 @@ int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
 	return c;
 }
 
-bool eq(double& a, double& b)
+inline bool eq(double& a, double& b)
 {
-	if (fabs(a - b) < DBL_EPSILON)return true;
+	if (std::fabs(a - b) < DBL_EPSILON)return true;
 	else return false;
 }
 
-bool gt(double& a, double& b)
+inline bool gt(double& a, double& b)
 {
 	if ((a - b) > DBL_EPSILON)return true;
 	else return false;
 }
 
-bool lt(double& a, double& b)
+inline bool lt(double& a, double& b)
 {
 	if ((b - a) > DBL_EPSILON)return true;
 	else return false;
 }
 
-bool le(double& a, double& b)
+inline bool le(double& a, double& b)
 {
 	if (eq(a, b) || lt(a, b))return true;
 	else return false;
 }
 
-bool ge(double& a, double& b)
+inline bool ge(double& a, double& b)
 {
 	if (eq(a, b) || gt(a, b))return true;
 	else return false;
 }
 
-void planeequation(const double& x1, const double& y1, const double& z1, const double& x2, const double& y2, const double& z2, const double& x3, const double& y3, const double& z3, double& A, double& B, double& C, double& D)
+inline void planeequation(const double& x1, const double& y1, const double& z1, const double& x2, const double& y2, const double& z2, const double& x3, const double& y3, const double& z3, double& A, double& B, double& C, double& D)
 {
 	//Ax+By+Cz+D=0
 	double ax, ay, az, bx, by, bz;
@@ -366,7 +378,7 @@ void planeequation(const double& x1, const double& y1, const double& z1, const d
 	D = -(A * x1 + B * y1 + C * z1);
 }
 
-bool interplineline(const std::vector<double>& xin, const std::vector<double>& yin, std::vector<double>& xout, std::vector<double>& yout, double& dl)
+inline bool interplineline(const std::vector<double>& xin, const std::vector<double>& yin, std::vector<double>& xout, std::vector<double>& yout, double& dl)
 {
 	double d, x1, y1, x2, y2;
 	double dx, dy, gradient, intercept;
@@ -374,16 +386,16 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 
 	gradient = 0.0;
 	intercept = 0.0;
-	if (fabs(xin[n - 1] - xin[0]) > fabs(yin[n - 1] - yin[0])) {
+	if (std::fabs(xin[n - 1] - xin[0]) > std::fabs(yin[n - 1] - yin[0])) {
 		regression(xin, yin, gradient, intercept);
 		x1 = xin[0];
 		y1 = x1 * gradient + intercept;
 		x2 = xin[n - 1];
 		y2 = x2 * gradient + intercept;
 
-		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
+		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
-		size_t nl = (size_t)floor(0.5 + d / dl);
+		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
 		yout.resize(nl);
 
@@ -400,9 +412,9 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 		y2 = yin[n - 1];
 		x2 = y2 * gradient + intercept;
 
-		d = sqrt(pow(2.0, (x2 - x1)) + pow(2.0, (y2 - y1)));
+		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
-		size_t nl = (size_t)floor(0.5 + d / dl);
+		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
 		yout.resize(nl);
 
@@ -416,7 +428,7 @@ bool interplineline(const std::vector<double>& xin, const std::vector<double>& y
 	return true;
 }
 
-int findindex(const size_t n, const double* x, const double& xtarget)
+inline int findindex(const size_t n, const double* x, const double& xtarget)
 {
 	int N = (int)n;
 
@@ -441,12 +453,17 @@ int findindex(const size_t n, const double* x, const double& xtarget)
 	return lo;
 }
 
-int findindex(const std::vector<double>& x, const double& xtarget)
+inline int findindex(const std::vector<double>& x, const double& xtarget)
 {
 	return findindex(x.size(), &(x[0]), xtarget);
 }
 
-double linearinterp(const size_t n, const double* x, const double* y, const double& xtarget)
+inline double linearinterp(const double& x1, const double& y1, const double& x2, const double& y2, const double& xtarget)
+{
+	return ((y2 - y1) / (x2 - x1)) * (xtarget - x1) + y1;
+}
+
+inline double linearinterp(const size_t n, const double* x, const double* y, const double& xtarget)
 {
 	int k = findindex(n, x, xtarget);
 	if (k < 0)k = 0;
@@ -454,24 +471,19 @@ double linearinterp(const size_t n, const double* x, const double* y, const doub
 	return linearinterp(x[k], y[k], x[k + 1], y[k + 1], xtarget);
 }
 
-double linearinterp(const double& x1, const double& y1, const double& x2, const double& y2, const double& xtarget)
-{
-	return ((y2 - y1) / (x2 - x1)) * (xtarget - x1) + y1;
-}
-
-double linearinterp(const std::vector<double>& x, const std::vector<double>& y, const double& xtarget)
+inline double linearinterp(const std::vector<double>& x, const std::vector<double>& y, const double& xtarget)
 {
 	return linearinterp(x.size(), &(x[0]), &(y[0]), xtarget);
 }
 
-void   linearinterp(const size_t n, const double* x, const double* y, size_t ni, const double* xi, double* yi)
+inline void   linearinterp(const size_t n, const double* x, const double* y, size_t ni, const double* xi, double* yi)
 {
 	for (size_t i = 0; i < ni; i++) {
 		yi[i] = linearinterp(n, x, y, xi[i]);
 	}
 }
 
-std::vector<double> linearinterp(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& xi)
+inline std::vector<double> linearinterp(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& xi)
 {
 	std::vector<double> yi(xi.size());
 	for (size_t i = 0; i < xi.size(); i++) {
@@ -480,36 +492,36 @@ std::vector<double> linearinterp(const std::vector<double>& x, const std::vector
 	return yi;
 }
 
-size_t bytesallocated(const std::vector<int>& v)
+inline size_t bytesallocated(const std::vector<int>& v)
 {
 	return v.capacity() * sizeof(int);
 }
 
-size_t bytesallocated(const std::vector<double>& v)
+inline size_t bytesallocated(const std::vector<double>& v)
 {
 	return v.capacity() * sizeof(double);
 }
 
-bool isreportable(int rec)
+inline bool isreportable(int rec)
 {
 	int k, interval;
 
 	if (rec < 1000)k = 2;
-	else        k = (int)log10((double)rec);
+	else        k = (int)std::log10((double)rec);
 
-	interval = (int)pow(10.0, (double)k);
+	interval = (int)std::pow(10.0, (double)k);
 
 	if (rec % interval == 0) return true;
 	else return false;
 }
 
-bool isinrange(const cRange<int>& r, const int& i)
+inline bool isinrange(const cRange<int>& r, const int& i)
 {
 	if (i<r.from || i>r.to)return false;
 	else return true;
 }
 
-double overlap(const double al, const double ah, const double bl, const double bh)
+inline double overlap(const double al, const double ah, const double bl, const double bh)
 {
 	//this returns the amount of overlap between the ranges al-ah with bl-bh
 	if (al >= bh || ah <= bl)return 0;//no overlap 
@@ -523,13 +535,13 @@ double overlap(const double al, const double ah, const double bl, const double b
 	}
 }
 
-double fractionaloverlap(const double al, const double ah, const double bl, const double bh)
+inline double fractionaloverlap(const double al, const double ah, const double bl, const double bh)
 {
 	double o = overlap(al, ah, bl, bh);
 	return o / (ah - al);
 }
 
-std::vector<double> overlaps(const double& a1, const double& a2, const std::vector<double>& b)
+inline std::vector<double> overlaps(const double& a1, const double& a2, const std::vector<double>& b)
 {
 	std::vector<double> o(b.size() - 1);
 	o.resize(b.size() - 1);
@@ -539,7 +551,7 @@ std::vector<double> overlaps(const double& a1, const double& a2, const std::vect
 	return o;
 }
 
-std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const std::vector<double>& b)
+inline std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const std::vector<double>& b)
 {
 	std::vector<double> o(b.size() - 1);
 	o.resize(b.size() - 1);
@@ -549,18 +561,7 @@ std::vector<double> fractionaloverlaps(const double& a1, const double& a2, const
 	return o;
 }
 
-std::vector<std::vector<double>> overlaps(const std::vector<double>& a, const std::vector<double>& b)
-{
-	std::vector<std::vector<double>> o(a.size() - 1);
-	for (size_t ai = 0; ai < a.size() - 1; ai++) {
-		o[ai].resize(b.size() - 1);
-		for (size_t bi = 0; bi < b.size() - 1; bi++) {
-			o[ai][bi] = overlap(a[ai], a[ai + 1], b[bi], b[bi + 1]);
-		}
-	}
-	return o;
-}
-std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a, const std::vector<double>& b)
+inline std::vector<std::vector<double>> overlaps(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<std::vector<double>> o(a.size() - 1);
 	for (size_t ai = 0; ai < a.size() - 1; ai++) {
@@ -572,13 +573,33 @@ std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a
 	return o;
 }
 
-double gettime() {
+inline std::vector<std::vector<double>> fractionaloverlaps(const std::vector<double>& a, const std::vector<double>& b)
+{
+	std::vector<std::vector<double>> o(a.size() - 1);
+	for (size_t ai = 0; ai < a.size() - 1; ai++) {
+		o[ai].resize(b.size() - 1);
+		for (size_t bi = 0; bi < b.size() - 1; bi++) {
+			o[ai][bi] = overlap(a[ai], a[ai + 1], b[bi], b[bi + 1]);
+		}
+	}
+	return o;
+}
+
+inline std::chrono::high_resolution_clock::time_point gettime_hr() {
+	return std::chrono::high_resolution_clock::now();
+}
+
+inline double time_diff_hr(const std::chrono::high_resolution_clock::time_point& t1, const std::chrono::high_resolution_clock::time_point& t2){
+	return (double)1.0e-6 * (double)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+}
+
+inline double gettime() {
 	auto tp = std::chrono::high_resolution_clock::now();
 	auto t = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
 	return (double)t / (double)1e3;
 }
 
-char* temppath(const char* s, int set)
+inline char* temppath(const char* s, int set)
 {
 	static char* p = (char*)NULL;
 	if (set == 1) {
@@ -590,19 +611,19 @@ char* temppath(const char* s, int set)
 	else return p;
 }
 
-void settemppath(const char* s)
+inline void settemppath(const char* s)
 {
 	temppath(s, 1);
 }
 
-std::string gettemppath()
+inline std::string gettemppath()
 {
 	char* s = (char*)NULL;
 	char* p = temppath(s, 0);
 	return std::string(p);
 }
 
-int floatcompare(const void* pa, const void* pb)
+inline int floatcompare(const void* pa, const void* pb)
 {
 	float& a = *(float*)pa; float& b = *(float*)pb;
 	if (a < b)return -1;
@@ -610,12 +631,12 @@ int floatcompare(const void* pa, const void* pb)
 	else return 1;
 }
 
-void sort(float* x, const size_t n)
+inline void sort(float* x, const size_t n)
 {
 	qsort(x, n, sizeof(float), floatcompare);
 }
 
-int doublecompare(const void* pa, const void* pb)
+inline int doublecompare(const void* pa, const void* pb)
 {
 	double& a = *(double*)pa; double& b = *(double*)pb;
 	if (a < b)return -1;
@@ -623,56 +644,57 @@ int doublecompare(const void* pa, const void* pb)
 	else return 1;
 }
 
-void sort(double* x, const size_t n)
+inline void sort(double* x, const size_t n)
 {
 	qsort(x, n, sizeof(double), doublecompare);
 }
 
-int stringcompare(const void* pa, const void* pb)
+inline int stringcompare(const void* pa, const void* pb)
 {
 	char** a = (char**)pa;
 	char** b = (char**)pb;
 	return strcmp(*a, *b);
 }
 
-void sort(char** strings, const size_t n)
+inline void sort(char** strings, const size_t n)
 {
 	qsort(strings, n, sizeof(char*), stringcompare);
 }
 
-int intcompare(const void* pa, const void* pb)
+inline int intcompare(const void* pa, const void* pb)
 {
 	int& a = *(int*)pa; int& b = *(int*)pb;
 	return a - b;
 }
 
-void sort(int* x, const size_t n)
+inline void sort(int* x, const size_t n)
 {
 	qsort(x, n, sizeof(int), intcompare);
 }
 
 #if defined _WIN32
-double reportusage()
+inline double reportusage()
 {
 	MEMORYSTATUSEX memstatus;
 	GlobalMemoryStatusEx(&memstatus);
 	return memstatus.dwMemoryLoad;
 }
 #else
-double reportusage()
+inline double reportusage()
 {
 	int pid = getpid();
 	double vsize, pcpu, pmem;
 	std::string tmpfile = strprint("ps.%d.tmp", pid);
 	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	system(cmd.c_str());
-	FILE* fp = fileopen(tmpfile, "r");
+	int status = system(cmd.c_str());
+	FILE* fp = std::fopen(tmpfile.c_str(), "r");
 	char buf[201];
-	fgets(buf, 200, fp);
-	fgets(buf, 200, fp);
+	char* dummy;
+	dummy = fgets(buf, 200, fp);
+	dummy = fgets(buf, 200, fp);
 	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
-	deletefile(tmpfile);
+	std::filesystem::remove(tmpfile);
 	glog.logmsg("Percent CPU used: %.2lf\n", pcpu);
 	glog.logmsg("Percent memory used: %.2lf\n", pmem);
 	glog.logmsg("Virtual memory used (Mb): %.2lf\n", vsize / 1000.0);
@@ -681,35 +703,36 @@ double reportusage()
 #endif
 
 #if defined _WIN32
-double percentmemoryused()
+inline double percentmemoryused()
 {
 	MEMORYSTATUSEX memstatus;
 	GlobalMemoryStatusEx(&memstatus);
 	return memstatus.dwMemoryLoad;
 }
 #else
-double percentmemoryused()
+inline double percentmemoryused()
 {
 	int pid = getpid();
 	double vsize, pcpu, pmem;
 	std::string tmpfile = strprint("ps.%d.tmp", pid);
 	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	system(cmd.c_str());
-	FILE* fp = fileopen(tmpfile.c_str(), "r");
+	int status = system(cmd.c_str());
+	FILE* fp = std::fopen(tmpfile.c_str(), "r");
 	char buf[201];
-	fgets(buf, 200, fp);
-	fgets(buf, 200, fp);
+	char* dummy;
+	dummy = fgets(buf, 200, fp);
+	dummy = fgets(buf, 200, fp);
 	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
 	fclose(fp);
-	deletefile(tmpfile.c_str());
+	std::filesystem::remove(tmpfile.c_str());
 	return pmem;
 }
 #endif
 
-void guage(int ntot, int n, int pdiv1, int pdiv2)
+inline void guage(int ntot, int n, int pdiv1, int pdiv2)
 {
-	double d1 = ceil(((double)pdiv1 / 100.0) * (double)ntot);
-	double d2 = ceil(((double)pdiv2 / 100.0) * d1);
+	double d1 = std::ceil(((double)pdiv1 / 100.0) * (double)ntot);
+	double d2 = std::ceil(((double)pdiv2 / 100.0) * d1);
 
 	if (n == 0) {
 		printf("<");
@@ -725,7 +748,7 @@ void guage(int ntot, int n, int pdiv1, int pdiv2)
 	}
 }
 
-void allocate1darray(int*& a, const size_t n)
+inline void allocate1darray(int*& a, const size_t n)
 {
 	a = new int[n];
 	if (a == (int*)NULL) {
@@ -734,7 +757,7 @@ void allocate1darray(int*& a, const size_t n)
 	}
 }
 
-void allocate1darray(double*& a, const size_t n)
+inline void allocate1darray(double*& a, const size_t n)
 {
 	a = new double[n];
 	if (a == (double*)NULL) {
@@ -743,13 +766,13 @@ void allocate1darray(double*& a, const size_t n)
 	}
 }
 
-void allocate2darray(double**& a, const size_t nrows, const size_t ncols)
+inline void allocate2darray(double**& a, const size_t nrows, const size_t ncols)
 {
 	a = new double* [nrows];
 	for (size_t i = 0; i < nrows; i++)a[i] = new double[ncols];
 }
 
-void deallocate2darray(double**& a, const size_t nrows)
+inline void deallocate2darray(double**& a, const size_t nrows)
 {
 	if (a) {
 		for (size_t i = 0; i < nrows; i++) {
@@ -760,7 +783,7 @@ void deallocate2darray(double**& a, const size_t nrows)
 	}
 }
 
-void deallocate1darray(double*& a)
+inline void deallocate1darray(double*& a)
 {
 	if (a) {
 		delete[]a;
@@ -768,7 +791,7 @@ void deallocate1darray(double*& a)
 	}
 }
 
-void deallocate1darray(int*& a)
+inline void deallocate1darray(int*& a)
 {
 	if (a) {
 		delete[]a;
@@ -776,7 +799,7 @@ void deallocate1darray(int*& a)
 	}
 }
 
-double median(const double* v, const size_t n)
+inline double median(const double* v, const size_t n)
 {
 	double* d = new double[n];
 	for (size_t i = 0; i < n; i++) d[i] = v[i];
@@ -789,7 +812,7 @@ double median(const double* v, const size_t n)
 	return m;
 }
 
-std::vector<cRange<int>> parserangelist(std::string& str)
+inline std::vector<cRange<int>> parserangelist(std::string& str)
 {
 	std::vector<std::string> items = parsestrings(str, ",");
 
@@ -814,7 +837,7 @@ std::vector<cRange<int>> parserangelist(std::string& str)
 	return list;
 }
 
-std::vector<double> getdoublevector(const char* str, const char* delims)
+inline std::vector<double> getdoublevector(const char* str, const char* delims)
 {
 	double v;
 	std::vector<double> vec;
@@ -829,14 +852,14 @@ std::vector<double> getdoublevector(const char* str, const char* delims)
 	return vec;
 }
 
-std::vector<float> dvec2fvec(std::vector<double>& vd)
+inline std::vector<float> dvec2fvec(std::vector<double>& vd)
 {
 	std::vector<float> vf(vd.size());
 	for (size_t i = 0; i < vd.size(); i++)vf[i] = (float)vd[i];
 	return vf;
 }
 
-unsigned int factorial(unsigned int n) {
+inline unsigned int factorial(unsigned int n) {
 	if (n <= 1) return 1;
 	unsigned int fact = 1;
 	for (unsigned int i = 2; i <= n; i++) {
@@ -845,7 +868,7 @@ unsigned int factorial(unsigned int n) {
 	return fact;
 }
 
-int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
+inline int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 {
 	//Adapted from https://en.wikipedia.org/wiki/Levenshtein_distance#Example
 	int cost;
@@ -867,5 +890,179 @@ int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 	return c;
 }
 
+template <typename T>
+int roundnearest(const T& x, int nearest)
+{
+	return nearest * (int) std::round(x / nearest);
+}
 
+template <typename T>
+T roundnearest(const T& x, const double& nearest)
+{
+	return (T)(nearest * std::round(x / nearest) );
+}
+
+template <typename T>
+T roundupnearest(const T& x, const double& nearest)
+{
+	return (T)(nearest * std::ceil(x / nearest) );
+}
+
+template <typename T>
+T rounddownnearest(const T& x, const double& nearest)
+{
+	T f = std::floor(x / nearest);
+	T v = nearest*f;
+	return v;
+}
+
+template <typename T>
+T pow10(const T& x)
+{
+	return std::pow((T)10.0, x);
+};
+
+template <typename T>
+T distance(const T& x1, const T& y1, const T& x2, const T& y2)
+{
+	return std::sqrt(std::pow(x2 - x1, 2.0) + std::pow(y2 - y1, 2.0));
+}
+
+template <typename T>
+T distance(const T& x, const T& y)
+{
+	return std::sqrt(x*x + y*y);
+}
+
+inline bool isbigendian()
+{	
+	const int i = 1;
+	return (bool)(!*((char *)&i));
+}
+
+template <typename T>
+T swap_endian(const T u)
+{
+	//from stackoverflow.com/questions/105252/how-do-i-convert-between-big-endian-and-little-endian-values-in-c	
+
+	static_assert (CHAR_BIT == 8, "CHAR_BIT != 8");
+	union
+	{
+		T u;
+		unsigned char u8[sizeof(T)];
+	} source, dest;
+	source.u = u;
+	for (size_t k = 0; k < sizeof(T); k++){
+		dest.u8[k] = source.u8[sizeof(T) - k - 1];
+	}
+	return dest.u;
+}
+
+template <typename T>
+void swap_endian(T* array, size_t num)
+{
+	for (size_t i = 0; i < num; i++){
+		array[i] = swap_endian(array[i]);
+	}
+}
+
+template <typename T>
+void swap_endian(std::vector<T>& array)
+{
+	for (size_t i = 0; i < array.size(); i++){
+		array[i] = swap_endian(array[i]);
+	}
+}
+
+template<typename T>
+inline const T sign(const T &a, const T &b) {return b >= 0 ? (a >= 0 ? a : -a) : (a >= 0 ? -a : a);}
+
+template<typename T>
+double covariance(const std::vector<T>& x, const std::vector<T>& y)
+{
+	size_t n = x.size();
+	cStats<T> sx(x);
+	cStats<T> sy(y);
+	std::vector<T> v(n);
+	for (size_t i = 0; i < x.size(); i++){
+		v[i] = (x[i] - sx.mean) * (y[i] - sy.mean);
+	}
+	cStats<T> sv(v);	
+	return sv.mean;
+}
+
+template<typename T>
+double correlation(const std::vector<T>& x, const std::vector<T>& y)
+{
+	size_t n = x.size();	
+	double sx = 0.0;
+	double sy = 0.0;
+	double sxx = 0.0;
+	double syy = 0.0;
+	double sxy = 0.0;
+	for (size_t i = 0; i < x.size(); i++){
+		sx  += x[i];
+		sy  += y[i];
+		sxx += x[i] * x[i];
+		syy += y[i] * y[i];
+		sxy += x[i] * y[i];
+	}	
+	double r = (n*sxy - sx*sy) /std::sqrt(n*sxx - sx*sx) /std::sqrt(n*syy - sy*sy);
+	return r;
+}
+
+constexpr auto SORT_UP = 0;
+constexpr auto SORT_DOWN = 1;
+template<typename T> void quicksortindex(T* a, int* index, const int& leftarg, const int& rightarg, int sortupordown)
+{	
+	if (leftarg < rightarg) {
+		T pivotvalue = a[leftarg];
+		int left  = leftarg - 1;
+		int right = rightarg + 1;
+		for(;;) {
+			if(sortupordown==SORT_UP){
+				while (a[--right] > pivotvalue);
+				while (a[++left] < pivotvalue);
+			}
+			else{
+				while (a[--right] < pivotvalue);
+				while (a[++left] > pivotvalue);
+			}
+			if (left >= right) break;			
+
+			T temp   = a[right];
+			a[right] = a[left];
+			a[left]  = temp;
+
+			if(index){
+				int tempind  = index[right];
+				index[right] = index[left];
+				index[left]  = tempind;
+			}
+		}
+		int pivot = right;
+		quicksortindex(a, index, leftarg, pivot, sortupordown);
+		quicksortindex(a, index, pivot + 1, rightarg, sortupordown);
+	}
+}
+
+template<typename T>
+bool bwrite(FILE* fp, const T& v){
+	size_t status = fwrite(&v, sizeof(T), 1, fp);
+	if (status != 1){
+		glog.errormsg(_SRC_,"Error writing to binary file\n");		
+	}
+	return true;
+}
+
+template<typename T>
+bool bwrite(FILE* fp, const std::vector<T>& v){
+	size_t status = fwrite(&(v[0]), sizeof(T), v.size(), fp);
+	if (status != v.size()){
+		glog.errormsg(_SRC_,"Error in writing to binary file\n");
+	}
+	return true;
+}
+
+#endif
 

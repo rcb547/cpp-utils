@@ -534,7 +534,7 @@ public:
 
 };
 
-int field_index_by_name_impl(const std::vector<cAsciiColumnField>& fields, const std::string& fieldname) {
+inline int field_index_by_name_impl(const std::vector<cAsciiColumnField>& fields, const std::string& fieldname) {
 	int index = -1;
 	for (int fi = 0; fi < fields.size(); fi++) {
 		if (ciequal(fields[fi].name, fieldname)) {

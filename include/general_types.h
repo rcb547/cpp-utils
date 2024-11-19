@@ -429,6 +429,13 @@ public:
 		zmin = _zmin; zmax = _zmax;
 	};
 
+	cBoundingBox(const T& halfsize) {
+		const T& r = halfsize;
+		xmin = -r; xmax = r;
+		ymin = -r; ymax = r;
+		zmin = -r; zmax = r;
+	};
+
 	template <typename O>
 	cBoundingBox(const cBoundingBox<O>& other) {
 		xmin = (T)other.xmin; xmax = (T)other.xmax;
@@ -436,18 +443,13 @@ public:
 		zmin = (T)other.zmin; zmax = (T)other.zmax;
 	};
 
-	T dx() { return xmax - xmin; };
-	T dy() { return ymax - ymin; };
-	T dz() { return zmax - zmin; };
-
 	T diagonal_size() const {
 		T x = xmax - xmin;
 		T y = ymax - ymin;
 		T z = zmax - zmin;
-		T d = std::sqrt(x*x + y*y + z*z);
+		T d = std::sqrt(x * x + y * y + z * z);
 		return d;
 	};
-
 };
 
 class cPoint{

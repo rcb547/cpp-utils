@@ -20,23 +20,23 @@ constexpr float _undefined_float_ = std::numeric_limits<float>::lowest();
 constexpr double _undefined_double_ = std::numeric_limits<double>::lowest();
 constexpr char _undefined_stdstring_[] = "Undefined std::string";
 
-const inline short _undefinedvalue(const short&){
+inline short _undefinedvalue(const short&){
 	return _undefined_short_;
 }
 
-const inline int _undefinedvalue(const int&){
+inline int _undefinedvalue(const int&){
 	return _undefined_int_;
 }
 
-const inline size_t _undefinedvalue(const size_t&){
+inline size_t _undefinedvalue(const size_t&){
 	return _undefined_size_t_;
 }
 
-const inline float _undefinedvalue(const float&) {
+inline float _undefinedvalue(const float&) {
 	return _undefined_float_;
 }
 
-const inline double _undefinedvalue(const double&){
+inline double _undefinedvalue(const double&){
 	return _undefined_double_;
 }
 
