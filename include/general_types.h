@@ -416,24 +416,10 @@ public:
 
 	cBoundingBox() {};
 
-	cBoundingBox(const T& halfsize) {
-		const T& r = halfsize;
-		xmin = -r; xmax = r;
-		ymin = -r; ymax = r;
-		zmin = -r; zmax = r;
-	};
-
 	cBoundingBox(const T& _xmin, const T& _xmax, const T& _ymin, const T& _ymax, const T& _zmin, const T& _zmax) {
 		xmin = _xmin; xmax = _xmax;
 		ymin = _ymin; ymax = _ymax;
 		zmin = _zmin; zmax = _zmax;
-	};
-
-	cBoundingBox(const T& halfsize) {
-		const T& r = halfsize;
-		xmin = -r; xmax = r;
-		ymin = -r; ymax = r;
-		zmin = -r; zmax = r;
 	};
 
 	template <typename O>
@@ -441,6 +427,13 @@ public:
 		xmin = (T)other.xmin; xmax = (T)other.xmax;
 		ymin = (T)other.ymin; ymax = (T)other.ymax;
 		zmin = (T)other.zmin; zmax = (T)other.zmax;
+	};
+
+	cBoundingBox(const T& halfsize) {
+		const T& r = halfsize;
+		xmin = -r; xmax = r;
+		ymin = -r; ymax = r;
+		zmin = -r; zmax = r;
 	};
 
 	T diagonal_size() const {
