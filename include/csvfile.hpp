@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _csvfile_H
-#define _csvfile_H
+#pragma once
 
 #include "general_utils.h"
 #include "file_utils.h"
@@ -142,6 +141,4 @@ class cCSVFile{
 			std::printf("\n");
 		}
 };
-
-#endif
 

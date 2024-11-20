@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _blocklanguage_H
-#define _blocklanguage_H
+#pragma once
 
 #include <iostream>
 #include <cstring>
@@ -572,4 +571,3 @@ public:
 	}
 };
 
-#endif

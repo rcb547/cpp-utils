@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _ndarray_H
-#define _ndarray_H
+#pragma once
 
 #include "stacktrace.h"
 #include "vector_utils.h"
@@ -245,6 +244,4 @@ public:
 	}
 
 };
-
-#endif
 

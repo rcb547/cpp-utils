@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _file_utils_H
-#define _file_utils_H
+#pragma once
 
 #include <cstdint>
 #include <cstring>
@@ -633,4 +632,3 @@ inline size_t countlines1(const std::string filename)
 	return n;
 }
 
-#endif

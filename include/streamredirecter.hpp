@@ -1,8 +1,7 @@
 //Copied from 
 //https://stackoverflow.com/questions/52357/what-is-the-point-of-clog?rq=1
 
-#ifndef _streamredirecter_H
-#define _streamredirecter_H
+#pragma once
 
 #include <fstream>
 #include <iostream>
@@ -23,4 +22,3 @@ private:
 	cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
 };
 
-#endif

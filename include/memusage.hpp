@@ -6,9 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _memusage_H
-#define _memusage_H
-
+#pragma once
 
 #if defined(_WIN32)
 #include "windows.h"
@@ -93,7 +91,4 @@ public:
 #endif
 
 };
-
-#endif
-
 

@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _eigen_utils_H
-#define _eigen_utils_H
+#pragma once
 
 #include <vector>
 #include <Eigen/Dense>
@@ -169,7 +168,4 @@ T mvgaussian_pdf(const Vector& m0, const Eigen::Matrix<T, -1, -1>& C, const Vect
 	double pdf = exp(a) / sqrt(pow(TWOPI, k) * detC);
 	return pdf;
 };
-
-#endif
-
 

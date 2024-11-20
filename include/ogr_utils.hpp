@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef ogr_utils_H
-#define ogr_utils_H
+#pragma once
 
 #include <vector>
 #include <variant>
@@ -367,9 +366,4 @@ public:
 	}
 
 };
-
-#endif
-
-
-
 

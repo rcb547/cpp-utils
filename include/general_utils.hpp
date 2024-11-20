@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _general_utils_H
-#define _general_utils_H
+#pragma once
 
 #include <algorithm>
 #include <cfloat>
@@ -1062,6 +1061,4 @@ bool bwrite(FILE* fp, const std::vector<T>& v) {
 	}
 	return true;
 }
-
-#endif
 

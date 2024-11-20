@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef matrixvector23_H
-#define matrixvector23_H
+#pragma once
 
 template<class T> class Vector2{
 
@@ -267,6 +266,4 @@ public:
 	}
 		
 };
-
-#endif
 

@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _conductivity_logs_H
-#define _conductivity_logs_H
+#pragma once
 
 #include <vector>
 
@@ -135,6 +134,4 @@ public:
 		return s;
 	};
 };
-
-#endif
 

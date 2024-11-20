@@ -6,8 +6,6 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _asciicolumnfile_H
-#define _asciicolumnfile_H
 #pragma once 
 
 #include <cstdlib>
@@ -711,4 +709,4 @@ public:
 		return groupby;
 	};
 };
-#endif
+

@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _gdiplus_utils_H
-#define _gdiplus_utils_H
+#pragma once
 
 #include <windows.h>
 #include <gdiplus.h>
@@ -167,9 +166,5 @@ public:
 
 		return bm;
 	}
-
-
-
 };
 
-#endif

@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _general_constants_H
-#define _general_constants_H
+#pragma once
 
 constexpr auto MUZERO = 12.56637061435917295384e-7; //Magnetic permeability of free space;
 constexpr auto EZERO = 8.854e-12;  //Electrical permitivity of free space
@@ -31,4 +30,3 @@ constexpr auto R2D    = 57.295779513082322865;// 180/PI Convert radians to degre
 constexpr auto NLOG10 = 2.3025850929940459; //Natrural log(10)
 constexpr auto GOLDENRATIO = 0.38196601125010510;//Golden Ratio
 
-#endif

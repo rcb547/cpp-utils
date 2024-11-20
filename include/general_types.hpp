@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _general_types_H
-#define _general_types_H
+#pragma once
 
 #include <cstring>
 #include <complex>
@@ -508,5 +507,3 @@ public:
 	int nk() const { return (int) data[0][0].size(); }
 };
 
-
-#endif

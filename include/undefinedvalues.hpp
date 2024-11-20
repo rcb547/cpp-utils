@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _undefinedvalues_H
-#define _undefinedvalues_H
+#pragma once
 
 #include <cstdint>
 #include <limits>
@@ -60,5 +59,3 @@ bool isdefined(const T& v) {
 	if (v == undefinedvalue<T>()) return false;
 	return true;
 }
-
-#endif

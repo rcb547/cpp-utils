@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _rollpitchyaw_H
-#define _rollpitchyaw_H
+#pragma once
 
 #include <Eigen/Dense>
 
@@ -109,4 +108,3 @@ Eigen::Matrix<T, 3, 3> yaw_matrix(const T& yaw)
 	return m;
 }
 
-#endif

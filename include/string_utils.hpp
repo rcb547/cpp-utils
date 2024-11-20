@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _string_utils_H
-#define _string_utils_H
+#pragma once
 
 #include <cfloat>
 #include <cctype>
@@ -283,4 +282,3 @@ template <class T> struct caseinsensetiveless {
 	}
 };
 
-#endif

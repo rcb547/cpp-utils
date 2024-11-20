@@ -6,8 +6,8 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _RANDOM_UTILS_H_
-#define _RANDOM_UTILS_H_
+#pragma once
+
 #include <vector>
 #include <chrono>
 #include <random>
@@ -60,4 +60,3 @@ double gaussian_pdf(const T& mean, const T& std, const T& x)
 	return p;
 };
 
-#endif

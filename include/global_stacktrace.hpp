@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _stacktrace_H
-#define _stacktrace_H
+#pragma once
 
 #include <vector>
 #include "logger.h"
@@ -84,6 +83,4 @@ public:
 	}
         
 };
-
-#endif
 

@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _vector_utils_H
-#define _vector_utils_H
+#pragma once
 
 #include <cmath>
 #include <numeric>
@@ -355,6 +354,4 @@ std::vector<T> log10space(const T& x1, const T& x2, const size_t n)
 	}
 	return v;
 };
-
-#endif
 

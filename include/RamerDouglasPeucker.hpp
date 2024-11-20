@@ -1,5 +1,4 @@
-#ifndef _RamerDouglasPeucker_H
-#define _RamerDouglasPeucker_H
+#pragma once
 
 //2D implementation of the Ramer-Douglas-Peucker algorithm
 //By Tim Sheerman-Chase, 2016
@@ -89,4 +88,4 @@ namespace RDP {
 		}
 	}
 };
-#endif
+

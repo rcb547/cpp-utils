@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _colormap_H
-#define _colormap_H
+#pragma once
 
 #include <sstream>
 #include <vector>
@@ -174,4 +173,3 @@ public:
 
 };
 
-#endif

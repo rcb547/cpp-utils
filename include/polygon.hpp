@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _polygon_H
-#define _polygon_H
+#pragma once
 
 #include <vector>
 #include "general_types.hpp"
@@ -64,4 +63,4 @@ class cPolygon {
 	  };
 
 };
-#endif
+

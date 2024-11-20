@@ -6,8 +6,7 @@ The GNU GPL 2.0 licence is available at: http://www.gnu.org/licenses/gpl-2.0.htm
 Author: Ross C. Brodie, Geoscience Australia.
 */
 
-#ifndef _cgal_utils_H
-#define _cgal_utils_H
+#pragma once
 
 #if defined _WIN32
 #pragma warning (push)
@@ -180,7 +179,3 @@ bool line_data_alpha_shape_polygon_ch(
 	}		
 	return true;
 }
-
-#endif
-
-
