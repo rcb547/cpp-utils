@@ -27,7 +27,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <filesystem>
 
 #include "logger.h"
-#include "stacktrace.h"
 #include "general_constants.h"
 #include "general_types.h"
 #include "string_utils.h"
@@ -220,7 +219,7 @@ inline double correlation_coefficient(std::vector<double>x, std::vector<double>y
 		sumyy += y[i] * y[i];
 		sumxy += x[i] * y[i];
 	}
-	return (N * sumxy - sumx * sumy) /std::sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
+	return (N * sumxy - sumx * sumy) / std::sqrt((N * sumxx - sumx * sumx) * (N * sumyy - sumy * sumy));
 
 }
 
@@ -393,7 +392,7 @@ inline bool interplineline(const std::vector<double>& xin, const std::vector<dou
 		x2 = xin[n - 1];
 		y2 = x2 * gradient + intercept;
 
-		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
+		d = std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
 		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
@@ -412,7 +411,7 @@ inline bool interplineline(const std::vector<double>& xin, const std::vector<dou
 		y2 = yin[n - 1];
 		x2 = y2 * gradient + intercept;
 
-		d =std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
+		d = std::sqrt(std::pow(2.0, (x2 - x1)) + std::pow(2.0, (y2 - y1)));
 
 		size_t nl = (size_t)std::floor(0.5 + d / dl);
 		xout.resize(nl);
@@ -589,7 +588,7 @@ inline std::chrono::high_resolution_clock::time_point gettime_hr() {
 	return std::chrono::high_resolution_clock::now();
 }
 
-inline double time_diff_hr(const std::chrono::high_resolution_clock::time_point& t1, const std::chrono::high_resolution_clock::time_point& t2){
+inline double time_diff_hr(const std::chrono::high_resolution_clock::time_point& t1, const std::chrono::high_resolution_clock::time_point& t2) {
 	return (double)1.0e-6 * (double)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 }
 
@@ -893,26 +892,26 @@ inline int LevenshteinDistance(char* s, int len_s, char* t, int len_t)
 template <typename T>
 int roundnearest(const T& x, int nearest)
 {
-	return nearest * (int) std::round(x / nearest);
+	return nearest * (int)std::round(x / nearest);
 }
 
 template <typename T>
 T roundnearest(const T& x, const double& nearest)
 {
-	return (T)(nearest * std::round(x / nearest) );
+	return (T)(nearest * std::round(x / nearest));
 }
 
 template <typename T>
 T roundupnearest(const T& x, const double& nearest)
 {
-	return (T)(nearest * std::ceil(x / nearest) );
+	return (T)(nearest * std::ceil(x / nearest));
 }
 
 template <typename T>
 T rounddownnearest(const T& x, const double& nearest)
 {
 	T f = std::floor(x / nearest);
-	T v = nearest*f;
+	T v = nearest * f;
 	return v;
 }
 
@@ -931,13 +930,13 @@ T distance(const T& x1, const T& y1, const T& x2, const T& y2)
 template <typename T>
 T distance(const T& x, const T& y)
 {
-	return std::sqrt(x*x + y*y);
+	return std::sqrt(x * x + y * y);
 }
 
 inline bool isbigendian()
-{	
+{
 	const int i = 1;
-	return (bool)(!*((char *)&i));
+	return (bool)(!*((char*)&i));
 }
 
 template <typename T>
@@ -952,7 +951,7 @@ T swap_endian(const T u)
 		unsigned char u8[sizeof(T)];
 	} source, dest;
 	source.u = u;
-	for (size_t k = 0; k < sizeof(T); k++){
+	for (size_t k = 0; k < sizeof(T); k++) {
 		dest.u8[k] = source.u8[sizeof(T) - k - 1];
 	}
 	return dest.u;
@@ -961,7 +960,7 @@ T swap_endian(const T u)
 template <typename T>
 void swap_endian(T* array, size_t num)
 {
-	for (size_t i = 0; i < num; i++){
+	for (size_t i = 0; i < num; i++) {
 		array[i] = swap_endian(array[i]);
 	}
 }
@@ -969,13 +968,13 @@ void swap_endian(T* array, size_t num)
 template <typename T>
 void swap_endian(std::vector<T>& array)
 {
-	for (size_t i = 0; i < array.size(); i++){
+	for (size_t i = 0; i < array.size(); i++) {
 		array[i] = swap_endian(array[i]);
 	}
 }
 
 template<typename T>
-inline const T sign(const T &a, const T &b) {return b >= 0 ? (a >= 0 ? a : -a) : (a >= 0 ? -a : a);}
+inline const T sign(const T& a, const T& b) { return b >= 0 ? (a >= 0 ? a : -a) : (a >= 0 ? -a : a); }
 
 template<typename T>
 double covariance(const std::vector<T>& x, const std::vector<T>& y)
@@ -984,60 +983,60 @@ double covariance(const std::vector<T>& x, const std::vector<T>& y)
 	cStats<T> sx(x);
 	cStats<T> sy(y);
 	std::vector<T> v(n);
-	for (size_t i = 0; i < x.size(); i++){
+	for (size_t i = 0; i < x.size(); i++) {
 		v[i] = (x[i] - sx.mean) * (y[i] - sy.mean);
 	}
-	cStats<T> sv(v);	
+	cStats<T> sv(v);
 	return sv.mean;
 }
 
 template<typename T>
 double correlation(const std::vector<T>& x, const std::vector<T>& y)
 {
-	size_t n = x.size();	
+	size_t n = x.size();
 	double sx = 0.0;
 	double sy = 0.0;
 	double sxx = 0.0;
 	double syy = 0.0;
 	double sxy = 0.0;
-	for (size_t i = 0; i < x.size(); i++){
-		sx  += x[i];
-		sy  += y[i];
+	for (size_t i = 0; i < x.size(); i++) {
+		sx += x[i];
+		sy += y[i];
 		sxx += x[i] * x[i];
 		syy += y[i] * y[i];
 		sxy += x[i] * y[i];
-	}	
-	double r = (n*sxy - sx*sy) /std::sqrt(n*sxx - sx*sx) /std::sqrt(n*syy - sy*sy);
+	}
+	double r = (n * sxy - sx * sy) / std::sqrt(n * sxx - sx * sx) / std::sqrt(n * syy - sy * sy);
 	return r;
 }
 
 constexpr auto SORT_UP = 0;
 constexpr auto SORT_DOWN = 1;
 template<typename T> void quicksortindex(T* a, int* index, const int& leftarg, const int& rightarg, int sortupordown)
-{	
+{
 	if (leftarg < rightarg) {
 		T pivotvalue = a[leftarg];
-		int left  = leftarg - 1;
+		int left = leftarg - 1;
 		int right = rightarg + 1;
-		for(;;) {
-			if(sortupordown==SORT_UP){
+		for (;;) {
+			if (sortupordown == SORT_UP) {
 				while (a[--right] > pivotvalue);
 				while (a[++left] < pivotvalue);
 			}
-			else{
+			else {
 				while (a[--right] < pivotvalue);
 				while (a[++left] > pivotvalue);
 			}
-			if (left >= right) break;			
+			if (left >= right) break;
 
-			T temp   = a[right];
+			T temp = a[right];
 			a[right] = a[left];
-			a[left]  = temp;
+			a[left] = temp;
 
-			if(index){
-				int tempind  = index[right];
+			if (index) {
+				int tempind = index[right];
 				index[right] = index[left];
-				index[left]  = tempind;
+				index[left] = tempind;
 			}
 		}
 		int pivot = right;
@@ -1047,19 +1046,19 @@ template<typename T> void quicksortindex(T* a, int* index, const int& leftarg, c
 }
 
 template<typename T>
-bool bwrite(FILE* fp, const T& v){
+bool bwrite(FILE* fp, const T& v) {
 	size_t status = fwrite(&v, sizeof(T), 1, fp);
-	if (status != 1){
-		glog.errormsg(_SRC_,"Error writing to binary file\n");		
+	if (status != 1) {
+		glog.errormsg(_SRC_, "Error writing to binary file\n");
 	}
 	return true;
 }
 
 template<typename T>
-bool bwrite(FILE* fp, const std::vector<T>& v){
+bool bwrite(FILE* fp, const std::vector<T>& v) {
 	size_t status = fwrite(&(v[0]), sizeof(T), v.size(), fp);
-	if (status != v.size()){
-		glog.errormsg(_SRC_,"Error in writing to binary file\n");
+	if (status != v.size()) {
+		glog.errormsg(_SRC_, "Error in writing to binary file\n");
 	}
 	return true;
 }

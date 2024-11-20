@@ -446,7 +446,7 @@ public:
 
 	int fieldindexbyname(const std::string& fieldname) const
 	{
-		for (int fi = 0; fi < (int) fields.size(); fi++) {
+		for (int fi = 0; fi < (int)fields.size(); fi++) {
 			if (strcasecmp(fields[fi].name, fieldname) == 0) return (int)fi;
 		}
 		return -1;
@@ -661,8 +661,8 @@ public:
 
 	size_t scan_for_line_index(const int& field_index, std::vector<unsigned int>& line_index_start, std::vector<unsigned int>& line_index_count, std::vector<unsigned int>& line_number)
 	{
-		_GSTITEM_
-			size_t fi = field_index;
+
+		size_t fi = field_index;
 		const size_t& i1 = fields[fi].startchar;
 		const size_t& width = fields[fi].width;
 
@@ -689,8 +689,7 @@ public:
 
 	std::vector<bool>  scan_for_groupby_fields(const std::vector<unsigned int>& line_index_count)
 	{
-		_GSTITEM_
-			std::vector<bool> groupby(fields.size(), true);
+		std::vector<bool> groupby(fields.size(), true);
 		size_t nltocheck = std::min((size_t)4, line_index_count.size());
 		rewind();
 		for (size_t li = 0; li < nltocheck; li++) {

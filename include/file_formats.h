@@ -13,7 +13,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <fstream>
 
-#include "stacktrace.h"
 #include "undefinedvalues.h"
 #include "string_utils.h"
 #include "general_utils.h"
@@ -155,7 +154,7 @@ public:
 
 	int endchar() const
 	{
-		return (int)(startchar + (nbands * width) -1);
+		return (int)(startchar + (nbands * width) - 1);
 	};
 
 	bool add_att(const std::string& key, const std::string& value) {
@@ -410,7 +409,7 @@ public:
 
 	std::vector<cAsciiColumnField> fields;
 
-	cOutputFileInfo() {	};
+	cOutputFileInfo() {};
 
 	void lockfields() {
 		allowmorefields = false;
@@ -570,8 +569,8 @@ public:
 	cRange<int> column_range(const int& fieldindex) const {
 		cRange<int> r(-1, -1);
 		if (fieldindex >= 0 && fieldindex < fields.size()) {
-			r.from = (int) fields[fieldindex].startcol();
-			r.to = (int) fields[fieldindex].endcol();
+			r.from = (int)fields[fieldindex].startcol();
+			r.to = (int)fields[fieldindex].endcol();
 		}
 		return r;
 	};
