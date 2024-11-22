@@ -8,8 +8,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include "general_utils.h"
-#include "file_utils.h"
+#include "general_utils.hpp"
+#include "file_utils.hpp"
 
 class cCSVFile{
 

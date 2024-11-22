@@ -12,7 +12,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <variant>
 #include "gdal.h"
 #include "ogrsf_frmts.h"
-#include "stacktrace.h"
 
 class cGeoDataset;//forward declaration
 
@@ -326,13 +325,11 @@ public:
 	}
 
 	static cGeoDataset* open_existing(const std::string shapepath) {
-		_GSTITEM_		
 		cGeoDataset* poDS = (cGeoDataset*)GDALDataset::Open(shapepath.c_str(), GDAL_OF_VECTOR);		
 		return (cGeoDataset*)poDS;
 	}
 
 	static cGeoDataset create_shapefile(const std::string shapepath) {
-		_GSTITEM_
 		GDALDriver*  poDriver = get_driver("ESRI Shapefile");				
 		GDALDataset* poDS = poDriver->Create(shapepath.c_str(), 0, 0, 0, GDT_Unknown, NULL);
 		if (poDS == NULL){
