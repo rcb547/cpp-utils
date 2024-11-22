@@ -18,6 +18,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <iterator>
 #include <algorithm>
 #include "undefinedvalues.hpp"
+#include "string_print.hpp"
 
 template<typename T>
 void str2num(const std::string str, T& v)
@@ -32,28 +33,6 @@ void str2num(const char* str, T& v)
 	std::stringstream ss(str);
 	ss >> v;
 }
-
-inline std::string strprint_va(const char* fmt, va_list vargs)
-{
-	va_list vargscopy;
-	va_copy(vargscopy, vargs);
-	const int len = 1 + std::vsnprintf(nullptr, 0, fmt, vargscopy);
-	va_end(vargscopy);
-
-	std::string s(len, '\0');
-	std::vsnprintf(&(s.front()), len, fmt, vargs);
-	return std::string(s.c_str());
-}
-
-inline std::string strprint(const char* fmt, ...)
-{
-	va_list vargs;
-	va_start(vargs, fmt);
-	std::string s = strprint_va(fmt, vargs);
-	va_end(vargs);
-	return s;
-}
-
 
 inline bool instring(const char* str, const char& c)
 {

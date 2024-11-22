@@ -90,7 +90,7 @@ public:
 
 	static Status saveimage(Bitmap* bm, const std::string& filename)
 	{
-		makedirectorydeep(extractfiledirectory(filename));
+		makedirectory_for(filename);
 		CLSID id = getencoderid(filename);
 		std::wstring wpath(ws(filename.c_str()));
 		return bm->Save(wpath.c_str(), &id, NULL);

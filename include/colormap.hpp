@@ -57,7 +57,7 @@ public:
 	}
 
 	bool load(const std::string s){		
-		if (exists(s)){
+		if (fs::exists(s)){
 			return loadErMapperLUT(s);			
 		}
 		return loadbuiltin(s);		
@@ -65,7 +65,7 @@ public:
 
 	bool loadErMapperLUT(const std::string lutfile){
 		
-		if (exists(lutfile) == false)return false;
+		if (fs::exists(lutfile) == false)return false;
 
 		cBlock B(lutfile);
 		size_t n = B.getsizetvalue("NrEntries");		

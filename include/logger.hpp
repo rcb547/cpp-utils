@@ -9,29 +9,26 @@ Author: Ross C. Brodie, Geoscience Australia.
 #pragma once
 
 #include <iostream>
-#include <cstring>
+#include <ctime>
 #include <string>
 #include <fstream>
-#include <cstdarg>
 #include <cstdio>
 #include <vector>
-#include <stdexcept>
+#include <filesystem>
+
+#include "string_print.hpp"
+
+#if defined ENABLE_MPI
+	#include <mpi.h>
+#endif
 
 #if defined _OPENMP
 	#include <omp.h>
 #endif
 
 #if defined MATLAB_MEX_FILE
-#include "mex.h"
+	#include "mex.h"
 #endif
-
-#include "string_utils.hpp"
-
-extern bool makedirectorydeep(std::string dirname);
-extern std::string extractfiledirectory(const std::string& pathname);
-extern std::string extractfilename(const std::string& filename);
-extern const std::string timestamp();
-extern int mpi_openmp_rank();
 
 class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager
@@ -74,7 +71,8 @@ class cLogger
 			}
 			const int i = threadindex();
 			return ofs[i];
-		}
+		};
+
 
 public:
 
@@ -90,7 +88,10 @@ public:
 		if (ofs.size() < i + 1) {
 			ofs.resize(i + 1);
 		}
-		makedirectorydeep(extractfiledirectory(logfilename));
+
+		std::filesystem::path p(logfilename); p.make_preferred();
+		std::filesystem::create_directories(p.parent_path());
+
 		ofs[i].open(logfilename, std::ios_base::out);
 
 		if (ofs[i].fail()) {
@@ -208,8 +209,39 @@ public:
 
 	static std::string src_code_location(const char* file, const char* function, const int& linenumber)
 	{
-		std::string s = strprint("File: %s\t Function:%s\t Line:%d", extractfilename(file).c_str(), function, linenumber);
+		const std::filesystem::path p(file);
+		std::string s = strprint("File: %s\t Function:%s\t Line:%d", p.filename().string().c_str(), function, linenumber);
 		return s;
+	}
+
+	inline static const std::string timestamp()
+	{
+		std::time_t result = std::time(nullptr);
+		const char* t = std::asctime(std::localtime(&result));
+		std::string str;
+		if (t) {
+			str = std::string(t);
+			if (str[str.length() - 1] == '\n') str.erase(str.length() - 1, 1);
+		}
+		return str;
+	};
+
+	inline static int mpi_openmp_rank() {
+		int rank = 0;
+		#if defined _OPENMP
+			rank = omp_get_thread_num();
+			if (rank > 0) return rank;
+		#endif
+
+		#ifdef ENABLE_MPI
+			int mpi_initialised;
+			int ierr = MPI_Initialized(&mpi_initialised);
+			if (mpi_initialised) {
+				MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+				return rank;
+			}
+		#endif
+		return rank;
 	}
 
 };

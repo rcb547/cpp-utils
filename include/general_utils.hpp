@@ -25,6 +25,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <filesystem>
 
+#include "string_print.hpp"
 #include "logger.hpp"
 #include "general_constants.hpp"
 #include "general_types.hpp"
@@ -298,21 +299,22 @@ inline bool bestfitlineendpoints(const std::vector<double>& x, const std::vector
 
 inline const std::string timestamp()
 {
-	time_t ltime;
-	time(&ltime);
-	std::string str = std::string(ctime(&ltime));
-	str.erase(str.length() - 1, 1);
+	std::time_t result = std::time(nullptr);
+	const char* t = std::asctime(std::localtime(&result));
+	std::string str;
+	if (t) {
+		str = std::string(t);
+		if (str[str.length() - 1] == '\n') str.erase(str.length() - 1, 1);
+	}
 	return str;
-}
+};
 
-inline const std::string timestring(const std::string format, std::time_t t = 0) {
-
+inline const std::string timestring_fmt(const std::string format, std::time_t t = 0) {
 	if (t == 0) t = std::time(NULL);
 	//"%Y%m%d";
 	char str[100];
 	std::strftime(str, sizeof(str), format.c_str(), std::localtime(&t));
 	return std::string(str);
-
 }
 
 inline int isinsidepolygon(int npol, double* xp, double* yp, double x, double y)
