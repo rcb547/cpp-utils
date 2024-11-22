@@ -94,20 +94,20 @@ inline std::string getcurrentdirectory()
 	return fs::current_path().string();
 };
 
-class sFilePathParts {
+class FilePathParts {
 
 public:
 	std::string directory;
-	std::string prefix;
+	std::string stem;
 	std::string extension;
 	
-	sFilePathParts() = delete;
+	FilePathParts() = delete;
 
-	sFilePathParts(const std::string& path) {
+	FilePathParts(const std::string& path) {
 		fs::path p = path;
 		p.make_preferred();
 		directory = (p.parent_path() += fs::path::preferred_separator).string();
-		prefix = p.stem().string();
+		stem = p.stem().string();
 		extension = p.extension().string();
 	};
 };
@@ -154,7 +154,7 @@ inline std::string extractfilename(const std::string& pathname)
 	return p.filename().string();	
 }
 
-inline std::string extractfilename_noextension(const std::string& pathname)
+inline std::string extractfilestem(const std::string& pathname)
 {
 	fs::path p = fs::path(pathname).make_preferred();
 	return p.stem().string();
@@ -168,20 +168,20 @@ inline std::string extractfileextension(const std::string& pathname)
 
 inline std::string insert_before_filename(const std::string& pathname, const std::string& insertion)
 {
-	sFilePathParts fpp(pathname);
-	return fpp.directory + insertion + fpp.prefix + fpp.extension;
+	FilePathParts fpp(pathname);
+	return fpp.directory + insertion + fpp.stem + fpp.extension;
 }
 
 inline std::string insert_after_filename(const std::string& pathname, const std::string& insertion)
 {
-	sFilePathParts fpp(pathname);
-	std::string s = fpp.directory + fpp.prefix + insertion + fpp.extension;
+	FilePathParts fpp(pathname);
+	std::string s = fpp.directory + fpp.stem + insertion + fpp.extension;
 	return s;
 }
 
 inline std::string insert_after_extension(const std::string& pathname, const std::string& insertion)
 {
-	sFilePathParts fpp(pathname);
-	return fpp.directory + fpp.prefix + fpp.extension + insertion;
+	FilePathParts fpp(pathname);
+	return fpp.directory + fpp.stem + fpp.extension + insertion;
 }
 

@@ -329,7 +329,7 @@ inline std::vector<std::string> cDirectoryAccess::getfilelist(const std::string&
 inline std::vector<std::string> cDirectoryAccess::getfilelist_single(const std::string& searchpattern)
 {
 	std::vector<std::string> flist;
-	sFilePathParts fpp(searchpattern);
+	FilePathParts fpp(searchpattern);
 
 	struct _finddata_t file;
 
