@@ -37,12 +37,12 @@ public:
 
 		if(b.getvalue("LowClip",lowclip) == false){
 			std::string msg("Stretch LowClip not set\n");
-			throw(std::runtime_error(_SRC_ + msg));
+			glog.errormsg(_SRC_, msg);
 		}
 
 		if (b.getvalue("HighClip", highclip) == false){
 			std::string msg("Stretch HighClip not set\n");
-			throw(std::runtime_error(_SRC_ + msg));
+			glog.errormsg(_SRC_, msg);
 		}				
 
 		std::string s = b.getstringvalue("Type");
@@ -55,7 +55,7 @@ public:
 		}
 		else{
 			std::string msg("ColourStretch type not set\n");
-			throw(std::runtime_error(_SRC_ + msg));
+			glog.errormsg(_SRC_, msg);
 		}		
 	}
 	

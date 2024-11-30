@@ -20,21 +20,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "undefinedvalues.hpp"
 #include "string_print.hpp"
 
-template<typename T>
-void str2num(const std::string str, T& v)
-{
-	std::stringstream ss(str);
-	ss >> v;
-}
-
-template<typename T>
-void str2num(const char* str, T& v)
-{
-	std::stringstream ss(str);
-	ss >> v;
-}
-
-inline bool instring(const char* str, const char& c)
+inline bool string_contains(const char* str, const char& c)
 {
 	const char* p = str;
 	while (*p != 0) {
@@ -42,11 +28,18 @@ inline bool instring(const char* str, const char& c)
 		p++;
 	}
 	return false;
-}
+};
 
-inline bool instring(const std::string& str, const char& c)
+inline bool string_contains(const std::string& str, const char& c)
 {
-	return instring(str.c_str(), c);
+	return string_contains(str.c_str(), c);
+};
+
+template<typename T>
+void str2num(const char* str, T& v)
+{
+	std::stringstream ss(str);
+	ss >> v;
 }
 
 inline std::string stringvalue(const double value, const char* fmt)
@@ -92,6 +85,39 @@ inline int strncasecmp(const std::string& A, const std::string& B, const size_t 
 #endif
 }
 
+inline std::vector<std::string> uniquify(std::vector<std::string>& v) {
+	std::sort(v.begin(), v.end());
+	v.erase(std::unique(v.begin(), v.end()), v.end());
+	return v;
+};
+
+inline void ltrim_inplace(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c)
+		{
+			return !(c == ' ' || c == '\t' || c == '\r' || c == '\n');
+		}
+	));
+};
+
+inline void rtrim_inplace(std::string& s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](int c)
+		{
+			return !(c == ' ' || c == '\t' || c == '\r' || c == '\n');
+		}
+	).base(), s.end());
+};
+
+inline void trim_inplace(std::string& s) {
+	ltrim_inplace(s);
+	rtrim_inplace(s);
+};
+
+inline std::string trim_ex(const std::string& s) {
+	std::string t = s;
+	trim_inplace(t);
+	return t;
+};
+
 inline std::vector<std::string>& split(const std::string& str, const char delim, std::vector<std::string>& elems) {
 	std::stringstream ss(str);
 	std::string item;
@@ -99,59 +125,46 @@ inline std::vector<std::string>& split(const std::string& str, const char delim,
 		elems.push_back(item);
 	}
 	return elems;
-}
+};
 
 inline std::vector<std::string> split(const std::string& str, const char delim) {
 	std::vector<std::string> elems;
 	split(str, delim, elems);
 	return elems;
-}
-
-inline std::string trim(const std::string& s)
-{
-	if (s.length() == 0) return s;
-	size_t index1 = s.find_first_not_of(" \t\r\n");
-	size_t index2 = s.find_last_not_of(" \t\r\n");
-	if (index1 == std::string::npos || index2 == std::string::npos) {
-		return std::string("");
-	}
-	else {
-		return s.substr(index1, index2 - index1 + 1);
-	}
-}
+};
 
 inline std::vector<std::string> trimsplit(const std::string& str, const char delim) {
 	std::vector<std::string> elems;
 	split(str, delim, elems);
 	for (size_t i = 0; i < elems.size(); i++) {
-		elems[i] = trim(elems[i]);
+		trim_inplace(elems[i]);
 	}
 	return elems;
 }
 
 inline std::vector<std::string> tokenise(const std::string& str, const char delim) {
-	std::string s = trim(str);
+	std::string s = trim_ex(str);
 	std::vector<std::string> tokens;
 	size_t p = s.find_first_of(delim);
 	while (p < s.size()) {
-		tokens.push_back(trim(s.substr(0, p)));
+		tokens.push_back(trim_ex(s.substr(0, p)));
 		s = s.substr(p + 1, s.length());
 		p = s.find_first_of(delim);
 	}
-	tokens.push_back(trim(s));
+	tokens.push_back(trim_ex(s));
 	return tokens;
 }
 
 inline std::vector<std::string> tokenise(const std::string& str, const char* delims) {
-	std::string s = trim(str);
+	std::string s = trim_ex(str);
 	std::vector<std::string> tokens;
 	size_t p = s.find_first_of(delims);
 	while (p < s.size()) {
-		tokens.push_back(trim(s.substr(0, p)));
+		tokens.push_back(trim_ex(s.substr(0, p)));
 		s = s.substr(p + 1, s.length());
 		p = s.find_first_of(delims);
 	}
-	tokens.push_back(trim(s));
+	tokens.push_back(trim_ex(s));
 	return tokens;
 }
 

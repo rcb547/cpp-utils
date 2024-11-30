@@ -12,7 +12,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <mpi.h>
 
-#include "logger.hpp"
+//#include "logger.hpp"
 
 class cMpiComm;
 class cMpiEnv;
@@ -42,15 +42,15 @@ public:
 		return std::string(pname);
 	};
 
-	void start(int argc, char** argv){
-		MPI_Init(&argc, &argv);		
-		glog.logmsg(0,"MPI Started Processes=%d\tRank=%d\tProcessor name = %s\n", world_size(), world_rank(), processor_name().c_str());
+	static void start(int argc, char** argv){
+		int ierr = MPI_Init(&argc, &argv);		
+		chkerr(ierr);
 		return;
 	};
 
-	void stop(){
-		glog.logmsg(0,"Finalizing MPI\n");
-		MPI_Finalize();
+	static void stop(){
+		int ierr = MPI_Finalize();
+		chkerr(ierr);
 	}
 
 	static std::string errorstring(int ierr){
@@ -70,9 +70,11 @@ public:
 	}
 
 	static bool chkerr(int ierr){
-		if (ierr == MPI_SUCCESS)return true;
+		if (ierr == MPI_SUCCESS) {
+			return true;
+		}
 		else{
-			printf("%s\n", errorstring(ierr).c_str());
+			std::cout << errorstring(ierr)  << std::endl;
 			return false;
 		}
 	}

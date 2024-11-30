@@ -57,45 +57,42 @@ public:
 
 	void loadfromfile(const std::string& filename)
 	{
-		Filename = filename;
-		FILE* fp = fileopen(filename, "r");
-		if (fp == NULL){
-			glog.errormsg(_SRC_,"Could not open file: %s\n", filename.c_str());		
+		Filename = fs::path(filename).make_preferred().string();
+		if (fs::exists(Filename) == false) {
+			glog.errormsg(_SRC_, "Could not open file: %s\n", Filename.c_str());
 		}
-		else {
-			loadfromfilepointer(fp, true);
-			fclose(fp);
-		}
+		std::ifstream ifs = fileopen(Filename);
+		loadfrom_ifstream(ifs, true);	
 	}
 
-	void loadfromfilepointer(FILE* fp, bool rootlevel)
+	void loadfrom_ifstream(std::ifstream& ifs, bool rootlevel)
 	{
 		std::string linestr;
-		while (filegetline(fp, linestr)){
-			std::string s = trim(linestr);
+		while (filegetline_ifs(ifs, linestr)) {
+			std::string s = trim_ex(linestr);
 			if (s.length() == 0)continue;
 
 			std::vector<std::string> vs = tokenize(s);
-			if (vs.size() >= 2){
-				if (strcasecmp(vs[1], "End") == 0){
+			if (vs.size() >= 2) {
+				if (strcasecmp(vs[1], "End") == 0) {
 					break;
 				}
-				else if (strcasecmp(vs[1], "Begin") == 0){
-					if (rootlevel == true){
+				else if (strcasecmp(vs[1], "Begin") == 0) {
+					if (rootlevel == true) {
 						Name = vs[0];
 						rootlevel = false;
 					}
-					else{
+					else {
 						cBlock newblock;
 						newblock.Name = vs[0];
-						newblock.loadfromfilepointer(fp, false);
+						newblock.loadfrom_ifstream(ifs, false);
 						Blocks.push_back(newblock);
 					}
 					continue;
 				}
 				Entries.push_back(s);
 			}
-			else{
+			else {
 				Entries.push_back(s);
 			}
 		}
@@ -127,15 +124,15 @@ public:
 		std::string s = get_as_string(n);
 		std::cout << s.c_str();
 	}
-
-	void write(FILE* fp, size_t n = 0) const
+	
+	void write(std::ofstream& ofs, size_t n = 0) const
 	{
-		if (fp == (FILE*)NULL) return;
+		if (ofs.is_open() == false) return;
 		std::string s = get_as_string(n);
-		fprintf(fp, "%s", s.c_str());		
+		ofs << s;
 		return;
 	}
-	
+
 	void printidentifiers() const
 	{
 		for (size_t i = 0; i < Entries.size(); i++){
@@ -153,7 +150,7 @@ public:
 		std::string s = strip_comments(entry);
 		size_t index = s.find("=");
 		std::string id = s.substr(0, index - 1);
-		return trim(id);
+		return trim_ex(id);
 	}
 	
 	std::string key(const size_t eindex) const
@@ -168,7 +165,7 @@ public:
 		size_t len = s.size() - index - 1;
 		if (len == 0) return std::string("");
 		std::string v = s.substr(index + 1, len);
-		return trim(v);
+		return trim_ex(v);
 	}
 
 	std::string value(const size_t eindex) const
@@ -396,7 +393,7 @@ public:
 
 		fields = fieldparsestring(s.c_str(), delimiters.c_str());
 		for (size_t i = 0; i < fields.size(); i++){
-			fields[i] = trim(fields[i]);
+			trim_inplace(fields[i]);
 		}
 		return fields;
 	}
@@ -564,8 +561,8 @@ public:
 		for (size_t i = 0; i < s.size(); i++){
 			v[i] = split(s[i], '=');
 			if (v[i].size() == 1)v[i].push_back("");
-			v[i][0] = trim(v[i][0]);
-			v[i][1] = trim(v[i][1]);
+			trim_inplace(v[i][0]);
+			trim_inplace(v[i][1]);
 		}
 		return v;
 	}

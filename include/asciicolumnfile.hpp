@@ -64,11 +64,11 @@ private:
 			}
 			else {
 				if (n != rl) {
-					std::string msg = _SRC_;
+					std::string msg;
 					msg += strprint("\n%s is not a fixed record length\n", FileName.c_str());
 					msg += strprint("\trecord 1 has length %zu\n", rl);
 					msg += strprint("\trecord %zu has length %zu\n", k + 1, n);
-					throw(std::runtime_error(msg));
+					glog.errormsg(_SRC_,msg);
 				}
 				k++;
 			}
@@ -206,10 +206,10 @@ public:
 
 			std::vector<cFmt> fmts1 = guess_column_formats(s);
 			if (fmts0 != fmts1) {
-				std::string msg = _SRC_;
+				std::string msg;
 				msg += strprint("\nIn file %s\n", FileName.c_str());
 				msg += strprint("\tField formats on record %d do not match those on record 1\n", k + 1);
-				throw(std::runtime_error(msg));
+				glog.errormsg(_SRC_,msg);
 			}
 			k++;
 		}
@@ -218,15 +218,15 @@ public:
 	}
 
 	static std::vector<std::string> tokenise(const std::string& str, const char delim) {
-		std::string s = trim(str);
+		std::string s = trim_ex(str);
 		std::vector<std::string> tokens;
 		size_t p = s.find_first_of(delim);
 		while (p < s.size()) {
-			tokens.push_back(trim(s.substr(0, p)));
+			tokens.push_back(trim_ex(s.substr(0, p)));
 			s = s.substr(p + 1, s.length());
 			p = s.find_first_of(delim);
 		}
-		tokens.push_back(trim(s));
+		tokens.push_back(trim_ex(s));
 		return tokens;
 	}
 
@@ -297,9 +297,8 @@ public:
 			c.decimals = fmt.decimals;
 			for (size_t b = 1; b < c.nbands - 1; b++) {
 				if (fmt != fmts[k + b]) {
-					std::string msg = _SRC_;
-					msg += strprint("\nInconsistend formats in multiband field %s\n", c.name.c_str());
-					throw(std::runtime_error(msg));
+					std::string msg = strprint("\nInconsistend formats in multiband field %s\n", c.name.c_str());
+					glog.errormsg(_SRC_, msg);
 				}
 			}
 			k += c.nbands;
@@ -470,7 +469,7 @@ public:
 			cAsciiColumnField& f = fields[i];
 			std::string nullstr = f.nullstring();
 			for (size_t j = 0; j < f.nbands; j++) {
-				const std::string s = trim(CurrentRecord.substr(f.startchar + j * f.width, f.width));
+				const std::string s = trim_ex(CurrentRecord.substr(f.startchar + j * f.width, f.width));
 				if (s == nullstr) {
 					cs.push_back(std::string());
 				}
@@ -502,9 +501,8 @@ public:
 	inline void getcolumn(const size_t& columnnumber, T& v) const
 	{
 		if (columnnumber >= colstrings.size()) {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tError trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n%s\n", columnnumber + 1, colstrings.size(), CurrentRecord.c_str());
-			throw(std::runtime_error(msg));
+			std::string msg = strprint("\n\tError trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n%s\n", columnnumber + 1, colstrings.size(), CurrentRecord.c_str());
+			glog.errormsg(_SRC_, msg);
 		}
 		else {
 			if (colstrings[columnnumber].size() == 0) {

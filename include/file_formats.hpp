@@ -91,8 +91,8 @@ public:
 		return false;
 	};
 
-	bool valid_fmttype() {
-		return instring(validfmttypes, fmtchar);
+	bool valid_fmttype() const {
+		return string_contains(validfmttypes, fmtchar);
 	};
 
 };
@@ -471,12 +471,11 @@ public:
 	}
 
 	void write_simple_header(const std::string pathname) {
-		FILE* fp = fileopen(pathname.c_str(), "w");
+		std::ofstream ofs = ofstream_ex(pathname);
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].simple_header_record();
-			fprintf(fp, "%s", s.c_str());
+			ofs << strprint("%s", s.c_str());
 		}
-		fclose(fp);
 	};
 
 	void write_csv_header(const std::string pathname) {
@@ -507,27 +506,25 @@ public:
 	};
 
 	void write_PAi3_header(const std::string pathname) {
-		FILE* fp = fileopen(pathname.c_str(), "w");
-		fprintf(fp, "[IMPORT ARCHIVE]\n");
-		fprintf(fp, "FILEHEADER\t1\n");
-		fprintf(fp, "RECORDFORM\tFIXED\n");
-		fprintf(fp, "SKIPSTRING\t\"/\"\n");
+		std::ofstream ofs = ofstream_ex(pathname);
+		ofs << strprint("[IMPORT ARCHIVE]\n");
+		ofs << strprint("FILEHEADER\t1\n");
+		ofs << strprint("RECORDFORM\tFIXED\n");
+		ofs << strprint("SKIPSTRING\t\"/\"\n");
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].i3_header_record();
-			fprintf(fp, "%s", s.c_str());
+			ofs << strprint("%s", s.c_str());
 		}
-		fclose(fp);
 	};
 
 	void write_aseggdf_header(const std::string pathname) {
-		FILE* fp = fileopen(pathname.c_str(), "w");
-		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
+		std::ofstream ofs = ofstream_ex(pathname);
+		ofs << strprint("DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].aseggdf_header_record();
-			fprintf(fp, "%s", s.c_str());
+			ofs << strprint("%s", s.c_str());
 		}
-		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
-		fclose(fp);
+		ofs << strprint("DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
 	};
 
 };
@@ -601,7 +598,7 @@ public:
 	static bool read_static(const std::string& hdrfile, std::vector<cAsciiColumnField>& fvec) {
 		fvec.clear();
 
-		std::ifstream file(hdrfile);
+		std::ifstream file = fileopen(hdrfile);
 		int k = 0;
 		while (!file.eof()) {
 			std::string cstr;
@@ -617,7 +614,6 @@ public:
 					return false;
 				}
 			}
-
 
 			std::istringstream is(cstr);
 			int col1 = -1;
@@ -722,7 +718,7 @@ public:
 		bool status = false;
 		_fields.clear();
 
-		FILE* fp = fileopen(dfnfile, "r");
+		std::ifstream ifs = fileopen(dfnfile);
 		std::string dfnrecord;
 		bool reported_mixing = false;
 		bool reported_badincrement = false;
@@ -731,7 +727,7 @@ public:
 		size_t datarec = 0;
 		int dfnlinenum = 0;
 		int lastfileorder = -1;
-		while (filegetline(fp, dfnrecord)) {
+		while (filegetline_ifs(ifs, dfnrecord)) {
 			dfnlinenum++;
 			//std::cout << str << std::endl;
 
@@ -868,10 +864,10 @@ public:
 				}
 
 				if (F.nbands < 1 || F.width < 1 || F.decimals < 0) {
-					std::string msg = _SRC_;
+					std::string msg;
 					msg += strprint("Error: Parsing line %d of DFN file %s\n\t%s\n", dfnlinenum, dfnfile.c_str(), dfnrecord.c_str());
 					msg += strprint("\tCould not decipher the format %s\n", formatstr.c_str());
-					throw(std::runtime_error(msg));
+					glog.errormsg(_SRC_, msg);
 				}
 
 				if (colon_tokens.size() > 3) {
@@ -945,7 +941,6 @@ public:
 				datarec++;
 			}
 		};
-		fclose(fp);
 		std::cerr << std::flush;
 
 		size_t startchar = 0;
@@ -961,14 +956,13 @@ public:
 	};
 
 	void write(const std::string& dfnpath) {
-		FILE* fp = fileopen(dfnpath, "w");
-		fprintf(fp, "DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
+		std::ofstream ofs = ofstream_ex(dfnpath);
+		ofs << strprint("DEFN   ST=RECD,RT=COMM;RT:A4;COMMENTS:A76\n");
 		for (size_t i = 0; i < fields.size(); i++) {
 			std::string s = fields[i].aseggdf_header_record();
-			fprintf(fp, "%s", s.c_str());
+			ofs << strprint("%s", s.c_str());
 		}
-		fprintf(fp, "DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
-		fclose(fp);
+		ofs << strprint("DEFN %zu ST=RECD,RT=;END DEFN\n", fields.size() + 1);
 	};
 
 	const std::vector<cAsciiColumnField>& getfields() const {
@@ -1062,8 +1056,8 @@ public:
 		file.open(path, std::fstream::in);
 		if (file.is_open())return true;
 		else {
-			std::string msg = _SRC_ + strprint("Could not open file (%s)\n", path.c_str());
-			throw(std::runtime_error(msg));
+			std::string msg = strprint("Could not open file (%s)\n", path.c_str());
+			glog.errormsg(_SRC_, msg);
 		}
 		return false;
 	};

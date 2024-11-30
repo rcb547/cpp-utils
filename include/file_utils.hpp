@@ -12,440 +12,382 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstring>
 #include <fstream>
 #include <cstdlib>
-#include <cstdio>
+//#include <cstdio>
 #include <cstdarg>
 #include <cerrno>
 #include <vector>
 #include <cstring>
 #include <filesystem>
+#include <regex>
+#include <functional>
+#include <numeric>
 
-#if defined _WIN32
-	#include <io.h>
-	#include <sys/stat.h>
-	#include <direct.h>
-#else	
-	#include <dirent.h>
-	#include <sys/types.h>
-	#include <sys/stat.h>
-	#include <unistd.h>
-	#include <sys/resource.h>
-	#include <unistd.h>
-	//#define strnicmp strncasecmp
-#endif
+#include "logger.hpp"
+#include "string_utils.hpp"
 
-#include "file_utils_new.hpp"
-#include "general_utils.hpp"
 namespace fs = std::filesystem;
 
-struct sFilePathParts_old {
-	std::string directory;
-	std::string prefix;
-	std::string extension;
+inline char pathseparator() {
+	char c = fs::path::preferred_separator;
+	return c;
 };
 
-class cDirectoryAccess
+inline std::string pathseparatorstring() {
+	return (fs::path("") += fs::path::preferred_separator).string();
+};
+
+inline void fixseparator(std::string& path) {
+	fs::path p(path);
+	path = p.make_preferred().string();;
+}
+
+inline std::string fixseparator(const std::string& path) {
+	fs::path p(path);
+	return p.make_preferred().string();
+};
+
+inline void remove_trailing_separator(std::string& path)
+{
+	if (path.size() == 0) return;
+	fixseparator(path);
+	size_t len = path.size();
+	while(path[len - 1] == pathseparator()) {
+		path.erase(len - 1, 1);
+		len = path.size();
+	}
+};
+
+inline void remove_trailing_separator(fs::path& path)
+{
+	std::string s = path.string();
+	remove_trailing_separator(s);
+	path = fs::path(s);
+};
+
+inline void add_trailing_separator(std::string& path)
+{
+	fixseparator(path);
+	if (path.back() == pathseparator()) return;
+	path += pathseparatorstring();
+};
+
+
+inline bool makedirectory(const fs::path& dirname)
+{
+	if (dirname.string().size() == 0) return true;
+	if (fs::exists(dirname)) return true;
+
+	std::string p = dirname.string();
+	remove_trailing_separator(p);
+
+	fs::path dpath = fs::path(p).make_preferred();
+	if (fs::exists(dpath)) return true;
+
+	std::error_code ec;
+	bool status = fs::create_directories(dpath, ec);
+	if (status == false) {
+		glog.warningmsg(_SRC_, "Could not create directory %s (%s)\n", dpath.string().c_str(), ec.message().c_str());
+	}
+	return status;
+}
+
+inline bool makedirectory_for(const fs::path& deeppath) {
+	//deeppath can be directory or file
+	fs::path p = deeppath;
+	p.make_preferred();
+	bool status = makedirectory(p.parent_path());
+	if (status == false) {
+		glog.errormsg(_SRC_, "Unable to create directory %s (for path %s)\n", p.parent_path().string().c_str(), deeppath.string().c_str());
+	}
+	return status;
+};
+
+// Chexks for existence and open failure
+inline std::ifstream ifstream_ex(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::in) {
+	fs::path fpath = fs::path(filepath).make_preferred();
+	std::ifstream ifs(fpath, mode);
+	if (ifs.fail()) {
+		std::string errstr = std::strerror(errno);
+		glog.errormsg(_SRC_, "Unable to open file %s (%s)\n", fpath.string().c_str(), errstr.c_str());
+	}
+	return ifs;
+};
+
+// Chexks for existence and open failure
+inline std::ifstream fileopen(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::in){
+	fs::path fpath = fs::path(filepath).make_preferred();
+	std::ifstream ifs(fpath,mode);
+	if (ifs.fail()){
+		std::string errstr = std::strerror(errno);
+		glog.errormsg(_SRC_, "Unable to open file %s (%s)\n", fpath.string().c_str(), errstr.c_str());	
+	}
+	return ifs;
+};
+
+// Chexks for open failure
+inline std::ofstream ofstream_ex(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::out) {
+	fs::path fpath = fs::path(filepath).make_preferred();
+	bool status = makedirectory_for(fpath);
+	if (status == false) {
+		glog.errormsg(_SRC_, "Unable to create directory for file %s\n", fpath.string().c_str());
+	}
+
+	std::ofstream ofs(fpath, mode);
+	if (ofs.fail()) {
+		std::string errstr = std::strerror(errno);
+		glog.errormsg(_SRC_, "Unable to open output file %s (%s)\n", fpath.string().c_str(), errstr.c_str());
+	}
+	return ofs;
+};
+
+
+
+inline std::string getcurrentdirectory()
+{
+	return fs::current_path().string();
+};
+
+class FilePathParts {
+
+public:
+	std::string directory;
+	std::string stem;
+	std::string extension;
+
+	FilePathParts() = delete;
+
+	FilePathParts(const std::string& path) {
+		fs::path p = path;
+		p.make_preferred();
+		directory = (p.parent_path() += fs::path::preferred_separator).string();
+		stem = p.stem().string();
+		extension = p.extension().string();
+	};
+};
+
+inline std::string extractfiledirectory_nosep(const std::string& pathname) {
+	fs::path p = fs::path(pathname).make_preferred();
+	return p.parent_path().string();
+}
+
+inline std::string extractfiledirectory(const std::string& pathname) {
+	fs::path p = fs::path(pathname).make_preferred();
+	return (p.parent_path() += fs::path::preferred_separator).string();
+}
+
+inline std::string extractfilepath_noextension(const std::string& pathname)
+{
+	fs::path p = fs::path(pathname).make_preferred();
+	return p.replace_extension().string();
+}
+
+inline std::string extractfilename(const std::string& pathname)
+{
+	fs::path p = fs::path(pathname).make_preferred();
+	return p.filename().string();
+};
+
+inline std::string extractfilestem(const std::string& pathname)
+{
+	fs::path p = fs::path(pathname).make_preferred();
+	return p.stem().string();
+};
+
+inline std::string extractfileextension(const std::string& pathname)
+{
+	fs::path p = fs::path(pathname).make_preferred();
+	return p.filename().extension().string();
+};
+
+inline std::string insert_before_filename(const std::string& pathname, const std::string& insertion)
+{
+	FilePathParts fpp(pathname);
+	return fpp.directory + insertion + fpp.stem + fpp.extension;
+};
+
+inline std::string insert_after_filename(const std::string& pathname, const std::string& insertion)
+{
+	FilePathParts fpp(pathname);
+	return fpp.directory + fpp.stem + insertion + fpp.extension;
+};
+
+inline std::string insert_after_extension(const std::string& pathname, const std::string& insertion)
+{
+	FilePathParts fpp(pathname);
+	return fpp.directory + fpp.stem + fpp.extension + insertion;
+};
+
+class DirectoryAccess
 {
 
 private:
-	static std::vector<std::string> getfilelist_single(const std::string& searchpattern);
-	char pathsepchar;
 
 public:
 
-	cDirectoryAccess()
+	static std::vector<std::string> getfilelist_single_pattern(std::string single_searchpattern)
 	{
-		pathsepchar = pathseparator();
-	}
+		trim_inplace(single_searchpattern);
+		const std::string basepathname = extractfiledirectory_nosep(single_searchpattern);
+		const std::string wildcard_pattern = extractfilename(single_searchpattern);
 
-	~cDirectoryAccess()
+		const std::regex star_replace(R"(\*)");
+		const std::regex questionmark_replace(R"(\?)");
+
+		// Change 
+		std::string regex_pattern = wildcard_pattern;
+		regex_pattern = std::regex_replace(regex_pattern, star_replace, ".*");
+		regex_pattern = std::regex_replace(regex_pattern, questionmark_replace, ".");
+		std::regex match_regex(regex_pattern);
+
+		std::vector<std::string> pathlist;
+		auto it = fs::directory_iterator(basepathname);
+		for (fs::directory_entry const& de : it) {
+			if (de.is_regular_file()) {
+				const std::string filename = de.path().filename().string();
+				if (std::regex_match(filename, match_regex)) {
+					const std::string pathname = de.path().string();
+					pathlist.push_back(pathname);
+				}
+			}
+		}
+		return pathlist;
+	};
+
+	static std::vector<std::string> getfilelist_multi_pattern(const std::string& multisearchpattern)
 	{
+		std::vector<std::string> s = split(multisearchpattern, ';');
+		std::vector<std::string> pathlist;
+		for (size_t i = 0; i < s.size(); i++) {
+			std::vector<std::string> l = DirectoryAccess::getfilelist_single_pattern(s[i]);
+			pathlist.insert(pathlist.end(), l.begin(), l.end());
+		}
+		uniquify(pathlist);
+		return pathlist;
+	};
 
-	}
+	static std::vector<std::string> getfilelist(const std::string& pathname) {
+		std::vector<std::string> pathlist;
+		auto it = fs::directory_iterator(fs::path(pathname).make_preferred());
+		for (fs::directory_entry const& de : it) {
+			if (de.is_regular_file()) {
+				const std::string pathname = de.path().string();
+				pathlist.push_back(pathname);
+			}
+		}
+		return pathlist;
+	};
 
+	static std::vector<std::string> getfilelist(const std::string& pathname, std::string extension) {
+		if (extension[0] != '.') extension = "." + extension;
+		std::vector<std::string> pathlist;
+		auto it = fs::directory_iterator(fs::path(pathname).make_preferred());
+		for (fs::directory_entry const& de : it) {
+			if (de.is_regular_file() && de.path().has_extension()){
+				const std::string e = de.path().extension().string();
+				if (extension == de.path().extension().string()) {
+					pathlist.push_back(de.path().string());
+				}
+			}
+		}
+		return pathlist;
+	};
 
-	static std::vector<std::string> getfilelist(const std::string& searchpattern);
-	static bool wildcmp(std::string& wildpattern, std::string& stringpattern);
+	static std::vector<std::string> getfilelist_recursive(const std::string& pathname) {
+		std::vector<std::string> pathlist;
+		fs::directory_options options = fs::directory_options::skip_permission_denied;
+		auto it = fs::recursive_directory_iterator(fs::path(pathname).make_preferred(),options);
+		for (auto const& de : it) {
+			std::cout << de.path().string() << std::endl;
+			if (de.is_regular_file()) {
+				const std::string pathname = de.path().string();
+				pathlist.push_back(pathname);
+			}
+		}
+		return pathlist;
+	};
 
-private:
-
+	static std::vector<std::string> getfilelist_recursive(const std::string& pathname, std::string extension) {
+		if (extension[0] != '.') extension = "." + extension;
+		std::vector<std::string> pathlist;
+		fs::directory_options options = fs::directory_options::skip_permission_denied;
+		auto it = fs::recursive_directory_iterator(fs::path(pathname).make_preferred(), options);
+		for (auto const& de : it) {
+			std::cout << de.path().string() << std::endl;
+			if (de.is_regular_file()) {
+				if (extension == de.path().extension().string()) {
+					pathlist.push_back(de.path().string());
+				}
+			}
+		}
+		return pathlist;
+	};
 };
 
-inline void fixseparator_old(std::string& path)
-{
-#if defined _WIN32
-	for (size_t i = 0; i < path.length(); i++)if (path[i] == '/')  path[i] = '\\';
-#else
-	for (size_t i = 0; i < path.length(); i++)if (path[i] == '\\') path[i] = '/';
-#endif		
-}
+template <typename T, typename Comparator>
+std::vector<size_t> sort_indices(const std::vector<T>& v, const Comparator& comparator = std::less<T>{}) {
+	//Modified from https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
+	std::vector<size_t> idx(v.size());
+	std::iota(idx.begin(), idx.end(), 0);
+	std::stable_sort(idx.begin(), idx.end(), 
+		[&v,&comparator](size_t i1, size_t i2) {
+			return comparator(v[i1], v[i2]);
+		});
 
-inline std::string fixseparator_old(const std::string& path)
-{
-	std::string result = path;
-	fixseparator(result);
-	return result;
-}
+	return idx;
+};
 
-inline void removetrailingseparator(std::string& path)
+inline std::vector<std::string> sortfilelistbysize(const std::vector<std::string>& filelist, bool ascending=true)
 {
-	if (path.size() <= 0)return;
-	fixseparator(path);
-	size_t len = path.length();
-	if (path[len - 1] == pathseparator()) {
-		std::string p = path.substr(0, len - 1);
-		path = p;
+	const size_t n = filelist.size();
+	std::vector<std::uintmax_t> filesize(n);
+
+	for (size_t i = 0; i < n; i++) {
+		filesize[i] = fs::file_size(filelist[i].c_str());
 	}
-}
+	std::vector<size_t> indices;
+	if(ascending == true)indices = sort_indices(filesize, std::less<std::uintmax_t>{});
+	else indices = sort_indices(filesize, std::greater<std::uintmax_t>{});
 
-inline void addtrailingseparator(std::string& path)
-{
-	removetrailingseparator(path);
-	path += pathseparatorstring();
-}
-
-inline bool exists_old(const std::string fpath)
-{
-	std::string path = fpath;
-	fixseparator(path);
-	removetrailingseparator(path);
-#if defined _WIN32
-	if (_access(path.c_str(), 0) == 0)return true;
-	else return false;
-#else
-	if (access(path.c_str(), 0) == 0)return true;
-	else return false;
-#endif
-}
-
-inline bool isdirectory_old(std::string path)
-{
-	fixseparator(path);
-	removetrailingseparator(path);
-#if defined _WIN32
-	struct _stat64i32 status;
-	_stat(path.c_str(), &status);
-	if (status.st_mode & _S_IFDIR)return true;
-	else return false;
-#else
-	struct stat status;
-	stat(path.c_str(), &status);
-	if (status.st_mode & S_IFDIR)return true;
-	else return false;
-#endif        
-}
-
-inline bool isfile_old(std::string path)
-{
-	fixseparator(path);
-	removetrailingseparator(path);
-#if defined _WIN32
-	struct _stat64i32 status;
-	_stat(path.c_str(), &status);
-	if (status.st_mode & _S_IFREG)return true;
-	else return false;
-#else
-	struct stat status;
-	stat(path.c_str(), &status);
-	if (status.st_mode & S_IFREG)return true;
-	else return false;
-#endif     
-}
-
-inline bool isabsolutepath_old(std::string path)
-{
-#if defined _WIN32
-	if (path[1] == ':')return true;
-	else return false;
-#else
-	if (path[0] == pathseparator())return true;
-	else return false;
-#endif		
-}
-
-inline std::string getcurrentdirectory_old()
-{
-	return fs::current_path().string();
-}
-
-inline std::vector<std::string> directoryheirachy_old(std::string dirname)
-{
-	fixseparator(dirname);
-	addtrailingseparator(dirname);
-	std::vector<std::string> v;
-	size_t last = 0;
-	for (size_t i = 0; i < dirname.size(); i++) {
-		if (dirname[i] == pathseparator()) {
-			std::string s = dirname.substr(last, i - last);
-			v.push_back(s);
-			last = i + 1;
-		}
+	std::vector<std::string> slist(n);
+	for (size_t i = 0; i < n; i++) {
+		slist[i] = filelist[indices[i]];
 	}
-	return v;
+	return slist;
 }
 
-inline int copyfile_old(std::string src, std::string dest)
-{
-	fixseparator(src);
-	fixseparator(dest);
-	int status;
-	std::string cmd;
-#if defined _WIN32
-	cmd = "copy " + src + " " + dest;
-#else		
-	cmd = "cp " + src + " " + dest;;
-#endif
-
-	status = system(cmd.c_str());
-	if (status != 0) {
-		glog.warningmsg("copyfile(): Error copying %s to %s\n", src.c_str(), dest.c_str());
-	}
-
-	return status;
-}
-
-inline int deletefile_old(std::string src)
-{
-	fixseparator(src);
-	if (fs::exists(src) == false) return 0;
-
-	int status;
-	std::string cmd;
-#if defined _WIN32
-	cmd = "del " + src;
-#else		
-	cmd = "rm " + src;
-#endif
-
-	status = system(cmd.c_str());
-	if (status != 0) {
-		glog.warningmsg("deletefile(): Error deleting %s\n", src.c_str());
-	}
-
-	return status;
-}
-
-inline sFilePathParts_old getfilepathparts_old(const std::string& path)
-{
-	sFilePathParts_old fpp;
-	std::string p = path;
-
-	fixseparator(p);
-	int len = (int)p.size();
-	int isep = -1;
-	for (auto i = 0; i < len; i++) {
-		if (p[i] == pathseparator()) isep = i;
-	}
-
-	int iext = len;
-	for (auto i = isep + 1; i < len; i++) {
-		if (p[i] == '.') iext = i;
-	}
-
-	fpp.directory = p.substr(0, (size_t)isep + 1);
-	fpp.prefix = p.substr((size_t)isep + 1, (size_t)iext - isep - 1);
-	fpp.extension = p.substr(iext, (size_t)len - iext);
-	return fpp;
-}
-
-
-inline int64_t filesize_old(const std::string& path)
-{
-#if defined _WIN32
-	struct _stat64 st;
-	_stat64(path.c_str(), &st);
-	int64_t size = st.st_size;
-	return size;
-#else
-	struct stat st;
-	stat(path.c_str(), &st);
-	int64_t size = st.st_size;
-	return size;
-#endif
-}
-
-inline std::vector<std::string> getfilelist(const std::string& path, const std::string& extension)
-{
-	cDirectoryAccess d;
-	std::vector<std::string> filelist;
-	std::string p = path;
-	if (p[p.size() - 1] != pathseparator()) {
-		p.push_back(pathseparator());
-	}
-	std::string searchpattern = p + "*";
-	if (extension.size() > 0) searchpattern += "." + extension;
-	std::vector<std::string> list = d.getfilelist(searchpattern);
-	for (size_t i = 0; i < list.size(); i++) {
-		//std::string fullpath = p + list[i];
-		//filelist.push_back(fullpath);		
-		filelist.push_back(list[i]);
-	}
-	std::sort(filelist.begin(), filelist.end());
-	return filelist;
-}
-
-inline void recursivefilelist(const std::string& path, const std::string& extension, FILE* outfile)
-{
-	std::vector<std::string> files = getfilelist(path, extension);
-	for (size_t i = 0; i < files.size(); i++) {
-		std::string f = files[i];
-		if (outfile != NULL) {
-			fprintf(outfile, "%s\n", f.c_str());
-		}
-		else printf("%s\n", f.c_str());
-		size_t len = f.size();
-		if (strcmp(&(f[len - 1]), ".") == 0)continue;
-		if (strcmp(&(f[len - 2]), "..") == 0)continue;
-		recursivefilelist(f, extension, outfile);
-	}
-
-}
-
-inline void recursivefilelist(const std::string& path, const std::string& extension, std::vector<std::string>& list)
-{
-	std::vector<std::string> files = getfilelist(path, extension);
-	for (size_t i = 0; i < files.size(); i++) {
-		std::string f = files[i];
-		list.push_back(f);
-		size_t len = f.size();
-		if (strcmp(&(f[len - 1]), ".") == 0)continue;
-		if (strcmp(&(f[len - 2]), "..") == 0)continue;
-		recursivefilelist(f, extension, list);
-	}
-}
-
-inline std::vector<std::string> cDirectoryAccess::getfilelist(const std::string& searchpattern)
-{
-	std::vector<std::string> s = split(searchpattern, ';');
-	std::vector<std::string> flist;
-	for (size_t i = 0; i < s.size(); i++) {
-		std::vector<std::string> l = cDirectoryAccess::getfilelist_single(s[i]);
-		flist.insert(flist.end(), l.begin(), l.end());
-	}
-	return flist;
-}
-
-#if defined _WIN32	
-///This version is for Microsoft Visual Studio    
-inline std::vector<std::string> cDirectoryAccess::getfilelist_single(const std::string& searchpattern)
-{
-	std::vector<std::string> flist;
-	FilePathParts fpp(searchpattern);
-
-	struct _finddata_t file;
-
-	//Find First File	
-	intptr_t hFile = _findfirst(searchpattern.c_str(), &file);
-	if (hFile == -1) return flist;
-
-	//Insert first file
-	std::string fullpath = fpp.directory + file.name;
-	flist.push_back(fullpath);
-
-	//Find the rest of the files
-	while (_findnext(hFile, &file) == 0L) {
-		fullpath = fpp.directory + file.name;
-		flist.push_back(fullpath);
-	}
-	_findclose(hFile);
-
-	//Sort by name
-	std::sort(flist.begin(), flist.end());
-	return flist;
-}
-#else
-///This version for Linux
-inline std::vector<std::string> cDirectoryAccess::getfilelist_single(const std::string& searchpattern)
-{
-
-	std::vector<std::string> flist;
-	struct dirent* directoryentry;
-	DIR* dp;
-
-	sFilePathParts fpp = getfilepathparts(std::string(searchpattern));
-	if (fpp.directory.length() == 0)fpp.directory = ".";
-	std::string directorypath = fpp.directory;
-
-	//sp is the file search pattern (not directory)		
-	std::string sp = fpp.prefix + fpp.extension;
-
-	if ((dp = opendir(directorypath.c_str())) == NULL) {
-		glog.warningmsg("getfilelist_single(): Could not open directory: %s\n", directorypath.c_str());
-		return flist;
-	}
-
-	for (directoryentry = readdir(dp); directoryentry != NULL; directoryentry = readdir(dp)) {
-		std::string name = std::string(directoryentry->d_name);
-		if (wildcmp(sp, name) == true) {
-			std::string fullpath = fpp.directory + name;
-			flist.push_back(fullpath);
-		}
-	}
-	closedir(dp);
-	std::sort(flist.begin(), flist.end());
-	return flist;
-}
-#endif
-
-inline bool cDirectoryAccess::wildcmp(std::string& wildpattern, std::string& stringpattern)
-{
-	char* wild = &(wildpattern[0]);
-	char* str = &(stringpattern[0]);
-
-	while ((*str) && (*wild != '*')) {
-		if ((*wild != *str) && (*wild != '?')) {
-			return false;
-		}
-		wild++;
-		str++;
-	}
-
-	char* cp = (char*)NULL;
-	char* mp = (char*)NULL;
-	while (*str) {
-		if (*wild == '*') {
-			if (!*++wild) {
-				return true;
-			}
-			mp = wild;
-			cp = str + 1;
-		}
-		else if ((*wild == *str) || (*wild == '?')) {
-			wild++;
-			str++;
-		}
-		else {
-			wild = mp;
-			str = cp++;
-		}
-	}
-
-	while (*wild == '*') {
-		wild++;
-	}
-	bool rval = (bool)!*wild;
-	return rval;
-}
-
-inline bool filegetline(FILE* fp, std::string& str)
-{
-	size_t buflen = 8192;//buffer length
+inline bool filegetline_ifs(std::ifstream& ifs, std::string& str) {
 	str.clear();
-	std::vector<char> buf(buflen + 1);
-	while (fgets(&(buf[0]), (int)buflen, fp) != NULL) {
-		str += std::string(&(buf[0]));
-		size_t len = strlen(&(buf[0]));
-		if (len < buflen - 1) {
-			if (str[str.length() - 1] == 10) {
-				//strip linefeed character
-				str.resize(str.length() - 1);
-			}
-			return true;
-		}
-	}
-	return false;
+	if(std::getline(ifs, str)) return true;
+	else return false;
 }
 
-inline size_t countlines(const std::string filename)
+inline std::FILE* fileopen(const fs::path filepath, const std::string mode)
+{
+	fs::path fpath(filepath);
+	fpath.make_preferred();
+	if (mode[0] == 'w' || mode[0] == 'a') {
+		bool status = makedirectory_for(fpath);
+		if (status == false) return nullptr;
+	}
+	else if (mode[0] == 'r') {
+		if (fs::exists(fpath) == false) {
+			glog.warningmsg(_SRC_, "Unable to open file %s (file does not exist)\n", fpath.string().c_str());
+		}
+	}
+
+	FILE* fp = std::fopen(fpath.string().c_str(), mode.c_str());
+	if (!fp) {
+		glog.warningmsg(_SRC_, "Unable to open file %s\n", fpath.string().c_str());
+	}
+	return fp;
+};
+
+inline void fileclose(std::FILE* fp)
+{
+	if (fp) fclose(fp);
+};
+
+inline size_t countlines0(const std::string filename)
 {
 	FILE* fp = fopen(filename.c_str(), "rb");
 	size_t buffersize = 4194304;
@@ -460,86 +402,15 @@ inline size_t countlines(const std::string filename)
 	} while (nread > 0);
 	fclose(fp);
 	return n;
-}
+};
 
 inline size_t countlines1(const std::string filename)
 {
 	size_t n = 0;
-	std::ifstream in(filename);
+	std::ifstream in = fileopen(filename);
 	std::string str;
 	while (std::getline(in, str)) {
 		++n;
 	}
 	return n;
-}
-
-inline bool makedirectory_old(std::string dirname)
-{
-	if (dirname.size() == 0)return true;
-	fixseparator(dirname);
-	removetrailingseparator(dirname);
-	if (fs::exists(dirname))return true;
-	int status;
-#if defined _WIN32
-	status = _mkdir(dirname.c_str());
-	if (status != 0) {
-		if (errno == EEXIST) {
-			return true;
-		}
-		else {
-			glog.warningmsg("makedirectory(): Problem creating directory because %s is an invalid path\n", dirname.c_str());
-			return false;
-		}
-	}
-	return true;
-#else		
-	status = mkdir(dirname.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	if (status != 0) {
-		if (errno == EEXIST) {
-			return true;
-		}
-		else {
-			glog.warningmsg("makedirectory(): Problem creating directory because %s is an invalid path\n", dirname.c_str());
-			return false;
-		}
-	}
-	return true;
-#endif		
-}
-
-inline bool makedirectorydeep_old(const std::string& dirname)
-{
-	if (dirname.size() == 0)return true;
-	if (fs::exists(dirname))return true;
-	bool status = false;
-	std::vector<std::string> h = directoryheirachy_old(dirname);
-	std::string p;
-	for (size_t i = 0; i < h.size(); i++) {
-		p += h[i] + pathseparatorstring();
-		status = makedirectory_old(p);
-	}
-	return status;
-}
-
-inline FILE* fileopen_old(std::string path, const std::string mode)
-{
-	fixseparator(path);
-	if (mode[0] == 'w' || mode[0] == 'a') {
-		std::string dirname = extractfiledirectory(path);
-		removetrailingseparator(dirname);
-		if (dirname.size() > 0) {
-			if (fs::exists(dirname) == false) {
-				if (makedirectorydeep_old(dirname) == false) {
-					glog.warningmsg(_SRC_, "Unable to make directory for file %s\n", path.c_str());
-					return (FILE*)NULL;
-				}
-			}
-		}
-	}
-
-	FILE* fp = std::fopen(path.c_str(), mode.c_str());
-	if (!fp) {
-		glog.warningmsg(_SRC_, "Unable to open file %s\n", path.c_str());
-	}
-	return fp;
-}
+};

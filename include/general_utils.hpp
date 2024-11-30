@@ -94,7 +94,7 @@ inline int my_rank() {
 #endif
 }
 
-inline int mpi_openmp_rank() {
+inline int mpi_openmp_rank1() {
 	int rank = 0;
 
 #if defined _OPENMP
@@ -1060,6 +1060,16 @@ bool bwrite(FILE* fp, const std::vector<T>& v) {
 	size_t status = fwrite(&(v[0]), sizeof(T), v.size(), fp);
 	if (status != v.size()) {
 		glog.errormsg(_SRC_, "Error in writing to binary file\n");
+	}
+	return true;
+}
+
+template<typename T>
+bool bwrite(std::ofstream& ofs, const std::vector<T>& v) {
+	ofs.write(reinterpret_cast<const char*>(v.data()), v.size() * sizeof(T));
+	if(ofs.fail()){
+		std::string errstr = std::strerror(errno);
+		glog.errormsg(_SRC_, "Writing to binary file (%s).\n", errstr.c_str());
 	}
 	return true;
 }

@@ -16,6 +16,12 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <filesystem>
 
+#undef _HAS_STACK_TRACE_
+//#define _HAS_STACK_TRACE_
+#if defined  _HAS_STACK_TRACE_
+	#include <stacktrace>
+#endif
+
 #include "string_print.hpp"
 
 #if defined ENABLE_MPI
@@ -30,9 +36,31 @@ Author: Ross C. Brodie, Geoscience Australia.
 	#include "mex.h"
 #endif
 
+class SourceCodeLocation {
+
+private:
+	std::string location;
+
+public: 
+
+	SourceCodeLocation(const char* file, const char* function, const int& linenumber){
+		const std::filesystem::path p(file);
+		location = strprint("File: %s\t Function:%s\t Line:%d", p.filename().string().c_str(), function, linenumber);
+	};
+
+	const char* c_str() const {
+		return location.c_str();
+	}
+
+	size_t size() const {
+		return location.size();
+	}
+
+};
+
 class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager
-#define _SRC_ cLogger::src_code_location(__FILE__, __FUNCTION__, __LINE__)
+#define _SRC_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__)
 
 class cLogger
 {
@@ -84,16 +112,17 @@ public:
 
 	bool open(const std::string& logfilename)
 	{
-		const size_t i = (size_t)threadindex();
+		const size_t i = (size_t) threadindex();
 		if (ofs.size() < i + 1) {
 			ofs.resize(i + 1);
 		}
 
-		std::filesystem::path p(logfilename); p.make_preferred();
-		std::filesystem::create_directories(p.parent_path());
+		std::filesystem::path dirpath = std::filesystem::path(logfilename).make_preferred().parent_path();
+		if (dirpath.string().size() > 0) {
+			std::filesystem::create_directories(dirpath);
+		}
 
 		ofs[i].open(logfilename, std::ios_base::out);
-
 		if (ofs[i].fail()) {
 			glog.errormsg(_SRC_,"Failed to open Log file %s", logfilename.c_str());
 		}
@@ -118,26 +147,27 @@ public:
 		}
 	};
 
-	void log(const std::string& msg) {
+	void log_to_cout(const std::string& msg) {
+		std::cout << msg << std::flush;
+	};
+
+	void log_to_file(const std::string& msg) {
 		std::ofstream& fs = ostrm();
 		if (ofs.size() > 0 && fs.is_open()) fs << msg << std::flush;
 	};
 
-	void log(const char* fmt, ...)
-	{
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		log(msg);
-	}
-
-	void logmsg(const std::string& msg){
-		std::ofstream& fs = ostrm();
-		if ((int)ofs.size()>0 && fs.is_open()) fs << msg << std::flush;
-		std::cout << msg << std::flush;
+	void logmsg(const std::string& msg) {
+		log_to_file(msg);
+		log_to_cout(msg);
 	};
 
+	void logmsg(const int stdout_rank, const std::string& msg) {
+		log_to_file(msg);
+		if (cLogger::mpi_openmp_rank() == stdout_rank) {
+			log_to_cout(msg);
+		}
+	};
+	
 	void logmsg(const char* fmt, ...)
 	{
 		va_list vargs;
@@ -147,73 +177,75 @@ public:
 		logmsg(msg);
 	}
 
-	void logmsg(const int& rank, const std::string& msg) {
-		log(msg);
-		if (mpi_openmp_rank() == rank) {
-			std::cout << msg << std::flush;
-		}
-	};
-
-	void logmsg(const int& rank, const char* fmt, ...)
+	void logmsg(const int stdout_rank, const char* fmt, ...)
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
 		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
-		logmsg(rank, msg);
+		logmsg(stdout_rank, msg);
 	}
 	
-	void warningmsg(const std::string& srccodeloc, const char* fmt, ...)
+	void warningmsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc)
+	{
+		std::string fullmsg = "**Warning: " + msg + "\n";
+		if (srccodeloc.size() > 0) fullmsg += strprint("Warning is from %s\n", srccodeloc.c_str());
+
+		#if defined MATLAB_MEX_FILE
+			mexWarnMsgTxt(fullmsg.c_str());
+		#else
+			logmsg(fullmsg);
+		#endif
+	}
+
+	void warningmsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...)
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
 		std::string msg = "**Warning: " + strprint_va(fmt, vargs);
 		va_end(vargs);
+		warningmsg_impl(msg, srccodeloc);
+	}
+
+	void warningmsg(const SourceCodeLocation& srccodeloc, const std::string& msg){
+		warningmsg_impl(msg, srccodeloc);
+	}
+
+	void append_stacktrace(std::string& msg) {
+		#ifdef  _HAS_STACK_TRACE_
+			msg += "\n======= Stack Trace =========================\n";
+			msg += std::to_string(std::stacktrace::current());
+			msg += "\n=============================================\n";
+		#endif	
+	};
+
+	void errormsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc) {
+		std::string fullmsg = "***Error: " + msg;
+		if(srccodeloc.size()>0) fullmsg += strprint("Exception thrown from %s\n", srccodeloc.c_str());
+		append_stacktrace(fullmsg);
 
 		#if defined MATLAB_MEX_FILE
-			mexWarnMsgTxt(msg.c_str());
+			mexErrMsgTxt(fullmsg.c_str());
 		#else
-			logmsg(msg);
-		#endif
-		logmsg(strprint("%s\n",srccodeloc.c_str()));
-	}
-
-	void errormsg(const std::string& msg) {
-		errormsg(msg.c_str());
-	}
-
-	void errormsg(const char* str)
-	{		
-		std::string msg = "**Error: " + std::string(str);		
-		#if defined MATLAB_MEX_FILE
-			mexErrMsgTxt(msg.c_str());
-		#else			
-			throw(std::runtime_error(msg));
+			log_to_file(fullmsg);
+			throw(std::runtime_error(fullmsg));
 		#endif
 	}
 
-	void errormsg(const std::string& srccodeloc, const char* fmt, ...)
+	void errormsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...)
 	{
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Error: " + strprint_va(fmt, vargs);
+		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
-
-		#if defined MATLAB_MEX_FILE
-			mexErrMsgTxt(msg.c_str());
-		#else
-			logmsg(msg);
-			throw(std::runtime_error(strprint("Exception thrown from %s\n", srccodeloc.c_str())));
-		#endif
+		errormsg_impl(msg, srccodeloc);
 	}
 
-	static std::string src_code_location(const char* file, const char* function, const int& linenumber)
+	void errormsg(const SourceCodeLocation& srccodeloc, const std::string& msg)
 	{
-		const std::filesystem::path p(file);
-		std::string s = strprint("File: %s\t Function:%s\t Line:%d", p.filename().string().c_str(), function, linenumber);
-		return s;
+		errormsg_impl(msg, srccodeloc);
 	}
-
+	
 	inline static const std::string timestamp()
 	{
 		std::time_t result = std::time(nullptr);
@@ -227,21 +259,20 @@ public:
 	};
 
 	inline static int mpi_openmp_rank() {
-		int rank = 0;
+		int omprank = 0;
+		int mpirank = 0;
 		#if defined _OPENMP
-			rank = omp_get_thread_num();
-			if (rank > 0) return rank;
+			omprank = omp_get_thread_num();
 		#endif
 
 		#ifdef ENABLE_MPI
 			int mpi_initialised;
 			int ierr = MPI_Initialized(&mpi_initialised);
 			if (mpi_initialised) {
-				MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-				return rank;
+				MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 			}
 		#endif
-		return rank;
+		return std::max(mpirank,omprank);
 	}
 
 };

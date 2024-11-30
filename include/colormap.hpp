@@ -35,8 +35,8 @@ public:
 				loadErMapperLUT(name);				
 				break;
 		default:
-			std::string msg = strprint("Unknown eColorMapType") + _SRC_;
-			throw(std::runtime_error(msg));
+			std::string msg = strprint("Unknown eColorMapType");
+			glog.errormsg(_SRC_, msg);
 			break;
 		}
 	}
@@ -45,13 +45,13 @@ public:
 		std::string s;		
 		if(b.getvalue("ColourMap", s)==false){
 			std::string msg("ColourMap not set\n");
-			throw(std::runtime_error(_SRC_ + msg));
+			glog.errormsg(_SRC_, msg);
 		}
 		else{
 			bool status = load(s);
 			if (status == false){
 				std::string msg = strprint("Unknown ColourMap %s\n", s.c_str());
-				throw(std::runtime_error(_SRC_ + msg));
+				glog.errormsg(_SRC_, msg);
 			}
 		}
 	}

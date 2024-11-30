@@ -29,15 +29,14 @@ class cPolygon {
 	  {
 		  vertex.resize(0);
 		  std::string str;
-		  FILE* fp = fileopen(filename, "r");
-		  while(filegetline(fp,str)){
+		  std::ifstream ifs(filename);
+		  while(filegetline_ifs(ifs,str)){
 			  std::vector<std::string> t = tokenize(str);
 			  cPoint p;
 			  p.x = atof(t[0].c_str());
 			  p.y = atof(t[1].c_str());
 			  vertex.push_back(p);
 		  }
-		  fclose(fp);
 
 		  if (vertex[0] == vertex[vertex.size()-1]){
 			  vertex.resize(vertex.size() - 1);

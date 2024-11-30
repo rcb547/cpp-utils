@@ -131,9 +131,8 @@ public:
 	inline void getcolumn_val(const std::vector<std::string>& colstrings, const size_t& columnnumber, T& v) const
 	{
 		if (columnnumber >= colstrings.size()) {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tError trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n", columnnumber + 1, colstrings.size());
-			throw(std::runtime_error(msg));
+			std::string msg = strprint("Aeeempting to access column %zu when there are only %zu columns in the current record string (check format and delimiters).", columnnumber + 1, colstrings.size());
+			glog.errormsg(_SRC_, msg);
 		}
 		else {
 			if (colstrings[columnnumber].size() == 0) {
@@ -162,14 +161,12 @@ public:
 			return false;
 		}
 		else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tcFieldDefinition::TYPE::VARIABLENAME not allowed here\n");
-			throw(std::runtime_error(msg));
+			std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
+			glog.errormsg(_SRC_, msg);
 		}
 		else {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tUnknown cFieldDefinition::TYPE\n");
-			throw(std::runtime_error(msg));
+			std::string msg = "Unknown cFieldDefinition::TYPE.";
+			glog.errormsg(_SRC_, msg);
 		}
 		return true;
 	}
@@ -197,15 +194,12 @@ public:
 			return false;
 		}
 		else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tcFieldDefinition::TYPE::VARIABLENAME not allowed here\n");
-			throw(std::runtime_error(msg));
-			return false;
+			std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
+			glog.errormsg(_SRC_, msg);
 		}
 		else {
-			std::string msg = _SRC_;
-			msg += strprint("\n\tUnknown cFieldDefinition::TYPE\n");
-			throw(std::runtime_error(msg));
+			std::string msg = "Unknown cFieldDefinition::TYPE.";
+			glog.errormsg(_SRC_, msg);
 		}
 		return true;
 	}

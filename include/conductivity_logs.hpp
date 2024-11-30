@@ -35,11 +35,11 @@ public:
 		std::string s;
 		std::vector<std::string> t;
 		source = confile;
-		FILE* fp = fileopen(confile, "r");
+		std::ifstream ifs(source);
 
 		double usf = 1.0;
 		//Read header
-		while (filegetline(fp, s)){			
+		while (filegetline_ifs(ifs, s)){			
 			t = parsestrings(s, " ,:");
 			if (t[0] == "Bore") name = t[1];
 			if (t[0] == "Lasfile") lasfile = t[1];
@@ -54,12 +54,11 @@ public:
 		}
 
 		if (readheaderonly){
-			fclose(fp);
 			return true;
 		}
 
 		//Read data
-		while (filegetline(fp, s)){
+		while (filegetline_ifs(ifs, s)){
 			t = tokenize(s);
 			if (t[0] == "NaN")continue;
 			else if (t[1] == "NaN")continue;
@@ -72,7 +71,6 @@ public:
 				conductivity.push_back(usf*c);
 			}
 		}
-		fclose(fp);
 		return true;
 	};
 

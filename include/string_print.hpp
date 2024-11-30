@@ -13,20 +13,29 @@ Author: Ross C. Brodie
 
 inline std::string strprint_va(const char* fmt, va_list vargs)
 {
-	va_list vargscopy;
+	std::va_list vargscopy;
 	va_copy(vargscopy, vargs);
 	const int len = 1 + std::vsnprintf(nullptr, 0, fmt, vargscopy);
 	va_end(vargscopy);
 
-	std::string s(len, '\0');
+	std::string s(len-1,0);//initialise with null characters
 	std::vsnprintf(&(s.front()), len, fmt, vargs);
-	return std::string(s.c_str());
+	return s;
 }
 
-inline std::string strprint(const std::string& fmt, ...)
+inline std::string strprint(const char* fmt, ...)
+{
+	std::va_list vargs;
+	va_start(vargs, fmt);
+	std::string s = strprint_va(fmt, vargs);
+	va_end(vargs);
+	return s;
+}
+
+inline std::string strprint(const std::string fmt, ...)
 {
 	va_list vargs;
-	va_start(vargs, fmt.c_str());
+	va_start(vargs, fmt);
 	std::string s = strprint_va(fmt.c_str(), vargs);
 	va_end(vargs);
 	return s;
