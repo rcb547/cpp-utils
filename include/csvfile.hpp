@@ -21,20 +21,20 @@ class cCSVFile{
 
 		cCSVFile(const std::string csvfile){
 
-			FILE* fp = fileopen(csvfile, "r");
+			std::ifstream ifs = ifstream_ex(csvfile);
 
 			std::string str;
 			std::vector<std::string> tokens;
 
 			//Read header line
-			filegetline(fp, str);
+			filegetline_ifs(ifs, str);
 			split(str, ',', tokens);
 			header = tokens;
 			size_t nfields = header.size();			
 
 			//Read remaining lines
 			size_t k = 1;
-			while (filegetline(fp, str)){
+			while (filegetline_ifs(ifs, str)){
 				k++;
 				tokens.resize(0);
 				split(str, ',', tokens);
@@ -43,17 +43,16 @@ class cCSVFile{
 				}
 
 				if (tokens.size() != nfields){
-					std::printf("Error: On line %zu of file %s\n", k, csvfile.c_str());
-					std::printf("Error: The number of header items (%zu) does not match the number of data items (%zu)\n", nfields, tokens.size());
+					glog.logmsg("Error: On line %zu of file %s\n", k, csvfile.c_str());
+					glog.logmsg("Error: The number of header items (%zu) does not match the number of data items (%zu)\n", nfields, tokens.size());
 				}
 
 				for (size_t i = 0; i < tokens.size(); i++){
-					tokens[i] = trim(tokens[i]);
+					tokens[i] = trim_ex(tokens[i]);
 					tokens[i] = stripquotes(tokens[i]);
 				}
 				records.push_back(tokens);
 			}
-			fclose(fp);
 		}
 
 		bool addfield(const std::string fname){

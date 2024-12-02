@@ -32,7 +32,7 @@ private:
 	static constexpr int newline = 10;
 	static constexpr int carriagereturn = 13;
 	std::ifstream IFS;
-	std::string FileName;
+	fs::path FileName;
 	size_t FileSize = 0;
 	size_t RecordLength = 0;//Length in bytes of records including "\r\n" or "\n"
 	std::string CurrentRecord;
@@ -89,7 +89,7 @@ public:
 
 	cAsciiColumnFile() {};
 
-	cAsciiColumnFile(const std::string& filename) {
+	cAsciiColumnFile(const fs::path& filename) {
 		openfile(filename);
 	};
 
@@ -167,9 +167,10 @@ public:
 		IFS.seekg(0);
 	}
 
-	bool openfile(const std::string& datafilename) {
+	bool openfile(const fs::path& datafilename) {
 		FileName = datafilename;
-		fixseparator(FileName);
+		FileName.make_preferred();
+		//fixseparator(FileName);
 		//Open in binary mode so \r\n does not get converted to \n
 		IFS.open(datafilename, std::ifstream::in | std::ifstream::binary);
 		if (!IFS) {
@@ -381,7 +382,7 @@ public:
 		return true;
 	};
 
-	void parse_dfn_header(const std::string& dfnpath) {
+	void parse_dfn_header(const fs::path& dfnpath) {
 		cASEGGDF2Header H(dfnpath);
 		fields = H.getfields();
 		ST_string = H.get_ST_string();

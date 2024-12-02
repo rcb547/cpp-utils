@@ -71,6 +71,17 @@ inline void add_trailing_separator(std::string& path)
 	path += pathseparatorstring();
 };
 
+inline fs::path append_extension(const fs::path& path, const fs::path& extension)
+{
+	fs::path p(path);
+	p += extension;
+	return p;
+};
+
+inline fs::path change_extension(const fs::path& path, const std::string& new_extension)
+{
+	return fs::path(path).replace_extension(new_extension);
+};
 
 inline bool makedirectory(const fs::path& dirname)
 {
@@ -139,8 +150,6 @@ inline std::ofstream ofstream_ex(const fs::path filepath, const std::ios_base::o
 	}
 	return ofs;
 };
-
-
 
 inline std::string getcurrentdirectory()
 {

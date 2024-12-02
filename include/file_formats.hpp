@@ -666,7 +666,7 @@ private:
 
 public:
 
-	cASEGGDF2Header(const std::string& dfnpath) {
+	cASEGGDF2Header(const fs::path& dfnpath) {
 		valid = read(dfnpath);
 	};
 
@@ -701,7 +701,7 @@ public:
 		return status;
 	};
 
-	bool read(const std::string& dfnfile) {
+	bool read(const fs::path& dfnfile) {
 		std::vector<cAsciiColumnField> _fields;
 		std::string _ST_string;
 		std::string _RT_string;
@@ -714,11 +714,11 @@ public:
 		return valid;
 	}
 
-	static bool read_static(const std::string& dfnfile, std::vector<cAsciiColumnField>& _fields, std::string& _ST_string, std::string& _RT_string) {
+	static bool read_static(const fs::path& dfnfile, std::vector<cAsciiColumnField>& _fields, std::string& _ST_string, std::string& _RT_string) {
 		bool status = false;
 		_fields.clear();
 
-		std::ifstream ifs = fileopen(dfnfile);
+		std::ifstream ifs = ifstream_ex(dfnfile);
 		std::string dfnrecord;
 		bool reported_mixing = false;
 		bool reported_badincrement = false;

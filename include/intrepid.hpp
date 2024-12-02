@@ -552,7 +552,6 @@ public:
 		return true;
 	}
 
-
 	template <typename T>
 	bool getband(std::vector<T>& v, size_t band = 0)
 	{
@@ -575,8 +574,8 @@ public:
 				//Change internal blanks to zeros due to some stupid date strings in legacy databases
 				//for (size_t k = 1; k < s.size(); k++) {
 				//	if (s[k]==' ') s[k]='0';
-				//}				
-				str2num(s, v[i]);
+				//}
+				str2num(s.c_str(), v[i]);
 				p += len;
 			}
 			return true;
@@ -858,23 +857,23 @@ private:
 
 	bool readsurveyinfo()
 	{
-		FILE* fsurveyinfo;
-		if ((fsurveyinfo = fileopen(surveyinfopath, "r")) == NULL) {
-			glog.logmsg("Cannot open file: %s\n\n", surveyinfopath.c_str());
+		std::ifstream ifs = ifstream_ex(surveyinfopath);
+		if (ifs.fail()) {
+			glog.logmsg("Cannot open SurveyInfo file: %s.", surveyinfopath.c_str());
 			return false;
 		}
 
 		std::string lstr;
-		while (filegetline(fsurveyinfo, lstr)) {
+		while (filegetline_ifs(ifs, lstr)) {
 			size_t epos = lstr.find_first_of("=");
 			if (epos < lstr.size()) {
-				lstr = trim(lstr);
+				trim_inplace(lstr);
 				size_t len = lstr.size();
 				epos = lstr.find_first_of("=");
 				std::string lhs = lstr.substr(0, epos);
 				std::string rhs = lstr.substr(epos + 1, len - epos);
-				lhs = trim(lhs);
-				rhs = trim(rhs);
+				trim_inplace(lhs);
+				trim_inplace(rhs);
 
 				SurveyInfoEntry e;
 				e.key = lhs;
@@ -882,13 +881,12 @@ private:
 				SurveyInfo.push_back(e);
 			}
 		}
-		fclose(fsurveyinfo);
 		return true;
 	}
 
 	bool getfields()
 	{
-		std::vector<std::string> fall = getfilelist(datasetpath, "");
+		std::vector<std::string> fall = DirectoryAccess::getfilelist(datasetpath);
 		std::vector<std::string> filelist;
 		for (size_t i = 0; i < fall.size(); i++) {
 			std::string e = extractfileextension(fall[i]);
@@ -900,7 +898,7 @@ private:
 
 		//Count valid fields		
 		for (size_t i = 0; i < filelist.size(); i++) {
-			std::string name = extractfilename_noextension(filelist[i]);
+			std::string name = extractfilestem(filelist[i]);
 			std::string ext = extractfileextension(filelist[i]);
 
 			if (strcasecmp(name, "INDEX") == 0) {

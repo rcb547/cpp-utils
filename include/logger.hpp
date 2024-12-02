@@ -23,6 +23,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #endif
 
 #include "string_print.hpp"
+namespace fs = std::filesystem;
 
 #if defined ENABLE_MPI
 	#include <mpi.h>
@@ -110,14 +111,14 @@ public:
 		ofs.resize(n);
 	}
 
-	bool open(const std::string& logfilename)
+	bool open(fs::path logfilename)
 	{
 		const size_t i = (size_t) threadindex();
 		if (ofs.size() < i + 1) {
 			ofs.resize(i + 1);
 		}
 
-		std::filesystem::path dirpath = std::filesystem::path(logfilename).make_preferred().parent_path();
+		std::filesystem::path dirpath = logfilename.make_preferred().parent_path();
 		if (dirpath.string().size() > 0) {
 			std::filesystem::create_directories(dirpath);
 		}
