@@ -14,8 +14,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <gdal_priv.h>
 #pragma warning(pop)
 
-
-
 inline void checkogrerror(const OGRErr& err)
 {
 	if(err != OGRERR_NONE){

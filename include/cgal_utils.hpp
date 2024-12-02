@@ -43,7 +43,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <vector>
 #include <list>
-#include "general_utils.h"
+#include "general_utils.hpp"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::FT FT;
@@ -56,7 +56,6 @@ typedef CGAL::Delaunay_triangulation_2<K,Tds> Triangulation_2;
 typedef CGAL::Alpha_shape_2<Triangulation_2> Alpha_shape_2;
 typedef Alpha_shape_2::Alpha_shape_edges_iterator Alpha_shape_edges_iterator;
 
-typedef CGAL::Polygon_2<K> Polygon;
 namespace PS = CGAL::Polyline_simplification_2;
 
 bool line_data_alpha_shape_polygon_ch(
@@ -138,7 +137,7 @@ bool line_data_alpha_shape_polygon_ch(
 	}
 	
 	//Create a polygon
-	Polygon polygon;
+	CGAL::Polygon_2<K> polygon;
 	for (auto it = dst.begin(); it != dst.end(); ++it){
 		double vx = (*it).source().x();
 		double vy = (*it).source().y();
@@ -158,7 +157,7 @@ bool line_data_alpha_shape_polygon_ch(
 			PS::Stop_above_cost_threshold stop(thr_d*thr_d);
 			PS::Squared_distance_cost cost;
 			//PS::Scaled_squared_distance_cost cost;
-			Polygon simple = polygon;
+			CGAL::Polygon_2<K> simple = polygon;
 			simple = PS::simplify(simple, cost, stop);
 			//printf("%lf %lu\n", r, simple.container().size());
 			polygon = simple;
