@@ -76,6 +76,22 @@ private:
 		return rl;
 	}
 
+	void eliminate_nulls(std::vector<std::string>& colstrings) {
+		const size_t n = fields.size();
+		for (size_t fi = 0; fi < n; fi++) {
+			const cAsciiColumnField& f = fields[fi];
+			if (f.hasnullvalue()) {
+				const std::string fieldnullstr = f.nullstring();
+				for (size_t j = 0; j < f.nbands; j++) {
+					const size_t k = f.column(j);
+					if (f.isnull_trimmed_string(colstrings[k], fieldnullstr)) {
+						colstrings[k] = std::string();
+					}
+				}
+			}
+		}
+	};
+
 public:
 	enum class HeaderType { DFN, CSV, HDR, NONE } headertype = HeaderType::NONE;
 	enum class ParseType { FIXEDWIDTH, DELIMITED } parsetype = ParseType::FIXEDWIDTH;
@@ -459,24 +475,26 @@ public:
 	}
 
 	std::vector<std::string> delimited_parse() {
+		const static std::string delims = " ,\t\r\n";
 		std::vector<std::string> cs;
-		cs = fieldparsestring(CurrentRecord.c_str(), " ,\t\r\n");
+		cs = fieldparsestring(CurrentRecord.c_str(), delims.c_str());
+		eliminate_nulls(cs);
 		return cs;
 	}
 
 	std::vector<std::string> fixed_width_parse() {
 		std::vector<std::string> cs;
-		for (size_t i = 0; i < fields.size(); i++) {
-			cAsciiColumnField& f = fields[i];
-			std::string nullstr = f.nullstring();
+		const size_t n = fields.size();
+		for (size_t fi = 0; fi < n; fi++) {
+			const cAsciiColumnField& f = fields[fi];
+			const std::string nullstr = f.nullstring();
 			for (size_t j = 0; j < f.nbands; j++) {
-				const std::string s = trim_ex(CurrentRecord.substr(f.startchar + j * f.width, f.width));
-				if (s == nullstr) {
-					cs.push_back(std::string());
-				}
-				else cs.push_back(s);
+				std::string bandstr = CurrentRecord.substr(f.startchar + j * f.width, f.width);
+				trim_inplace(bandstr);
+				cs.push_back(bandstr);
 			}
 		}
+		eliminate_nulls(cs);
 		return cs;
 	}
 

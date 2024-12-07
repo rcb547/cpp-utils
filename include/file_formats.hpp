@@ -151,6 +151,11 @@ public:
 		return (int)(startcolumn + nbands - 1);
 	};
 
+	int column(const size_t band) const //Zero based column index
+	{
+		return (int)(startcol()+band);
+	};
+
 	int endchar() const
 	{
 		return (int)(startchar + (nbands * width) - 1);
@@ -183,6 +188,26 @@ public:
 		T val = 0;
 		iss >> val;
 		return val;
+	}
+
+	bool isnull_trimmed_string(const std::string& trimmedbandstring, const std::string& nullstr) const {
+		// nullstr could be retrieved by nullstring() but faster to pass it in from outside
+		// assume it is has a null value hasnullvalue() == true
+		// if (hasnullvalue() == false) return false;
+
+		const std::string& s = trimmedbandstring;
+
+		// Check for string match
+		if (s == nullstr) return true;
+
+		// Cannot do numeric value match on strings
+		if (ischar()) return false;
+
+		// Check for numeric match
+		double v1 = std::atof(s.c_str());
+		double v2 = std::atof(nullstr.c_str());
+		if (v1 == v2) return true;
+		else return false;
 	}
 
 	std::string longname() const {
@@ -729,8 +754,6 @@ public:
 		int lastfileorder = -1;
 		while (filegetline_ifs(ifs, dfnrecord)) {
 			dfnlinenum++;
-			//std::cout << str << std::endl;
-
 			auto tk_space = tokenise(dfnrecord, ' ');
 			auto tk_semicolon = tokenise(dfnrecord, ';');
 			bool processrecord = true;
@@ -977,7 +1000,6 @@ public:
 		return RT_string;
 	};
 };
-
 
 class cFieldManager {
 

@@ -77,7 +77,6 @@ public:
 };
 
 
-
 typedef std::variant<double, int, float, char, std::vector<double>, std::vector<int>, std::vector<float>, std::vector<char>> cVrnt;
 
 //Unsorted vector of unique-key key,value pairs
@@ -120,11 +119,6 @@ public:
 		return true;
 	}
 
-	//ValType& operator[](const KeyType& key) {
-	//	const& int i = keyindex(key);		
-	//	return ((*this)[i]).second;
-	//}
-	
 	std::pair<KeyType, ValType>&  pair(const KeyType& key) {
 		const int& i = keyindex(key);
 		std::pair<KeyType, ValType>& p = (*this)[i];
@@ -168,7 +162,6 @@ public:
 
 //Case insensitive std::string KeyVec
 using cKeyVecCiStr = cKeyVec<std::string, std::string, caseinsensetiveequal<std::string>>;
-
 
 template<typename T>
 class cHistogramStats{
@@ -298,7 +291,6 @@ public:
 		}
 	}
 };
-
 
 template<typename T>
 class cStats{

@@ -440,48 +440,48 @@ public:
 		value = getboolvalue(id);
 		return true;
 	}
-	bool getvalue(const std::string id, short& value) const
-	{
-		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+
+	bool getvalue(const std::string id, short& value) const {
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0) {
 			return false;
 		}
 		value = getshortvalue(id);
 		return true;
-	}
-	bool getvalue(const std::string id, int& value) const
-	{
-		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+	};
+
+	bool getvalue(const std::string id, int& value) const {
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0) {
 			return false;
 		}
 		value = getintvalue(id);
 		return true;
-	}
-	bool getvalue(const std::string id, size_t& value) const
-	{
-		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+	};
+
+	bool getvalue(const std::string id, size_t& value) const {
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0) {
 			return false;
 		}
 		value = getsizetvalue(id);
 		return true;
-	}
-	bool getvalue(const std::string id, float& value) const
-	{
-		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+	};
+	
+	bool getvalue(const std::string id, float& value) const {
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0) {
 			return false;
 		}
 		value = getfloatvalue(id);
 		return true;
-	}
-	bool getvalue(const std::string id, double& value) const
-	{
-		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
+	};
+
+	bool getvalue(const std::string id, double& value) const {
+		if (getentry(id).compare(undefinedvalue<std::string>()) == 0) {
 			return false;
 		}
 		value = getdoublevalue(id);
 		return true;
-	}
-	bool getvalue(const std::string id, std::string& value) const
-	{
+	};
+
+	bool getvalue(const std::string id, std::string& value) const {
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			return false;
 		}
@@ -489,7 +489,12 @@ public:
 		return true;
 	}
 
-	//bookmark
+	bool getvalue(const std::string id, std::vector<std::vector<double>>& matrix) const {
+		matrix = getdoublematrix(id);
+		if(matrix.size() == 0) return false;
+		return true;
+	};
+
 	template<typename T>
 	bool get(const std::string id, T& value, const T& defaultvalue) const
 	{
@@ -513,6 +518,7 @@ public:
 		}
 		return result;
 	}
+	
 	std::vector<double> getmultipledoubles(const std::string id) const
 	{
 		std::vector<std::string> str = getmultiplestrings(id);
@@ -524,6 +530,7 @@ public:
 		}
 		return result;
 	}
+	
 	std::vector<std::string> getmultiplestrings(const std::string id) const
 	{
 		int i;
@@ -544,6 +551,7 @@ public:
 		}
 		return result;
 	}
+	
 	std::vector<std::string> getblockstrings(const std::string id) const
 	{
 		std::vector<std::string> result;
@@ -554,6 +562,7 @@ public:
 		}
 		return result;
 	}
+	
 	std::vector<std::vector<std::string>> getblockleftright(const std::string id) const
 	{
 		std::vector<std::string> s = getblockstrings(id);

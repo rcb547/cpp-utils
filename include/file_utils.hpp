@@ -165,13 +165,21 @@ public:
 
 	FilePathParts() = delete;
 
-	FilePathParts(const std::string& path) {
-		fs::path p = path;
+	FilePathParts(const fs::path filepath) {
+		fs::path p = filepath;
 		p.make_preferred();
 		directory = (p.parent_path() += fs::path::preferred_separator).string();
 		stem = p.stem().string();
 		extension = p.extension().string();
 	};
+
+	//FilePathParts(const std::string& filepath) {
+	//	fs::path p = filepath;
+	//	p.make_preferred();
+	//	directory = (p.parent_path() += fs::path::preferred_separator).string();
+	//	stem = p.stem().string();
+	//	extension = p.extension().string();
+	//};
 };
 
 inline std::string extractfiledirectory_nosep(const std::string& pathname) {
