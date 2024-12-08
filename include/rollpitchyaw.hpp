@@ -17,8 +17,30 @@ Author: Ross C. Brodie, Geoscience Australia.
 //The order of rotations matters
 
 template<class T>
-Eigen::Matrix<T, 3, 3> rollpitchyaw_matrix(const T& roll, const T& pitch, const T& yaw)
-{			
+Eigen::Matrix<T, 3, 3> rollpitchyaw_matrix(const T& roll_radians, const T& pitch_radians, const T& yaw_radians) {
+	//Roll then pitch then yaw order - specify angles in radians	
+	//Same as yaw_matrix(yaw) * pitch_matrix(pitch) * roll_matrix(roll)
+	Eigen::AngleAxis<double> AR(roll_radians, Eigen::Vector3d::UnitX());
+	Eigen::AngleAxis<double> AP(pitch_radians, Eigen::Vector3d::UnitY());
+	Eigen::AngleAxis<double> AY(yaw_radians, Eigen::Vector3d::UnitZ());
+	Eigen::Quaterniond Q(AY * AP * AR); Q.normalize();
+	return Q.toRotationMatrix();
+};
+
+template<class T>
+Eigen::Matrix<T, 3, 3> yawpitchroll_matrix(const T& roll_radians, const T& pitch_radians, const T& yaw_radians) {
+	//Yaw then pitch then roll order - specify angles in radians	
+	//Same as roll_matrix(roll) * pitch_matrix(pitch) * yaw_matrix(yaw)
+	//I think this is the aviation convention order
+	Eigen::AngleAxis<double> AR(roll_radians, Eigen::Vector3d::UnitX());
+	Eigen::AngleAxis<double> AP(pitch_radians, Eigen::Vector3d::UnitY());
+	Eigen::AngleAxis<double> AY(yaw_radians, Eigen::Vector3d::UnitZ());
+	Eigen::Quaterniond Q(AR * AP * AY); Q.normalize();
+	return Q.toRotationMatrix();
+};
+
+template<class T>
+Eigen::Matrix<T, 3, 3> rollpitchyaw_matrix_old(const T& roll, const T& pitch, const T& yaw) {
 	//Roll then pitch then yaw order - specify angles in radians	
 	//Same as yaw_matrix(yaw) * pitch_matrix(pitch) * roll_matrix(roll)
 	const T cosr = cos(roll);
@@ -43,8 +65,7 @@ Eigen::Matrix<T, 3, 3> rollpitchyaw_matrix(const T& roll, const T& pitch, const 
 }
 
 template<class T>
-Eigen::Matrix<T, 3, 3> yawpitchroll_matrix(const T& roll, const T& pitch, const T& yaw)
-{	
+Eigen::Matrix<T, 3, 3> yawpitchroll_matrix_old(const T& roll, const T& pitch, const T& yaw) {
 	//Yaw then pitch then roll order - specify angles in radians	
 	//Same as roll_matrix(roll) * pitch_matrix(pitch) * yaw_matrix(yaw)
 	//I think this is the aviation convention order
@@ -70,8 +91,7 @@ Eigen::Matrix<T, 3, 3> yawpitchroll_matrix(const T& roll, const T& pitch, const 
 }
 
 template<class T>
-Eigen::Matrix<T, 3, 3> roll_matrix(const T& roll)
-{
+Eigen::Matrix<T, 3, 3> roll_matrix_old(const T& roll) {
 	//Specify angles in radians
 	const T cosr = cos(roll);
 	const T sinr = sin(roll);
@@ -83,8 +103,7 @@ Eigen::Matrix<T, 3, 3> roll_matrix(const T& roll)
 }
 
 template<class T>
-Eigen::Matrix<T, 3, 3> pitch_matrix(const T& pitch)
-{
+Eigen::Matrix<T, 3, 3> pitch_matrix_old(const T& pitch) {
 	//Specify angles in radians
 	const T cosp = cos(pitch);
 	const T sinp = sin(pitch);
@@ -96,8 +115,7 @@ Eigen::Matrix<T, 3, 3> pitch_matrix(const T& pitch)
 }
 
 template<class T>
-Eigen::Matrix<T, 3, 3> yaw_matrix(const T& yaw)
-{
+Eigen::Matrix<T, 3, 3> yaw_matrix_old(const T& yaw) {
 	//Specify angles in radians
 	const T cosy = cos(yaw);
 	const T siny = sin(yaw);

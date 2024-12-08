@@ -8,7 +8,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-template <typename T=double> constexpr T MUZERO = 12.56637061435917295384e-7; //Magnetic permeability of free space;
+template <typename T> constexpr T MUZERO = 12.56637061435917295384e-7; //Magnetic permeability of free space;
 template <typename T> constexpr T EZERO = 8.854e-12;  //Electrical permitivity of free space
 template <typename T> constexpr T UGC = 6.67384e-11; //Universal gravitational constant
 

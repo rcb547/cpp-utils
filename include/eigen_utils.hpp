@@ -8,17 +8,22 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include <random>
+#include <chrono>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include "general_constants.hpp"
+
+typedef Eigen::Vector<double, 3> Vec3;
+typedef Eigen::Matrix<double, 3, 3> Mat3;
 typedef Eigen::VectorXd Vector;
 typedef Eigen::MatrixXd Matrix;
 
-#include <random>
-#include <chrono>
-
 template<typename T>
-void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name)
-{
+void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name) {
 	std::cout << name << std::endl;
 	for (auto i = 0; i < A.rows(); i++) {
 		for (auto j = 0; j < A.cols(); j++) {
@@ -32,9 +37,9 @@ template<typename T>
 void writetofile(const Eigen::Matrix<T,-1,-1>& A, const std::string& path)
 {
 	std::ofstream ofs(path, std::ofstream::out);
-	for (auto i = 0; i < A.rows(); i++) {
-		for (auto j = 0; j < A.cols(); j++) {
-			ofs << i + 1 << "\t" << j + 1 << "\t" << A(i, j) << std::endl;;
+	for (size_t i = 0; i < A.rows(); i++) {
+		for (size_t j = 0; j < A.cols(); j++) {
+			ofs << (i + 1) << "\t" << (j + 1) << "\t" << A(i, j) << std::endl;;
 		}
 	}
 };

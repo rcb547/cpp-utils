@@ -19,29 +19,28 @@ namespace Geometry3D {
 	class cLine;//forward declarations
 	class cLineSeg;//forward declarations
 
-
 	class cVec {
 
 	public:
 
-		double x;
-		double y;
-		double z;
+		double x = 0.0;
+		double y = 0.0;
+		double z = 0.0;
 
-		cVec() { x = 0.0; y = 0.0; z = 0.0; }
+		cVec() {};
 
 		cVec(const double& xo, const double& yo, const double& zo) {
 			x = xo; y = yo; z = zo;
 		}
 
 		cVec(const std::vector<double>& v) {
+			assert(v.size() == 3);
 			x = v[0]; y = v[1]; z = v[2];
 		}
 
-		void set(double xo, double yo, double zo) { x = xo; y = yo; z = zo; }
+		//void set(double xo, double yo, double zo) { x = xo; y = yo; z = zo; }
 
-		cVec& operator=(const double& a)
-		{
+		cVec& operator=(const double& a) {
 			x = a; y = a; z = a;
 			return *this;
 		}
@@ -52,6 +51,7 @@ namespace Geometry3D {
 		}
 
 		cVec& operator=(const std::vector<double>& v) {
+			assert(v.size() == 3);
 			x = v[0]; y = v[1]; z = v[2];
 			return *this;
 		}
@@ -130,8 +130,7 @@ namespace Geometry3D {
 			else return 1;
 		}
 
-		void rotate_inplace(const double& angle, const cVec& axis)
-		{
+		void rotate_inplace(const double& angle, const cVec& axis) {
 			if (angle == 0.0) return;
 
 			cVec a = axis.unit();
@@ -168,51 +167,45 @@ namespace Geometry3D {
 
 		}
 
-		cVec rotate(const double& angle, const cVec& axis) {
-			cVec v = *this;
+		cVec rotate(const double& angle, const cVec& axis) const {
+			cVec v(*this);
 			v.rotate_inplace(angle, axis);
 			return v;
 		}
 
-		double length_squared() const
-		{
+		double norm_squared() const {
 			return x * x + y * y + z * z;
 		}
 
-		double length() const
-		{
+		double norm() const {
 			return std::sqrt(x * x + y * y + z * z);
+			//return std::hypot(x, y, z);
 		}
 
-		double length2n(const double& power)
-		{
+		double norm2n(const double& power) const {
 			return std::pow(x * x + y * y + z * z, 0.5 * power);
 		}
 
 		void unitise() {
-			double len = std::sqrt(x * x + y * y + z * z);
+			const double len = norm();
 			x /= len; y /= len; z /= len;
 		}
 
-		cVec unit() const
-		{
-			cVec v(x, y, z);
+		cVec unit() const {
+			cVec v(*this);
 			v.unitise();
 			return v;
 		}
 
-		double dot(const cVec& v) const
-		{
+		double dot(const cVec& v) const {
 			return v.x * x + v.y * y + v.z * z;
 		}
 
-		static double dot(const cVec& a, const cVec& b)
-		{
+		friend double dot(const cVec& a, const cVec& b) {
 			return a.dot(b);
 		}
 
-		cVec cross(const cVec& b) const
-		{
+		cVec cross(const cVec& b) const {
 			cVec c;//c = a x b (a is this cVec)
 			c.x = y * b.z - b.y * z;
 			c.y = z * b.x - b.z * x;
@@ -220,11 +213,14 @@ namespace Geometry3D {
 			return c;
 		}
 
-		static cVec cross(const cVec& a, const cVec& b)
-		{
+		friend cVec cross(const cVec& a, const cVec& b) {
 			return a.cross(b);
 		}
 
+		friend std::ostream& operator<<(std::ostream& os, cVec& v) {
+			os << v.x << std::endl << v.y << std::endl << v.z;
+			return os;
+		}
 	};
 
 	class cPnt : public cVec {
@@ -334,16 +330,16 @@ namespace Geometry3D {
 		double distance(const cPnt& p) const
 		{
 			cVec v = PLL.cross(p - PNT);
-			return v.length();
+			return v.norm();
 		}
 
 		double distance(const cLine& n) const
 		{
 			cVec w = PNT - n.PNT;
-			if (w.length() < DBL_EPSILON) return 0;
+			if (w.norm() < DBL_EPSILON) return 0;
 			cVec v = n.PLL.cross(PLL);
-			if (v.length() < DBL_EPSILON) return n.distance(PNT);
-			return fabs(w.dot(v)) / v.length();
+			if (v.norm() < DBL_EPSILON) return n.distance(PNT);
+			return fabs(w.dot(v)) / v.norm();
 		}
 
 		cPnt closestpointonline(const cPnt& p)
