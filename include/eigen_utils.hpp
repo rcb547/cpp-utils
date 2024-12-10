@@ -17,10 +17,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <Eigen/Geometry>
 #include "general_constants.hpp"
 
-typedef Eigen::Vector<double, 3> Vec3;
-typedef Eigen::Matrix<double, 3, 3> Mat3;
-typedef Eigen::VectorXd Vector;
-typedef Eigen::MatrixXd Matrix;
+using Vec3 = Eigen::Vector<double, 3>;
+using Mat3 = Eigen::Matrix<double, 3, 3>;
+using Vector = Eigen::VectorXd;
+using Matrix = Eigen::MatrixXd;
 
 template<typename T>
 void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name) {

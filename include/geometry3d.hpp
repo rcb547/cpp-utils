@@ -11,6 +11,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cmath>
 #include <vector>
 #include <cfloat>
+#include <cfloat>
+#include <cassert>
 #include "general_constants.hpp"
 
 namespace Geometry3D {
