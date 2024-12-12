@@ -13,12 +13,16 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <iostream>
 #include <fstream>
 #include <vector>
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+
 #include "general_constants.hpp"
 
-using Vec3 = Eigen::Vector<double, 3>;
-using Mat3 = Eigen::Matrix<double, 3, 3>;
+using Vec3d = Eigen::Vector3d;
+using Mat3d = Eigen::Matrix3d;
+using Vec3cd = Eigen::Vector3cd;
+using Mat3cd = Eigen::Matrix3cd;
 using Vector = Eigen::VectorXd;
 using Matrix = Eigen::MatrixXd;
 
