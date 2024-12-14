@@ -355,3 +355,16 @@ std::vector<T> log10space(const T& x1, const T& x2, const size_t n)
 	return v;
 };
 
+//template<class T>
+//std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values) {
+//	std::copy(begin(values), end(values), std::ostream_iterator<T>(stream, ""));
+//	//c++20 std::ranges::copy(values, std::ostream_iterator<T>(stream, ""));	
+//	return stream;
+//}
+
+template<class T>
+std::string tostring(const std::vector<T>& values, const std::string delimiter = "") {
+	std::ostringstream oss;
+	std::copy(begin(values), end(values), std::ostream_iterator<T>(oss, delimiter.c_str()));
+	return oss.str();
+};
