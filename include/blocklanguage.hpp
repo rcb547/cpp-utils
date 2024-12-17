@@ -45,9 +45,8 @@ public:
 
 	cBlock() { }
 
-	cBlock(const std::string& filename)
-	{
-		loadfromfile(filename);
+	cBlock(const fs::path& filepath) {
+		loadfromfile(filepath);
 	}
 
 	bool empty() {
@@ -55,9 +54,9 @@ public:
 		return false;
 	}
 
-	void loadfromfile(const std::string& filename)
+	void loadfromfile(const fs::path& filepath)
 	{
-		Filename = fs::path(filename).make_preferred().string();
+		Filename = fs::path(filepath).make_preferred().string();
 		if (fs::exists(Filename) == false) {
 			glog.errormsg(_SRC_, "Could not open file: %s\n", Filename.c_str());
 		}
