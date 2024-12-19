@@ -8,7 +8,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <Eigen/Dense>
+#include "eigen_utils.hpp"
 
 // Angles are specified in RADIANS unledd its an "_degrees" function
 // The returnd 3x3 rotation matrices are position vector rotations about the origin
