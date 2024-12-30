@@ -20,77 +20,89 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <fstream> 
 
 //Vector scalar unary op
-template<typename T, typename S> std::vector<T>& operator+=(std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T>& operator+=(std::vector<T>& a, const S& s)
 {
 	std::for_each(a.begin(), a.end(), [&s](T& item) { item += s; });
 	return a;
 };
 
-template<typename T, typename S> std::vector<T>& operator-=(std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T>& operator-=(std::vector<T>& a, const S& s)
 {
 	std::for_each(a.begin(), a.end(), [&s](T& item) { item -= s; });
 	return a;
 };
 
-template<typename T, typename S> std::vector<T>& operator*=(std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T>& operator*=(std::vector<T>& a, const S& s)
 {
 	std::for_each(a.begin(), a.end(), [&s](T& item) { item *= s; });
 	return a;
 };
 
-template<typename T, typename S> std::vector<T>& operator/=(std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T>& operator/=(std::vector<T>& a, const S& s)
 {
 	std::for_each(a.begin(), a.end(), [&s](T& item) { item /= s; });
 	return a;
 };
 
 //Vector scalar binary op
-template<typename T, typename S> std::vector<T> operator+(const std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T> operator+(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b += s;
 };
 
-template<typename T, typename S> std::vector<T> operator-(const std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T> operator-(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b -= s;
 };
 
-template<typename T, typename S> std::vector<T> operator*(const std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T> operator*(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b *= s;
 };
 
-template<typename T, typename S> std::vector<T> operator/(const std::vector<T>& a, const S& s)
+template<typename T, typename S>
+std::vector<T> operator/(const std::vector<T>& a, const S& s)
 {
 	std::vector<T> b = a;
 	return b /= s;
 };
 
-template<typename T, typename S> std::vector<T> operator+(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator+(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s + a[i];
 	return b;
 };
 
-template<typename T, typename S> std::vector<T> operator-(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator-(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s - a[i];
 	return b;
 };
 
-template<typename T, typename S> std::vector<T> operator*(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator*(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s * a[i];
 	return b;
 };
 
-template<typename T, typename S> std::vector<T> operator/(const S& s, const std::vector<T>& a)
+template<typename T, typename S>
+std::vector<T> operator/(const S& s, const std::vector<T>& a)
 {
 	std::vector<T> b(a.size());
 	for (size_t i = 0; i < b.size(); i++) b[i] = s / a[i];
@@ -98,50 +110,57 @@ template<typename T, typename S> std::vector<T> operator/(const S& s, const std:
 };
 
 //Vector vector unary op
-template<typename T> std::vector<T>& operator+=(std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T>& operator+=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] += b[i];
 	return a;
 };
 
-template<typename T> std::vector<T>& operator-=(std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T>& operator-=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] -= b[i];
 	return a;
 };
 
-template<typename T> std::vector<T>& operator*=(std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T>& operator*=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (auto i = 0; i < b.size(); i++) a[i] *= b[i];
 	return a;
 };
 
-template<typename T> std::vector<T>& operator/=(std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T>& operator/=(std::vector<T>& a, const std::vector<T>& b)
 {
 	for (size_t i = 0; i < a.size(); i++) a[i] /= b[i];
 	return a;
 };
 
 //vector vector binary op
-template<typename T> std::vector<T> operator*(const std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T> operator*(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
 	return c *= b;
 };
 
-template<typename T> std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)
-{
+template<typename T>
+std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b) {
 	std::vector<T> c = a;
 	return c += b;
 };
 
-template<typename T> std::vector<T> operator-(const std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T> operator-(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
 	return c -= b;
 };
 
-template<typename T> std::vector<T> operator/(const std::vector<T>& a, const std::vector<T>& b)
+template<typename T>
+std::vector<T> operator/(const std::vector<T>& a, const std::vector<T>& b)
 {
 	std::vector<T> c = a;
 	return c /= b;
@@ -149,50 +168,59 @@ template<typename T> std::vector<T> operator/(const std::vector<T>& a, const std
 
 
 //Functions
-template<typename T> void pow10_apply(std::vector<T>& v)
+template<typename T>
+void pow10_apply(std::vector<T>& v)
 {
 	std::for_each(v.begin(), v.end(), [](T& item){ item = std::pow(10.0, item); });
 };
 
-template<typename T> std::vector<T> pow10(const std::vector<T>& v)
+template<typename T>
+std::vector<T> pow10(const std::vector<T>& v)
 {
 	std::vector<T> a = v;
 	pow10_apply(a); return a;
 };
 
-template<typename T> void log10_apply(std::vector<T>& v)
+template<typename T>
+void log10_apply(std::vector<T>& v)
 {
 	std::for_each(v.begin(), v.end(), [](T& item){ item = std::log10(item); });
 };
 
-template<typename T> std::vector<T> log10(const std::vector<T>& v)
+template<typename T>
+std::vector<T> log10(const std::vector<T>& v)
 {
 	std::vector<T> a = v;
 	log10_apply(a); return a;
 };
 
-template<typename T> T min(const std::vector<T>& v)
+template<typename T>
+T min(const std::vector<T>& v)
 {
 	return *std::min_element(v.cbegin(), v.cend());
 };
 
-template<typename T> T max(const std::vector<T>& v)
+template<typename T>
+T max(const std::vector<T>& v)
 {
 	return *std::max_element(v.cbegin(), v.cend());
 };
 
-template<typename T> T sum(const std::vector<T>& v)
+template<typename T>
+T sum(const std::vector<T>& v)
 {
 	T init = 0;
 	return std::accumulate(v.cbegin(), v.cend(), init);
 };
 
-template<typename T> T mean(const std::vector<T>& v)
+template<typename T>
+T mean(const std::vector<T>& v)
 {
 	return sum(v) / v.size();
 };
 
-template<typename T> T variance(const std::vector<T>& v)
+template<typename T>
+T variance(const std::vector<T>& v)
 {
 	T vmean = mean(v);
 	T init = 0.0;
@@ -200,7 +228,8 @@ template<typename T> T variance(const std::vector<T>& v)
 	return sum / v.size();
 };
 
-template<typename T> T stddev(const std::vector<T>& v)
+template<typename T>
+T stddev(const std::vector<T>& v)
 {
 	return sqrt(variance(v));
 };
@@ -226,7 +255,8 @@ std::vector<T> concaternate(const std::vector<T>& a, const std::vector<T>& b) {
 };
 
 //Resize 2d array
-template<typename T> void resize(std::vector<std::vector<T>>& m, size_t nrows, size_t ncols)
+template<typename T>
+void resize(std::vector<std::vector<T>>& m, size_t nrows, size_t ncols)
 {
 	m.resize(nrows);
 	for (size_t i = 0; i < nrows; i++){
