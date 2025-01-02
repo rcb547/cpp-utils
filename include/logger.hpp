@@ -44,6 +44,8 @@ private:
 
 public: 
 
+	SourceCodeLocation() {};
+
 	SourceCodeLocation(const char* file, const char* function, const int& linenumber){
 		const std::filesystem::path p(file);
 		location = strprint("File: %s\t Function:%s\t Line:%d", p.filename().string().c_str(), function, linenumber);
@@ -185,32 +187,42 @@ public:
 		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		logmsg(stdout_rank, msg);
-	}
+	};
 	
-	void warningmsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc)
-	{
+	void warningmsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc = SourceCodeLocation()) {
 		std::string fullmsg = "**Warning: " + msg + "\n";
 		if (srccodeloc.size() > 0) fullmsg += strprint("Warning is from %s\n", srccodeloc.c_str());
 
-		#if defined MATLAB_MEX_FILE
-			mexWarnMsgTxt(fullmsg.c_str());
-		#else
-			logmsg(fullmsg);
-		#endif
-	}
+#if defined MATLAB_MEX_FILE
+		mexWarnMsgTxt(fullmsg.c_str());
+#else
+		logmsg(fullmsg);
+#endif
+	};
 
-	void warningmsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...)
-	{
+	void warningmsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...) {
 		va_list vargs;
 		va_start(vargs, fmt);
-		std::string msg = "**Warning: " + strprint_va(fmt, vargs);
+		std::string msg = strprint_va(fmt, vargs);
 		va_end(vargs);
 		warningmsg_impl(msg, srccodeloc);
-	}
+	};
 
-	void warningmsg(const SourceCodeLocation& srccodeloc, const std::string& msg){
+	void warningmsg(const char* fmt, ...) {
+		va_list vargs;
+		va_start(vargs, fmt);
+		std::string msg = strprint_va(fmt, vargs);
+		va_end(vargs);
+		warningmsg_impl(msg);
+	};
+
+	void warningmsg(const SourceCodeLocation& srccodeloc, const std::string& msg) {
 		warningmsg_impl(msg, srccodeloc);
-	}
+	};
+
+	void warningmsg(const std::string& msg) {
+		warningmsg_impl(msg);
+	};
 
 	void append_stacktrace(std::string& msg) {
 		#ifdef  _HAS_STACK_TRACE_
