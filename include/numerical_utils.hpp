@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <complex>
 #include <limits>
 
 template <typename T>
@@ -11,7 +12,6 @@ template <typename T>
 static std::complex<T> pct_diff(const std::complex<T> ref, const std::complex<T> val) {
 	return std::complex<T>(pct_diff(ref.real(), val.real()), pct_diff(ref.imag(), val.imag()));
 };
-
 
 template <typename T>
 static bool nearly_equal(const T a, const T b, const T rel_th = 128 * std::numeric_limits<T>::epsilon(), T abs_th = std::numeric_limits<T>::epsilon())
@@ -47,6 +47,40 @@ static bool nearly_equal_ulps(const T x, const T y)
 };
 
 template <typename T>
+T stable_tanh(const T& x) {
+	//tanh(x) = (1.0 - exp(-4x))/(1.0 + 2.0*exp(-2x) + exp(-4x));
+	const T e2 = exp((T)-2.0*x);
+	const T e4 = e2 * e2;
+	const T tanhx = ((T)1.0 - e4) / ((T)1.0 + (T)2.0 * e2 + e4);
+	return tanhx;
+}
+
+// The limit b is adjusted to lie on a node for the given limit a and density given floating point precision
+// Returns n and the spacing
+template <typename T>
+static void spacing_ab_density1(const T& a, T& b, const T& density, size_t& n, T& spacing) {
+	spacing = (T)1.0 / density;
+	n = 1 + std::ceil((b - a) / spacing);
+	b = a + (T)(n - 1) * spacing;
+};
+
+template <typename T>
+static void spacing_ab_n(const T& a, T& b, const size_t& n, T& spacing) {
+	spacing = (b-a) / (T)(n-1);
+	b = a + (T)(n - 1) * spacing;
+};
+
+template <typename T>
+T smaller_even_divisor(const T& n, const T& start) {
+	T d = std::min(n, start);
+	while (n % d != 0) {
+		d--;
+	}
+	return d;
+}
+
+/*
+template <typename T>
 int test_ulps() {
 	T x, y;
 	std::cout << std::setprecision(16);
@@ -81,37 +115,5 @@ void test_tanh() {
 			<< t0 << " "
 			<< t1 << std::endl;
 	}
-}
+}*/
 
-template <typename T>
-T stable_tanh(const T& x) {
-	//tanh(x) = (1.0 - exp(-4x))/(1.0 + 2.0*exp(-2x) + exp(-4x));
-	const T e2 = exp((T)-2.0*x);
-	const T e4 = e2 * e2;
-	const T tanhx = ((T)1.0 - e4) / ((T)1.0 + (T)2.0 * e2 + e4);
-	return tanhx;
-}
-
-// The limit b is adjusted to lie on a node for the given limit a and density given floating point precision
-// Returns n and the spacing
-template <typename T>
-static void spacing_ab_density1(const T& a, T& b, const T& density, size_t& n, T& spacing) {
-	spacing = (T)1.0 / density;
-	n = 1 + std::ceil((b - a) / spacing);
-	b = a + (T)(n - 1) * spacing;
-};
-
-template <typename T>
-static void spacing_ab_n(const T& a, T& b, const size_t& n, T& spacing) {
-	spacing = (b-a) / (T)(n-1);
-	b = a + (T)(n - 1) * spacing;
-};
-
-template <typename T>
-T smaller_even_divisor(const T& n, const T& start) {
-	T d = std::min(n, start);
-	while (n % d != 0) {
-		d--;
-	}
-	return d;
-}
