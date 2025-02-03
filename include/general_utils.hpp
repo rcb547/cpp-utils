@@ -18,12 +18,12 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstring>
 #include <ctime>
 #include <iterator>
 #include <sstream>
 #include <vector>
 #include <filesystem>
+#include <typeinfo>
 
 #include "string_print.hpp"
 #include "logger.hpp"
@@ -1067,10 +1067,26 @@ bool bwrite(FILE* fp, const std::vector<T>& v) {
 template<typename T>
 bool bwrite(std::ofstream& ofs, const std::vector<T>& v) {
 	ofs.write(reinterpret_cast<const char*>(v.data()), v.size() * sizeof(T));
-	if(ofs.fail()){
+	if (ofs.fail()) {
 		std::string errstr = std::strerror(errno);
 		glog.errormsg(_SRC_, "Writing to binary file (%s).\n", errstr.c_str());
 	}
 	return true;
-}
+};
+
+std::string func_nyi_msg(const char* function) {
+	std::stringstream ss;
+	ss << "Function (" << function << ") is not yet implmented.\n";
+	return ss.str();
+};
+
+template<typename T>
+std::string template_func_nyi_msg(const char* function) {
+	const std::type_info& ti = typeid(T);
+	std::stringstream ss;
+	ss << "Template function (" << function << ") is not yet implmented for type (" << ti.name() << ").\n";
+	return ss.str();
+};
+
+
 

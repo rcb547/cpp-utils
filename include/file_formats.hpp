@@ -56,6 +56,14 @@ public:
 	size_t width = 15;//Total width of field
 	size_t decimals = 6;//Nuber of places after the decimal point	
 
+	cAsciiColumnFormat() {};
+
+	cAsciiColumnFormat(const char& _fmtchar, const size_t& _width, const size_t& _decimals) {
+		fmtchar = _fmtchar;
+		width = _width;
+		decimals = _decimals;
+	};
+
 	Type datatype() const {
 		if (fmtchar == 'I' || fmtchar == 'i') {
 			return Type::INTEGER;
@@ -131,6 +139,16 @@ public:
 
 	cAsciiColumnField() {};
 
+	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const cAsciiColumnFormat fmt, const size_t _nbands = 1) {
+		fileorder = _order;
+		startcolumn = _startcolumn;
+		name = _name;
+		fmtchar = fmt.fmtchar;
+		width = fmt.width;
+		decimals = fmt.decimals;
+		nbands = _nbands;
+	};
+
 	cAsciiColumnField(const size_t _order, const size_t _startcolumn, const std::string _name, const char _fmttype, const size_t _fmtwidth, const size_t _fmtdecimals, const size_t _nbands = 1) {
 		fileorder = _order;
 		startcolumn = _startcolumn;
@@ -141,8 +159,7 @@ public:
 		nbands = _nbands;
 	};
 
-	int startcol() const //Zero based start column index
-	{
+	int startcol() const {//Zero based start column index
 		return (int)startcolumn;
 	};
 

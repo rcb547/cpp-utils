@@ -11,6 +11,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <complex>
+#include <typeinfo>
 
 constexpr short _undefined_short_ = std::numeric_limits<short>::lowest();
 constexpr int _undefined_int_ = std::numeric_limits<int>::lowest();
@@ -19,43 +21,38 @@ constexpr float _undefined_float_ = std::numeric_limits<float>::lowest();
 constexpr double _undefined_double_ = std::numeric_limits<double>::lowest();
 constexpr char _undefined_stdstring_[] = "Undefined std::string";
 
-inline short _undefinedvalue(const short&){
-	return _undefined_short_;
-}
+template <typename T>
+T _undefinedvalue() {
+	const std::type_info& ti = typeid(T);
+	glog.errormsg(_SRC_, "_undefinedvalue() not allowed for type (%s).\n",ti.name());
+	return T(0);
+};
+template<> short _undefinedvalue<short>() { return _undefined_short_; };
+template<> int _undefinedvalue<int>() { return _undefined_int_; };
+template<> size_t _undefinedvalue<size_t>() { return _undefined_size_t_; };
+template<> float _undefinedvalue<float>() { return _undefined_float_; };
+template<> double _undefinedvalue<double>() { return _undefined_double_; };
+template<> std::string _undefinedvalue<std::string>() { return _undefined_stdstring_; };
 
-inline int _undefinedvalue(const int&){
-	return _undefined_int_;
-}
-
-inline size_t _undefinedvalue(const size_t&){
-	return _undefined_size_t_;
-}
-
-inline float _undefinedvalue(const float&) {
-	return _undefined_float_;
-}
-
-inline double _undefinedvalue(const double&){
-	return _undefined_double_;
-}
-
-inline std::string _undefinedvalue(const std::string&){
-	return _undefined_stdstring_;
-}
-
-//Does not make sense to have an undefined char really
-//inline char _undefinedvalue(const char&) {
+////Does not make sense to have an undefined char really
+//template<>
+//char _undefinedvalue<char>() {
 //	return 0;
-//}
+//};
 
 template <class T>
-inline T undefinedvalue(){
-	static T v;
-	return _undefinedvalue(v);
-}
+inline T undefinedvalue() {
+	return _undefinedvalue<T>();
+};
+
+template <>
+inline std::complex<double> undefinedvalue<std::complex<double>>() {
+	const double v = undefinedvalue<double>();
+	return std::complex<double>(v,v);
+};
 
 template <class T>
 bool isdefined(const T& v) {
 	if (v == undefinedvalue<T>()) return false;
 	return true;
-}
+};

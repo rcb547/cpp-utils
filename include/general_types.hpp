@@ -125,7 +125,7 @@ public:
 		return p;
 	}
 	
-	ValType& ref(const KeyType& key) {
+	ValType& refval(const KeyType& key) {
 		const int& i = keyindex(key);		
 		return ((*this)[i]).second;
 	}

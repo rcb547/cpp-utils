@@ -257,7 +257,7 @@ public:
 	}
 };
 
-typedef std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>> cFDMap;
+//typedef std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>> cFDMap;
 typedef std::pair<cFieldDefinition, cVrnt> cFDVar;
 
 
@@ -272,4 +272,3 @@ public:
 	cFieldDefinition fd;
 	cVrnt vnt;
 };
-

@@ -202,8 +202,7 @@ public:
 		}
 	}
 	
-	const cBlock findblock(const std::string name) const
-	{
+	const cBlock findblock(const std::string name) const {
 		size_t index = name.find(".");
 
 		if (index != std::string::npos){
@@ -261,13 +260,11 @@ public:
 		return undefinedvalue<std::string>();
 	}
 
-	std::string getstringvalue(const std::string id) const
-	{
+	std::string getstringvalue(const std::string id) const {
 		return value(getentry(id));
 	}
-
-	short getshortvalue(const std::string id) const
-	{
+	
+	short getshortvalue(const std::string id) const {
 		short v;
 		int status;
 		std::string entry = getentry(id);
@@ -431,8 +428,7 @@ public:
 		else return false;
 	}
 
-	bool getvalue(const std::string id, bool& value) const
-	{
+	bool getvalue(const std::string id, bool& value) const {
 		if (getentry(id).compare(undefinedvalue<std::string>()) == 0){
 			return false;
 		}
@@ -487,6 +483,22 @@ public:
 		value = getstringvalue(id);
 		return true;
 	}
+
+	bool getvalue(const std::string key, fs::path& value) const {
+		std::string v;
+		if (getvalue(key, v)) {
+			value = fs::path(v);
+			value.make_preferred();
+			return true;
+		}
+		return false;
+	}
+
+	bool getvalue(const std::string id, std::vector<double>& vec) const {
+		vec = getdoublevector(id);
+		if (vec.size() == 0) return false;
+		return true;
+	};
 
 	bool getvalue(const std::string id, std::vector<std::vector<double>>& matrix) const {
 		matrix = getdoublematrix(id);

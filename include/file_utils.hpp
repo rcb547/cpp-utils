@@ -222,8 +222,12 @@ inline std::string insert_before_filename(const std::string& pathname, const std
 	return fpp.directory + insertion + fpp.stem + fpp.extension;
 };
 
-inline std::string insert_after_filename(const std::string& pathname, const std::string& insertion)
-{
+inline fs::path insert_after_filename(const fs::path& pathname, const std::string& insertion) {
+	FilePathParts fpp(pathname);
+	return fpp.directory + fpp.stem + insertion + fpp.extension;
+};
+
+inline std::string insert_after_filename(const std::string& pathname, const std::string& insertion) {
 	FilePathParts fpp(pathname);
 	return fpp.directory + fpp.stem + insertion + fpp.extension;
 };

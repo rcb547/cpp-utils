@@ -38,8 +38,7 @@ void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name) {
 };
 
 template<typename T>
-void writetofile(const Eigen::Matrix<T,-1,-1>& A, const std::string& path)
-{
+void writetofile(const Eigen::Matrix<T,-1,-1>& A, const fs::path& path) {
 	std::ofstream ofs(path, std::ofstream::out);
 	for (size_t i = 0; i < A.rows(); i++) {
 		for (size_t j = 0; j < A.cols(); j++) {
@@ -49,8 +48,7 @@ void writetofile(const Eigen::Matrix<T,-1,-1>& A, const std::string& path)
 };
 
 template<typename T>
-void writetofile(const Eigen::Matrix<T,-1,1>& x, const std::string& path)
-{
+void writetofile(const Eigen::Matrix<T,-1,1>& x, const fs::path& path) {
 	std::ofstream ofs(path, std::ofstream::out);
 	for (auto i = 0; i < x.rows(); i++) {
 		ofs << x[i] << std::endl;
@@ -58,7 +56,7 @@ void writetofile(const Eigen::Matrix<T,-1,1>& x, const std::string& path)
 };
 
 template<typename VecType>
-void writetofile(const VecType& x, const std::string& path)
+void writetofile(const VecType& x, const fs::path& path)
 {
 	std::ofstream ofs(path, std::ofstream::out);
 	for (size_t i = 0; i < x.size(); i++) {		

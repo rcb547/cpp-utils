@@ -579,7 +579,7 @@ public:
 			base++;
 		}
 	};
-
+	
 	template<typename T>
 	bool getvec_fielddefinition(const cFieldDefinition& fd, std::vector<T>& vec, const size_t& n) const
 	{

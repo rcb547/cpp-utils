@@ -4,13 +4,13 @@
 #include <limits>
 
 template <typename T>
-static T pct_diff(const T ref, const T val) {
-	return (T)100.0 * (val - ref) / ref;
+static T pct_diff(const T refval, const T val) {
+	return (T)100.0 * (val - refval) / refval;
 };
 
 template <typename T>
-static std::complex<T> pct_diff(const std::complex<T> ref, const std::complex<T> val) {
-	return std::complex<T>(pct_diff(ref.real(), val.real()), pct_diff(ref.imag(), val.imag()));
+static std::complex<T> pct_diff(const std::complex<T> refval, const std::complex<T> val) {
+	return std::complex<T>(pct_diff(refval.real(), val.real()), pct_diff(refval.imag(), val.imag()));
 };
 
 template <typename T>
