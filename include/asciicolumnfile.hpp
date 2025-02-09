@@ -586,27 +586,27 @@ public:
 		bool readstatus = false;
 		const T udval = undefinedvalue<T>();
 		vec.resize(n);
-		if (fd.type == cFieldDefinition::TYPE::NUMERIC) {
-			size_t deflen = fd.numericvalue.size();
+		if (fd.get_type() == cFieldDefinition::TYPE::NUMERIC) {
+			size_t deflen = fd.get_numericvalue().size();
 			for (size_t i = 0; i < n; i++) {
-				if (deflen == 1) vec[i] = (T)fd.numericvalue[0];
-				else vec[i] = (T)fd.numericvalue[i];
+				if (deflen == 1) vec[i] = (T)fd.get_numericvalue()[0];
+				else vec[i] = (T)fd.get_numericvalue()[i];
 			}
 			readstatus = true;
 		}
-		else if (fd.type == cFieldDefinition::TYPE::COLUMNNUMBER) {
-			getcolumns(fd.column - 1, vec, n);
+		else if (fd.get_type() == cFieldDefinition::TYPE::COLUMNNUMBER) {
+			getcolumns(fd.get_column() - 1, vec, n);
 			readstatus = true;
 		}
-		else if (fd.type == cFieldDefinition::TYPE::VARIABLENAME) {
-			int findex = fieldindexbyname(fd.varname);
+		else if (fd.get_type() == cFieldDefinition::TYPE::VARIABLENAME) {
+			int findex = fieldindexbyname(fd.get_varname());
 			if (findex < 0) {
-				glog.errormsg(_SRC_, "Could not find a field named %s\n", fd.varname.c_str());
+				glog.errormsg(_SRC_, "Could not find a field named %s\n", fd.get_varname().c_str());
 			}
 			getfieldbyindex(findex, vec);
 			readstatus = true;
 		}
-		else if (fd.type == cFieldDefinition::TYPE::UNAVAILABLE) {
+		else if (fd.get_type() == cFieldDefinition::TYPE::UNAVAILABLE) {
 			vec = std::vector<T>(n, udval);
 			readstatus = false;
 		}

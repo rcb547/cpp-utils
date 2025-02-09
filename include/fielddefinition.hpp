@@ -20,10 +20,23 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 class cFieldDefinition {
 
+public:
+	enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };
+
 private:
 
 	bool initialised = false;
+	std::string keyname = std::string();//A tag name for the definition
+	
+	size_t coff = 1;//First column in ascii files for user perspective
+	TYPE type = TYPE::UNAVAILABLE;//The type of definition
+	char op = ' ';
+	double opval = 0.0;
+	bool flip = false;//flip polarity or not
 
+	std::string varname = std::string();//Variable name for variablename type defs
+	size_t column = undefinedvalue<size_t>();//Ascii file start column number for COLUMNUMBER type defs
+	
 	bool isnumeric(const std::string& rhs)
 	{
 		std::vector<std::string> tokens = tokenise(rhs, " \t,");
@@ -33,21 +46,10 @@ private:
 		if (*str_end) return false;
 		return true;
 	};
-
-public:
-
-	std::string keyname = std::string();//A tag name for the definition
-	enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };
-	size_t coff = 1;//First column in ascii files for user perspective
-	TYPE type = TYPE::UNAVAILABLE;//The type of definition
-	char op = ' ';
-	double opval = 0.0;
-	bool flip = false;//flip polarity or not
-
-	std::string varname = std::string();//Variable name for variablename type defs
-	size_t column = undefinedvalue<size_t>();//Ascii file start column number for COLUMNUMBER type defs
 	std::vector<double> numericvalue;//Numeric value
 
+public:
+	
 	cFieldDefinition() { }
 
 	cFieldDefinition(const cBlock& b, const std::string& key) {
@@ -123,8 +125,24 @@ public:
 		return initialised;
 	}
 
-	TYPE definitiontype() const {
+	const TYPE& get_type() const {
 		return type;
+	}
+
+	const std::string& get_varname() const {
+		return varname;
+	}
+
+	const std::string& get_keyname() const {
+		return keyname;
+	}
+
+	const size_t& get_column() const {
+		return column;
+	}
+
+	const std::vector<double>& get_numericvalue() const {
+		return numericvalue;
 	}
 
 	template<typename T>
@@ -256,10 +274,8 @@ public:
 		return;
 	}
 };
-
-//typedef std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>> cFDMap;
-typedef std::pair<cFieldDefinition, cVrnt> cFDVar;
-
+using FDMap = std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>>;
+using cFDVar = std::pair<cFieldDefinition, cVrnt>;
 
 class cFdVrnt {
 

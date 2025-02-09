@@ -76,6 +76,28 @@ public:
 	}
 };
 
+//Short cut for horizontal line
+class hline {
+
+public:
+	const std::size_t& ndashes;
+	const bool& newline_before;
+	const bool& newline_after;
+
+	hline(const size_t& _ndashes = 16, const bool& _newline_before = true, const bool& _newline_after = true) : 
+		ndashes(_ndashes), newline_before(_newline_before), newline_after(_newline_after)
+	{};
+
+	friend std::ostream& operator << (std::ostream& os, const hline& h) {
+		if(h.newline_before) os << "\n";
+		for (size_t i = 0; i < h.ndashes; i++) {
+			os << "-";
+		}
+		if (h.newline_after) os << "\n";
+		return os;
+	}
+};
+
 
 typedef std::variant<double, int, float, char, std::vector<double>, std::vector<int>, std::vector<float>, std::vector<char>> cVrnt;
 
