@@ -14,6 +14,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <complex>
 #include <typeinfo>
 
+#include "logger.hpp"
+
 constexpr short _undefined_short_ = std::numeric_limits<short>::lowest();
 constexpr int _undefined_int_ = std::numeric_limits<int>::lowest();
 constexpr size_t _undefined_size_t_ = (std::numeric_limits<size_t>::max)();
@@ -27,6 +29,7 @@ T _undefinedvalue() {
 	glog.errormsg(_SRC_, "_undefinedvalue() not allowed for type (%s).\n",ti.name());
 	return T(0);
 };
+
 template<> short _undefinedvalue<short>() { return _undefined_short_; };
 template<> int _undefinedvalue<int>() { return _undefined_int_; };
 template<> size_t _undefinedvalue<size_t>() { return _undefined_size_t_; };

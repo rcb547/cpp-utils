@@ -10,6 +10,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #include <vector>
 #include "vector_utils.hpp"
+using namespace VectorUtils;
 
 class cRadiusSearcherTile{
 

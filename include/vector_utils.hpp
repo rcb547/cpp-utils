@@ -49,6 +49,12 @@ namespace VectorUtils {
 		return a;
 	};
 
+	template<typename T, typename S>
+	void set(std::vector<T>& a, const S& s)
+	{
+		std::for_each(a.begin(), a.end(), [&s](T& item) { item = s; });
+	};
+
 	//Vector scalar binary op
 	template<typename T, typename S>
 	std::vector<T> operator+(const std::vector<T>& a, const S& s)
