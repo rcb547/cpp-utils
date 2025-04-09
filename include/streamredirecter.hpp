@@ -17,7 +17,7 @@ private:
 
 	std::ostream& src;
 	std::streambuf* sbuf;
-	// Prevent copying.                        
+	// Prevent copying.
 	cStreamRedirecter(const cStreamRedirecter&) = delete;
 	cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
 };
