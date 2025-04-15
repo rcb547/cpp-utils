@@ -3,15 +3,6 @@
 #include <complex>
 #include <limits>
 
-template <typename T>
-static T pct_diff(const T refval, const T val) {
-	return (T)100.0 * (val - refval) / refval;
-};
-
-template <typename T>
-static std::complex<T> pct_diff(const std::complex<T> refval, const std::complex<T> val) {
-	return std::complex<T>(pct_diff(refval.real(), val.real()), pct_diff(refval.imag(), val.imag()));
-};
 
 template <typename T>
 static bool nearly_equal(const T a, const T b, const T rel_th = 128 * std::numeric_limits<T>::epsilon(), T abs_th = std::numeric_limits<T>::epsilon())
@@ -45,6 +36,34 @@ static bool nearly_equal_ulps(const T x, const T y)
 {
 	return equal_within_ulps<T>(x, y, 0);
 };
+
+template <typename T>
+static T pct_diff(const T refval, const T val) {
+	return (T)100.0 * (val - refval) / refval;
+};
+
+template <typename T>
+static std::complex<T> pct_diff(const std::complex<T> refval, const std::complex<T> val) {
+	return std::complex<T>(pct_diff(refval.real(), val.real()), pct_diff(refval.imag(), val.imag()));
+};
+
+double pct_diff_ex(const double& a, const double& b, const double tol = std::numeric_limits<double>::epsilon()) {
+	double r = 100.0 * (b - a)/a;
+	//constexpr double eps = std::numeric_limits<double>::epsilon();
+	//constexpr double eps = 1e-14;
+	// Amend for closeness within numerical precision	
+	if (nearly_equal_ulps(a, b)) r = 0.0;
+	else if (a == 0.0 && b == 0.0) r = 0.0;
+	else if (std::abs(b - a) <= tol) r = 0.0;
+	else if (std::abs(b-a) <= tol && std::abs(a) <= tol) r = 0.0;
+	return r;
+};
+
+std::complex<double> pct_diff_ex(const std::complex<double>& a, const std::complex<double>& b, const double tol = std::numeric_limits<double>::epsilon()) {
+	std::complex<double> r(pct_diff_ex(a.real(), b.real(), tol), pct_diff_ex(a.imag(), b.imag(), tol));
+	return r;
+};
+
 
 template <typename T>
 T stable_tanh(const T& x) {

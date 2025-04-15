@@ -213,6 +213,12 @@ namespace VectorUtils {
 	};
 
 	template<typename T>
+	T maxabs(const std::vector<T>& v)
+	{
+		return std::max(std::abs(min(v)), std::abs(max(v)));
+	};
+
+	template<typename T>
 	T sum(const std::vector<T>& v)
 	{
 		T init = 0;
