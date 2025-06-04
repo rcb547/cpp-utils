@@ -186,7 +186,6 @@ public:
 	bool openfile(const fs::path& datafilename) {
 		FileName = datafilename;
 		FileName.make_preferred();
-		//fixseparator(FileName);
 		//Open in binary mode so \r\n does not get converted to \n
 		IFS.open(datafilename, std::ifstream::in | std::ifstream::binary);
 		if (!IFS) {

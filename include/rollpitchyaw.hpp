@@ -125,7 +125,7 @@ inline static Mat3d yaw_matrix_degrees(const double& yaw_degrees) {
 	return yaw_matrix(yaw_degrees * D2R<double>);
 };
 
-inline static Mat3d roll_matrix_derivative_degrees(const double& roll_degrees) {
+inline static Mat3d roll_matrix_derivative_degrees(const double& roll_degrees) {	
 	Mat3d m = roll_matrix_derivative(D2R<double>*roll_degrees);// derivative w.r.t radians
 	m *= D2R<double>;
 	return m;
