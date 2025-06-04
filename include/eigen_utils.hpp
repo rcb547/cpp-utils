@@ -172,7 +172,7 @@ T mvgaussian_pdf(const Vector& m0, const Eigen::Matrix<T, -1, -1>& C, const Vect
 
 	Vector dm = m - m0;
 	double a = -0.5 * mtAm(dm, invC);
-	double pdf = exp(a) / sqrt(pow(TWOPI, k) * detC);
+	double pdf = exp(a) / sqrt(pow(TWOPI<double>, k) * detC);
 	return pdf;
 };
 
