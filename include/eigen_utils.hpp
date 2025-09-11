@@ -40,8 +40,10 @@ void print(const Eigen::Matrix<T, -1, -1>& A, const std::string& name) {
 template<typename T>
 void writetofile(const Eigen::Matrix<T,-1,-1>& A, const fs::path& path) {
 	std::ofstream ofs(path, std::ofstream::out);
-	for (size_t i = 0; i < A.rows(); i++) {
-		for (size_t j = 0; j < A.cols(); j++) {
+	const size_t nr = A.rows();
+	const size_t nc = A.cols();
+	for (size_t i = 0; i < nr; i++) {
+		for (size_t j = 0; j < nc; j++) {
 			ofs << (i + 1) << "\t" << (j + 1) << "\t" << A(i, j) << std::endl;;
 		}
 	}
