@@ -11,9 +11,10 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <string>
 #include <filesystem>
 #include <sstream>
-
+#include <istream>
 
 #include "csv.hpp"
 #include "general_utils.hpp"
@@ -21,6 +22,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "file_formats.hpp"
 #include "general_types.hpp"
 #include "fielddefinition.hpp"
+#include "undefinedvalues.hpp"
 
 #ifdef ENABLE_MPI
 #include "mpi_wrapper.hpp"
@@ -516,18 +518,20 @@ public:
 	};
 
 	template<typename T>
-	inline void getcolumn(const size_t& columnnumber, T& v) const
+	inline void getcolumn_impl(const size_t& columnnumber, T& v) const
 	{
 		if (columnnumber >= colstrings.size()) {
 			std::string msg = strprint("\n\tError trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n%s\n", columnnumber + 1, colstrings.size(), CurrentRecord.c_str());
 			glog.errormsg(_SRC_, msg);
 		}
 		else {
-			if (colstrings[columnnumber].size() == 0) {
+			const std::string& colstr = colstrings[columnnumber];
+			if (colstr.size() == 0) {
+				// nulls already eliminated by eliminate_nulls();
 				v = undefinedvalue<T>();
 			}
 			else {
-				std::istringstream(colstrings[columnnumber]) >> v;
+				std::istringstream(colstr) >> v;
 			}
 		}
 	};
@@ -537,7 +541,7 @@ public:
 	{
 		vec.resize(n);
 		for (size_t i = 0; i < n; i++) {
-			getcolumn(i + columnnumber, vec[i]);
+			getcolumn_impl(i + columnnumber, vec[i]);
 		}
 	};
 
@@ -553,7 +557,7 @@ public:
 	void getfieldbyindex(const size_t& findex, T& v) const
 	{
 		const size_t& cnum = fields[findex].startcol();
-		getcolumn(cnum, v);
+		getcolumn_impl(cnum, v);
 	};
 
 	template<typename T>
