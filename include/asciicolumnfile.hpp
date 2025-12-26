@@ -518,7 +518,7 @@ public:
 	};
 
 	template<typename T>
-	inline void getcolumn_impl(const size_t& columnnumber, T& v) const
+	inline void getcolumn(const size_t& columnnumber, T& v) const
 	{
 		if (columnnumber >= colstrings.size()) {
 			std::string msg = strprint("\n\tError trying to access column %zu when there are only %zu columns in the current record string (check format and delimiters)\nCurrent record is\n%s\n", columnnumber + 1, colstrings.size(), CurrentRecord.c_str());
@@ -541,7 +541,7 @@ public:
 	{
 		vec.resize(n);
 		for (size_t i = 0; i < n; i++) {
-			getcolumn_impl(i + columnnumber, vec[i]);
+			getcolumn(i + columnnumber, vec[i]);
 		}
 	};
 
@@ -557,7 +557,7 @@ public:
 	void getfieldbyindex(const size_t& findex, T& v) const
 	{
 		const size_t& cnum = fields[findex].startcol();
-		getcolumn_impl(cnum, v);
+		getcolumn(cnum, v);
 	};
 
 	template<typename T>

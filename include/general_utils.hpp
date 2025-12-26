@@ -8,39 +8,15 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <algorithm>
-#include <cfloat>
-#include <chrono>
-#include <climits>
-#include <cmath>
-#include <cstdarg>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <iterator>
-#include <sstream>
-#include <vector>
-#include <filesystem>
-#include <typeinfo>
-
-#include "string_print.hpp"
 #include "logger.hpp"
-#include "general_constants.hpp"
 #include "general_types.hpp"
-#include "string_utils.hpp"
 
-#if defined _WIN32
-#define NOMINMAX 
-#include <windows.h>
-#include <conio.h>
-#else
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/resource.h>
-#include <errno.h>
-#endif
+#include <cstdlib>
+#include <chrono>
+#include <string>
+#include <vector>
+#include <sstream>
+
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -53,6 +29,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #ifdef MATLAB_MEX_FILE
 #include "mex.h"
 #endif
+
 
 inline std::string commandlinestring(int argc, char** argv) {
 	std::string str = "Executing:";
@@ -109,18 +86,6 @@ inline int mpi_openmp_rank1() {
 	}
 #endif
 	return rank;
-}
-
-inline void rb_sleep(double secs)
-{
-
-#if defined _WIN32
-	int ms = (int)(secs * 1000);
-	Sleep((DWORD)ms);
-#else        
-	int s = (int)(secs);
-	sleep(s);
-#endif
 }
 
 inline void debug(const char* msg)
@@ -633,7 +598,7 @@ inline int floatcompare(const void* pa, const void* pb)
 
 inline void sort(float* x, const size_t n)
 {
-	qsort(x, n, sizeof(float), floatcompare);
+	std::qsort(x, n, sizeof(float), floatcompare);
 }
 
 inline int doublecompare(const void* pa, const void* pb)
@@ -646,7 +611,7 @@ inline int doublecompare(const void* pa, const void* pb)
 
 inline void sort(double* x, const size_t n)
 {
-	qsort(x, n, sizeof(double), doublecompare);
+	std::qsort(x, n, sizeof(double), doublecompare);
 }
 
 inline int stringcompare(const void* pa, const void* pb)
@@ -658,7 +623,7 @@ inline int stringcompare(const void* pa, const void* pb)
 
 inline void sort(char** strings, const size_t n)
 {
-	qsort(strings, n, sizeof(char*), stringcompare);
+	std::qsort(strings, n, sizeof(char*), stringcompare);
 }
 
 inline int intcompare(const void* pa, const void* pb)
@@ -669,65 +634,8 @@ inline int intcompare(const void* pa, const void* pb)
 
 inline void sort(int* x, const size_t n)
 {
-	qsort(x, n, sizeof(int), intcompare);
+	std::qsort(x, n, sizeof(int), intcompare);
 }
-
-#if defined _WIN32
-inline double reportusage()
-{
-	MEMORYSTATUSEX memstatus;
-	GlobalMemoryStatusEx(&memstatus);
-	return memstatus.dwMemoryLoad;
-}
-#else
-inline double reportusage()
-{
-	int pid = getpid();
-	double vsize, pcpu, pmem;
-	std::string tmpfile = strprint("ps.%d.tmp", pid);
-	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	int status = system(cmd.c_str());
-	FILE* fp = std::fopen(tmpfile.c_str(), "r");
-	char buf[201];
-	char* dummy;
-	dummy = fgets(buf, 200, fp);
-	dummy = fgets(buf, 200, fp);
-	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
-	fclose(fp);
-	std::filesystem::remove(tmpfile);
-	glog.logmsg("Percent CPU used: %.2lf\n", pcpu);
-	glog.logmsg("Percent memory used: %.2lf\n", pmem);
-	glog.logmsg("Virtual memory used (Mb): %.2lf\n", vsize / 1000.0);
-	return pmem;
-}
-#endif
-
-#if defined _WIN32
-inline double percentmemoryused()
-{
-	MEMORYSTATUSEX memstatus;
-	GlobalMemoryStatusEx(&memstatus);
-	return memstatus.dwMemoryLoad;
-}
-#else
-inline double percentmemoryused()
-{
-	int pid = getpid();
-	double vsize, pcpu, pmem;
-	std::string tmpfile = strprint("ps.%d.tmp", pid);
-	std::string cmd = strprint("ps --pid %d --format pcpu,vsize,pmem > %s\n", pid, tmpfile.c_str());
-	int status = system(cmd.c_str());
-	FILE* fp = std::fopen(tmpfile.c_str(), "r");
-	char buf[201];
-	char* dummy;
-	dummy = fgets(buf, 200, fp);
-	dummy = fgets(buf, 200, fp);
-	sscanf(buf, "%lf %lf %lf", &pcpu, &vsize, &pmem);
-	fclose(fp);
-	std::filesystem::remove(tmpfile.c_str());
-	return pmem;
-}
-#endif
 
 inline void guage(int ntot, int n, int pdiv1, int pdiv2)
 {
@@ -1087,6 +995,4 @@ std::string template_func_nyi_msg(const char* function) {
 	ss << "Template function (" << function << ") is not yet implmented for type (" << ti.name() << ").\n";
 	return ss.str();
 };
-
-
 

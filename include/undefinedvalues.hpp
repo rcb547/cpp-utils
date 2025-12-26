@@ -8,13 +8,13 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include "logger.hpp"
+
 #include <cstdint>
 #include <limits>
 #include <string>
 #include <complex>
 #include <typeinfo>
-
-#include "logger.hpp"
 
 constexpr short _undefined_short_ = std::numeric_limits<short>::lowest();
 constexpr int _undefined_int_ = std::numeric_limits<int>::lowest();

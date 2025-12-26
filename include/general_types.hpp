@@ -8,15 +8,19 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <cstring>
-#include <complex>
-#include <vector>
-#include <variant>
-#include <map>
-#include <optional>
-#include <iomanip>
 #include "undefinedvalues.hpp"
 #include "string_utils.hpp"
+
+#include <vector>
+#include <variant>
+#include <optional>
+#include <iomanip>
+#include <ostream>
+#include <functional>
+#include <ios>
+#include <limits>
+#include <string>
+#include <utility>
 
 //Short cut for setting std::fixed output witdh/decimals
 class ixd {

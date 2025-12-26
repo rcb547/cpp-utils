@@ -8,15 +8,25 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 #include <functional>
-#include <float.h>
+#include <cfloat>
+#include <map>
 
 #include "string_utils.hpp"
 #include "general_utils.hpp"
 #include "blocklanguage.hpp"
+#include "general_types.hpp"
+#include "logger.hpp"
+#include "string_print.hpp"
+#include "undefinedvalues.hpp"
+
+#include <cstdio>
+#include <sstream>
+#include <string>
+#include <utility>
 
 class cFieldDefinition {
 

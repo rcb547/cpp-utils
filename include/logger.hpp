@@ -8,6 +8,8 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include "string_print.hpp"
+
 #include <iostream>
 #include <ctime>
 #include <string>
@@ -16,14 +18,13 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <vector>
 #include <filesystem>
 
+namespace fs = std::filesystem;
+
 #undef _HAS_STACK_TRACE_
 //#define _HAS_STACK_TRACE_
 #if defined  _HAS_STACK_TRACE_
 	#include <stacktrace>
 #endif
-
-#include "string_print.hpp"
-namespace fs = std::filesystem;
 
 #if defined ENABLE_MPI
 	#include <mpi.h>
@@ -61,9 +62,10 @@ public:
 
 };
 
+#define _SRC_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__)
+
 class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager
-#define _SRC_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__)
 
 class cLogger
 {
@@ -289,4 +291,6 @@ public:
 	}
 
 };
+
+
 
