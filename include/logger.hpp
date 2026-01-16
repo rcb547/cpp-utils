@@ -63,6 +63,7 @@ public:
 };
 
 #define _SRC_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__)
+#define _SRC_CSTR_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__).c_str()
 
 class cLogger; //forward declaration only
 extern class cLogger glog; //The global instance of the log file manager

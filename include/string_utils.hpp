@@ -8,6 +8,9 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include "undefinedvalues.hpp"
+#include "string_print.hpp"
+
 #include <cfloat>
 #include <cctype>
 #include <cstring>
@@ -17,8 +20,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <sstream>
 #include <iterator>
 #include <algorithm>
-#include "undefinedvalues.hpp"
-#include "string_print.hpp"
+#include <string_view>
 
 inline bool string_contains(const char* str, const char& c)
 {
@@ -65,24 +67,34 @@ inline std::string stringvalue(const bool value)
 {
 	if (value == true)return std::string("True");
 	return std::string("False");
-}
+};
+
+inline int strcasecmp(const char* A, const char* B)
+{
+#if defined _MSC_VER //Microsoft Visual Studio compiler does not seem to define strcasecmp
+	return _stricmp(A, B);
+#else
+	return strcasecmp(A, B);
+#endif
+};
+
+inline int strncasecmp(const char* A, const char* B, const size_t n)
+{
+#if defined _MSC_VER //Microsoft Visual Studio compiler does not seem to define strncasecmp
+	return _strnicmp(A, B, n);
+#else
+	return strncasecmp(A, B, n);
+#endif
+};
 
 inline int strcasecmp(const std::string& A, const std::string& B)
 {
-#if defined _MSC_VER //Microsoft Visual Studio compiler does not seem to define strcasecmp
-	return _stricmp(A.c_str(), B.c_str());
-#else
 	return strcasecmp(A.c_str(), B.c_str());
-#endif
-}
+};
 
 inline int strncasecmp(const std::string& A, const std::string& B, const size_t n)
 {
-#if defined _MSC_VER //Microsoft Visual Studio compiler does not seem to define strncasecmp
-	return _strnicmp(A.c_str(), B.c_str(), n);
-#else
 	return strncasecmp(A.c_str(), B.c_str(), n);
-#endif
 }
 
 inline std::vector<std::string> uniquify(std::vector<std::string>& v) {
@@ -236,8 +248,17 @@ inline std::string toupper(const std::string& s) {
 	return t;
 }
 
+inline bool ciequal(std::string_view a, std::string_view b)
+{
+	return a.size() == b.size() &&
+		std::equal(a.begin(), a.end(), b.begin(),
+			[](unsigned char x, unsigned char y) {
+				return std::tolower(x) == std::tolower(y);
+			});
+};
+
 //case insensitive equal function
-inline bool ciequal(const std::string& a, const std::string& b)
+inline bool ciequal_xxx(const std::string& a, const std::string& b)
 {
 	return std::equal(a.begin(), a.end(), b.begin(), b.end(),
 		[](char x, char y) {
