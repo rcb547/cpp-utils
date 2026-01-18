@@ -8,6 +8,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include "source_code_location.hpp"
 #include "string_print.hpp"
 
 #include <iostream>
@@ -17,8 +18,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdio>
 #include <vector>
 #include <filesystem>
-
-namespace fs = std::filesystem;
 
 #undef _HAS_STACK_TRACE_
 //#define _HAS_STACK_TRACE_
@@ -38,38 +37,18 @@ namespace fs = std::filesystem;
 	#include "mex.h"
 #endif
 
-class SourceCodeLocation {
+#include <algorithm>
+#include <cstdarg>
 
-private:
-	std::string location;
+namespace CppUtils {
 
-public: 
+	//	At the top of the C++ file that contains main() do this before other include files
+	//	#include "logger.hpp"
+	//	CppUtils::cLogger glog; //The global instance of the log file manager
 
-	SourceCodeLocation() {};
 
-	SourceCodeLocation(const char* file, const char* function, const int& linenumber){
-		const std::filesystem::path p(file);
-		location = strprint("File: %s\t Function:%s\t Line:%d", p.filename().string().c_str(), function, linenumber);
-	};
+	class cLogger {
 
-	const char* c_str() const {
-		return location.c_str();
-	}
-
-	size_t size() const {
-		return location.size();
-	}
-
-};
-
-#define _SRC_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__)
-#define _SRC_CSTR_ SourceCodeLocation(__FILE__, __FUNCTION__, __LINE__).c_str()
-
-class cLogger; //forward declaration only
-extern class cLogger glog; //The global instance of the log file manager
-
-class cLogger
-{
 	private:
 		std::vector<std::ofstream> ofs;
 
@@ -85,11 +64,11 @@ class cLogger
 
 		int threadindex()
 		{
-			#if defined _OPENMP
-				return omp_get_thread_num();
-			#else
-				return 0;
-			#endif
+#if defined _OPENMP
+			return omp_get_thread_num();
+#else
+			return 0;
+#endif
 		}
 
 		void flushindex(const int i)
@@ -108,189 +87,193 @@ class cLogger
 		};
 
 
-public:
+	public:
 
-	cLogger() {};
+		cLogger() {};
 
-	void set_num_omp_threads(const size_t& n){
-		ofs.resize(n);
-	}
-
-	bool open(fs::path logfilename)
-	{
-		const size_t i = (size_t) threadindex();
-		if (ofs.size() < i + 1) {
-			ofs.resize(i + 1);
+		void set_num_omp_threads(const size_t& n) {
+			ofs.resize(n);
 		}
 
-		std::filesystem::path dirpath = logfilename.make_preferred().parent_path();
-		if (dirpath.string().size() > 0) {
-			std::filesystem::create_directories(dirpath);
+		bool open(std::filesystem::path logfilename)
+		{
+			const size_t i = (size_t)threadindex();
+			if (ofs.size() < i + 1) {
+				ofs.resize(i + 1);
+			}
+
+			std::filesystem::path dirpath = logfilename.make_preferred().parent_path();
+			if (dirpath.string().size() > 0) {
+				std::filesystem::create_directories(dirpath);
+			}
+
+			ofs[i].open(logfilename, std::ios_base::out);
+			if (ofs[i].fail()) {
+				errormsg(_SRC_, "Failed to open Log file %s", logfilename.c_str());
+			}
+			ofs[i] << "Logfile opened on " << timestamp() << std::endl << std::flush;
+			return true;
 		}
 
-		ofs[i].open(logfilename, std::ios_base::out);
-		if (ofs[i].fail()) {
-			glog.errormsg(_SRC_,"Failed to open Log file %s", logfilename.c_str());
+		void flush()
+		{
+			flushindex(threadindex());
 		}
-		ofs[i] << "Logfile opened on " << timestamp() << std::endl << std::flush;
-		return true;
-	}
 
-	void flush()
-	{
-		flushindex(threadindex());
-	}
-
-	void close()
-	{
-		closeindex(threadindex());
-	}
-
-	~cLogger()
-	{
-		for (size_t i = 0; i < ofs.size(); i++) {
-			closeindex((int)i);
+		void close()
+		{
+			closeindex(threadindex());
 		}
-	};
 
-	void log_to_cout(const std::string& msg) {
-		std::cout << msg << std::flush;
-	};
+		~cLogger()
+		{
+			for (size_t i = 0; i < ofs.size(); i++) {
+				closeindex((int)i);
+			}
+		};
 
-	void log_to_file(const std::string& msg) {
-		std::ofstream& fs = ostrm();
-		if (ofs.size() > 0 && fs.is_open()) fs << msg << std::flush;
-	};
+		void log_to_cout(const std::string& msg) {
+			#if defined MATLAB_MEX_FILE
+				mexPrintf(msg.c_str());
+			#else
+				std::cout << msg << std::flush;
+			#endif
+			
+		};
 
-	void logmsg(const std::string& msg) {
-		log_to_file(msg);
-		log_to_cout(msg);
-	};
+		void log_to_file(const std::string& msg) {
+			std::ofstream& fs = ostrm();
+			if (ofs.size() > 0 && fs.is_open()) fs << msg << std::flush;
+		};
 
-	void logmsg(const int stdout_rank, const std::string& msg) {
-		log_to_file(msg);
-		if (cLogger::mpi_openmp_rank() == stdout_rank) {
+		void logmsg(const std::string& msg) {
+			log_to_file(msg);
 			log_to_cout(msg);
+		};
+
+		void logmsg(const int stdout_rank, const std::string& msg) {
+			log_to_file(msg);
+			if (cLogger::mpi_openmp_rank() == stdout_rank) {
+				log_to_cout(msg);
+			}
+		};
+
+		void logmsg(const char* fmt, ...)
+		{
+			va_list vargs;
+			va_start(vargs, fmt);
+			std::string msg = strprint_va(fmt, vargs);
+			va_end(vargs);
+			logmsg(msg);
 		}
-	};
-	
-	void logmsg(const char* fmt, ...)
-	{
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		logmsg(msg);
-	}
 
-	void logmsg(const int stdout_rank, const char* fmt, ...)
-	{
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		logmsg(stdout_rank, msg);
-	};
-	
-	void warningmsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc = SourceCodeLocation()) {
-		std::string fullmsg = "**Warning: " + msg + "\n";
-		if (srccodeloc.size() > 0) fullmsg += strprint("Warning is from %s\n", srccodeloc.c_str());
+		void logmsg(const int stdout_rank, const char* fmt, ...)
+		{
+			va_list vargs;
+			va_start(vargs, fmt);
+			std::string msg = strprint_va(fmt, vargs);
+			va_end(vargs);
+			logmsg(stdout_rank, msg);
+		};
 
-#if defined MATLAB_MEX_FILE
-		mexWarnMsgTxt(fullmsg.c_str());
-#else
-		logmsg(fullmsg);
-#endif
-	};
+		void warningmsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc = SourceCodeLocation()) {
+			std::string fullmsg = "**Warning: " + msg + "\n";
+			if (srccodeloc.size() > 0) fullmsg += strprint("Warning is from %s\n", srccodeloc.c_str());
+			#if defined MATLAB_MEX_FILE
+				mexWarnMsgTxt(fullmsg.c_str());
+			#else
+				logmsg(fullmsg);
+			#endif
+		};
 
-	void warningmsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...) {
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		warningmsg_impl(msg, srccodeloc);
-	};
+		void warningmsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...) {
+			va_list vargs;
+			va_start(vargs, fmt);
+			std::string msg = strprint_va(fmt, vargs);
+			va_end(vargs);
+			warningmsg_impl(msg, srccodeloc);
+		};
 
-	void warningmsg(const char* fmt, ...) {
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		warningmsg_impl(msg);
-	};
+		void warningmsg(const char* fmt, ...) {
+			va_list vargs;
+			va_start(vargs, fmt);
+			std::string msg = strprint_va(fmt, vargs);
+			va_end(vargs);
+			warningmsg_impl(msg);
+		};
 
-	void warningmsg(const SourceCodeLocation& srccodeloc, const std::string& msg) {
-		warningmsg_impl(msg, srccodeloc);
-	};
+		void warningmsg(const SourceCodeLocation& srccodeloc, const std::string& msg) {
+			warningmsg_impl(msg, srccodeloc);
+		};
 
-	void warningmsg(const std::string& msg) {
-		warningmsg_impl(msg);
-	};
+		void warningmsg(const std::string& msg) {
+			warningmsg_impl(msg);
+		};
 
-	void append_stacktrace(std::string& msg) {
-		#ifdef  _HAS_STACK_TRACE_
+		void append_stacktrace(std::string& msg) {
+#ifdef  _HAS_STACK_TRACE_
 			msg += "\n======= Stack Trace =========================\n";
 			msg += std::to_string(std::stacktrace::current());
 			msg += "\n=============================================\n";
-		#endif	
-	};
+#endif	
+		};
 
-	void errormsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc) {
-		std::string fullmsg = "***Error: " + msg;
-		if(srccodeloc.size()>0) fullmsg += strprint("Exception thrown from %s\n", srccodeloc.c_str());
-		append_stacktrace(fullmsg);
+		void errormsg_impl(const std::string& msg, const SourceCodeLocation& srccodeloc) {
+			std::string fullmsg = "***Error: " + msg;
+			if (srccodeloc.size() > 0) fullmsg += strprint("Exception thrown from %s\n", srccodeloc.c_str());
+			append_stacktrace(fullmsg);
 
-		#if defined MATLAB_MEX_FILE
-			mexErrMsgTxt(fullmsg.c_str());
-		#else
-			log_to_file(fullmsg);
-			throw(std::runtime_error(fullmsg));
-		#endif
-	}
-
-	void errormsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...)
-	{
-		va_list vargs;
-		va_start(vargs, fmt);
-		std::string msg = strprint_va(fmt, vargs);
-		va_end(vargs);
-		errormsg_impl(msg, srccodeloc);
-	}
-
-	void errormsg(const SourceCodeLocation& srccodeloc, const std::string& msg)
-	{
-		errormsg_impl(msg, srccodeloc);
-	}
-	
-	inline static const std::string timestamp()
-	{
-		std::time_t result = std::time(nullptr);
-		const char* t = std::asctime(std::localtime(&result));
-		std::string str;
-		if (t) {
-			str = std::string(t);
-			if (str[str.length() - 1] == '\n') str.erase(str.length() - 1, 1);
+			#if defined MATLAB_MEX_FILE
+				mexErrMsgTxt(fullmsg.c_str());
+			#else
+				log_to_file(fullmsg);
+				throw(std::runtime_error(fullmsg));
+			#endif
 		}
-		return str;
-	};
 
-	inline static int mpi_openmp_rank() {
-		int omprank = 0;
-		int mpirank = 0;
-		#if defined _OPENMP
+		void errormsg(const SourceCodeLocation& srccodeloc, const char* fmt, ...)
+		{
+			va_list vargs;
+			va_start(vargs, fmt);
+			std::string msg = strprint_va(fmt, vargs);
+			va_end(vargs);
+			errormsg_impl(msg, srccodeloc);
+		}
+
+		void errormsg(const SourceCodeLocation& srccodeloc, const std::string& msg)
+		{
+			errormsg_impl(msg, srccodeloc);
+		}
+
+		inline static const std::string timestamp()
+		{
+			std::time_t result = std::time(nullptr);
+			const char* t = std::asctime(std::localtime(&result));
+			std::string str;
+			if (t) {
+				str = std::string(t);
+				if (str[str.length() - 1] == '\n') str.erase(str.length() - 1, 1);
+			}
+			return str;
+		};
+
+		inline static int mpi_openmp_rank() {
+			int omprank = 0;
+			int mpirank = 0;
+#if defined _OPENMP
 			omprank = omp_get_thread_num();
-		#endif
+#endif
 
-		#ifdef ENABLE_MPI
+#ifdef ENABLE_MPI
 			int mpi_initialised;
 			int ierr = MPI_Initialized(&mpi_initialised);
 			if (mpi_initialised) {
 				MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 			}
-		#endif
-		return std::max(mpirank,omprank);
-	}
-
+#endif
+			return std::max(mpirank, omprank);
+		}
+	};
 };
 
 

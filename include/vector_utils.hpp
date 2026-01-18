@@ -19,7 +19,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <iomanip> 
 #include <fstream> 
 
-namespace VectorUtils {
+namespace CppUtils {
 	//Vector scalar unary op
 	template<typename T, typename S>
 	std::vector<T>& operator+=(std::vector<T>& a, const S& s)

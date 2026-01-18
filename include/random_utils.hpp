@@ -12,51 +12,53 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <chrono>
 #include <random>
 
-template<typename T>
-T irand(const T& imin, const T& imax)
-{		
-	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
-	std::uniform_int_distribution<T> dist(imin, imax);
-	return dist(gen);
-};
+namespace CppUtils {
+	template<typename T>
+	T irand(const T& imin, const T& imax)
+	{
+		std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
+		std::uniform_int_distribution<T> dist(imin, imax);
+		return dist(gen);
+	};
 
-template<typename T>
-T urand(const T& rmin=0.0, const T& rmax=1.0)
-{
-	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
-	std::uniform_real_distribution<T> dist(rmin, rmax);
-	return dist(gen);	
-};
+	template<typename T>
+	T urand(const T& rmin = 0.0, const T& rmax = 1.0)
+	{
+		std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
+		std::uniform_real_distribution<T> dist(rmin, rmax);
+		return dist(gen);
+	};
 
-template<typename T>
-T nrand(const T& mean = 0.0, const T& stddev = 1.0) {
-	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
-	std::normal_distribution<T> dist(mean, stddev);	
-	return dist(gen);
-};
+	template<typename T>
+	T nrand(const T& mean = 0.0, const T& stddev = 1.0) {
+		std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
+		std::normal_distribution<T> dist(mean, stddev);
+		return dist(gen);
+	};
 
-template<typename T>
-void nrand(size_t n, T* x, const T& mean=0.0, const T& stddev=1.0)
-{
-	std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
-	std::normal_distribution<T> dist(mean, stddev);
-	for (size_t i = 0; i < n; i++) {
-		x[i] = dist(gen);
-	}
-};
+	template<typename T>
+	void nrand(size_t n, T* x, const T& mean = 0.0, const T& stddev = 1.0)
+	{
+		std::mt19937 gen((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
+		std::normal_distribution<T> dist(mean, stddev);
+		for (size_t i = 0; i < n; i++) {
+			x[i] = dist(gen);
+		}
+	};
 
-template<typename T>
-std::vector<T> nrand(const size_t& n, const T& mean = 0.0, const T& stddev = 1.0)
-{	
-	std::vector<T> x(n);
-	nrand<T>(x.data(), mean, stddev);	
-	return x;
-};
+	template<typename T>
+	std::vector<T> nrand(const size_t& n, const T& mean = 0.0, const T& stddev = 1.0)
+	{
+		std::vector<T> x(n);
+		nrand<T>(x.data(), mean, stddev);
+		return x;
+	};
 
-template<typename T>
-double gaussian_pdf(const T& mean, const T& std, const T& x)
-{
-	T p = std::exp(-0.5 * std::pow((x - mean) / std, 2.0)) / (std::sqrt(TWOPI) * std);
-	return p;
+	template<typename T>
+	double gaussian_pdf(const T& mean, const T& std, const T& x)
+	{
+		T p = std::exp(-0.5 * std::pow((x - mean) / std, 2.0)) / (std::sqrt(TWOPI) * std);
+		return p;
+	};
 };
 

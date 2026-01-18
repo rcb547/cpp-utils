@@ -8,13 +8,6 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <cstdlib>
-#include <cstring>
-#include <vector>
-#include <functional>
-#include <cfloat>
-#include <map>
-
 #include "string_utils.hpp"
 #include "general_utils.hpp"
 #include "blocklanguage.hpp"
@@ -24,277 +17,285 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include "undefinedvalues.hpp"
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+#include <functional>
+#include <cfloat>
+#include <map>
 #include <sstream>
 #include <string>
 #include <utility>
 
-class cFieldDefinition {
+namespace CppUtils {
+	class cFieldDefinition {
 
-public:
-	enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };
+	public:
+		enum class TYPE { VARIABLENAME, COLUMNNUMBER, NUMERIC, UNAVAILABLE };
 
-private:
+	private:
 
-	bool initialised = false;
-	std::string keyname = std::string();//A tag name for the definition
-	
-	size_t coff = 1;//First column in ascii files for user perspective
-	TYPE type = TYPE::UNAVAILABLE;//The type of definition
-	char op = ' ';
-	double opval = 0.0;
-	bool flip = false;//flip polarity or not
+		bool initialised = false;
+		std::string keyname = std::string();//A tag name for the definition
 
-	std::string varname = std::string();//Variable name for variablename type defs
-	size_t column = undefinedvalue<size_t>();//Ascii file start column number for COLUMNUMBER type defs
-	
-	bool isnumeric(const std::string& rhs)
-	{
-		std::vector<std::string> tokens = tokenise(rhs, " \t,");
-		if (tokens.size() == 0)return false;
-		char* str_end;
-		double d = std::strtod(tokens[0].c_str(), &str_end);
-		if (*str_end) return false;
-		return true;
-	};
-	std::vector<double> numericvalue;//Numeric value
+		size_t coff = 1;//First column in ascii files for user perspective
+		TYPE type = TYPE::UNAVAILABLE;//The type of definition
+		char op = ' ';
+		double opval = 0.0;
+		bool flip = false;//flip polarity or not
 
-public:
-	
-	cFieldDefinition() { }
+		std::string varname = std::string();//Variable name for variablename type defs
+		size_t column = undefinedvalue<size_t>();//Ascii file start column number for COLUMNUMBER type defs
 
-	cFieldDefinition(const cBlock& b, const std::string& key) {
-		initialise(b, key);
-	}
+		bool isnumeric(const std::string& rhs)
+		{
+			std::vector<std::string> tokens = tokenise(rhs, " \t,");
+			if (tokens.size() == 0)return false;
+			char* str_end;
+			double d = std::strtod(tokens[0].c_str(), &str_end);
+			if (*str_end) return false;
+			return true;
+		};
+		std::vector<double> numericvalue;//Numeric value
 
-	void initialise(const cBlock& b, const std::string& key)
-	{
-		int col;
-		keyname = key;
-		std::string rhs = b.getstringvalue(key);
-		if (rhs == undefinedvalue<std::string>()) {
-			type = cFieldDefinition::TYPE::UNAVAILABLE;
-			column = 0;
-			initialised = false;
+	public:
+
+		cFieldDefinition() {}
+
+		cFieldDefinition(const cBlock& b, const std::string& key) {
+			initialise(b, key);
 		}
-		else if (rhs.size() == 0) {
-			type = cFieldDefinition::TYPE::UNAVAILABLE;
-			column = 0;
-			initialised = true;
-		}
-		else if (strncasecmp(rhs, "Unavailable", 11) == 0) {
-			type = cFieldDefinition::TYPE::UNAVAILABLE;
-			column = 0;
-			initialised = true;
-		}
-		else if (isnumeric(rhs)) {
-			type = cFieldDefinition::TYPE::NUMERIC;
-			column = 0;
-			numericvalue = b.getdoublevector(key);
-			initialised = true;
-		}
-		else if (strncasecmp(rhs, "Column", 6) == 0) {
-			type = cFieldDefinition::TYPE::COLUMNNUMBER;
-			flip = false;
-			int n = sscanf(&(rhs.c_str()[6]), "%d %c %lf", &col, &op, &opval);
-			column = (size_t)col;
-			if (n == 1) { op = ' '; opval = 0.0; }
-			initialised = true;
-		}
-		else if (strncasecmp(rhs, "-Column", 7) == 0) {
-			type = cFieldDefinition::TYPE::COLUMNNUMBER;
-			flip = true;
-			int n = sscanf(&(rhs.c_str()[7]), "%d %c %lf", &col, &op, &opval);
-			column = (size_t)col;
-			if (n == 1) { op = ' '; opval = 0.0; }
-			initialised = true;
-		}
-		else {
-			if (rhs[0] == '-') {
-				type = cFieldDefinition::TYPE::VARIABLENAME;
-				flip = true;
-				rhs = rhs.substr(1, rhs.size() - 1);
-				std::istringstream iss(rhs);
-				iss >> varname;
-				iss >> op;
-				iss >> opval;
+
+		void initialise(const cBlock& b, const std::string& key)
+		{
+			int col;
+			keyname = key;
+			std::string rhs = b.getstringvalue(key);
+			if (rhs == undefinedvalue<std::string>()) {
+				type = cFieldDefinition::TYPE::UNAVAILABLE;
+				column = 0;
+				initialised = false;
+			}
+			else if (rhs.size() == 0) {
+				type = cFieldDefinition::TYPE::UNAVAILABLE;
+				column = 0;
 				initialised = true;
 			}
-			else {
-				type = cFieldDefinition::TYPE::VARIABLENAME;
+			else if (strncasecmp(rhs, "Unavailable", 11) == 0) {
+				type = cFieldDefinition::TYPE::UNAVAILABLE;
+				column = 0;
+				initialised = true;
+			}
+			else if (isnumeric(rhs)) {
+				type = cFieldDefinition::TYPE::NUMERIC;
+				column = 0;
+				numericvalue = b.getdoublevector(key);
+				initialised = true;
+			}
+			else if (strncasecmp(rhs, "Column", 6) == 0) {
+				type = cFieldDefinition::TYPE::COLUMNNUMBER;
 				flip = false;
-				std::istringstream iss(rhs);
-				iss >> varname;
-				iss >> op;
-				iss >> opval;
+				int n = sscanf(&(rhs.c_str()[6]), "%d %c %lf", &col, &op, &opval);
+				column = (size_t)col;
+				if (n == 1) { op = ' '; opval = 0.0; }
 				initialised = true;
 			}
-		}
-	}
-
-	bool isinitialised() const {
-		return initialised;
-	}
-
-	const TYPE& get_type() const {
-		return type;
-	}
-
-	const std::string& get_varname() const {
-		return varname;
-	}
-
-	const std::string& get_keyname() const {
-		return keyname;
-	}
-
-	const size_t& get_column() const {
-		return column;
-	}
-
-	const std::vector<double>& get_numericvalue() const {
-		return numericvalue;
-	}
-
-	template<typename T>
-	inline void getcolumn_val(const std::vector<std::string>& colstrings, const size_t& columnnumber, T& v) const
-	{
-		if (columnnumber >= colstrings.size()) {
-			std::string msg = strprint("Aeeempting to access column %zu when there are only %zu columns in the current record string (check format and delimiters).", columnnumber + 1, colstrings.size());
-			glog.errormsg(_SRC_, msg);
-		}
-		else {
-			if (colstrings[columnnumber].size() == 0) {
-				v = undefinedvalue<T>();
+			else if (strncasecmp(rhs, "-Column", 7) == 0) {
+				type = cFieldDefinition::TYPE::COLUMNNUMBER;
+				flip = true;
+				int n = sscanf(&(rhs.c_str()[7]), "%d %c %lf", &col, &op, &opval);
+				column = (size_t)col;
+				if (n == 1) { op = ' '; opval = 0.0; }
+				initialised = true;
 			}
 			else {
-				std::istringstream(colstrings[columnnumber]) >> v;
-				if (flip) apply_flip(v);
+				if (rhs[0] == '-') {
+					type = cFieldDefinition::TYPE::VARIABLENAME;
+					flip = true;
+					rhs = rhs.substr(1, rhs.size() - 1);
+					std::istringstream iss(rhs);
+					iss >> varname;
+					iss >> op;
+					iss >> opval;
+					initialised = true;
+				}
+				else {
+					type = cFieldDefinition::TYPE::VARIABLENAME;
+					flip = false;
+					std::istringstream iss(rhs);
+					iss >> varname;
+					iss >> op;
+					iss >> opval;
+					initialised = true;
+				}
 			}
 		}
-	}
 
-	template<typename T>
-	bool getvalue(const std::vector<std::string>& fields, T& v) const
-	{
-		if (type == cFieldDefinition::TYPE::NUMERIC) {
-			v = (T)numericvalue[0];
-			return true;
+		bool isinitialised() const {
+			return initialised;
 		}
-		else if (type == cFieldDefinition::TYPE::COLUMNNUMBER) {
-			getcolumn_val(fields, column - coff, v);
-			return true;
-		}
-		else if (type == cFieldDefinition::TYPE::UNAVAILABLE) {
-			v = undefinedvalue<T>();
-			return false;
-		}
-		else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
-			std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
-			glog.errormsg(_SRC_, msg);
-		}
-		else {
-			std::string msg = "Unknown cFieldDefinition::TYPE.";
-			glog.errormsg(_SRC_, msg);
-		}
-		return true;
-	}
 
-	template<typename T>
-	bool getvalue(const std::vector<std::string>& fields, std::vector<T>& vec, const size_t& n) const
-	{
-		vec.resize(n);
-		if (type == cFieldDefinition::TYPE::NUMERIC) {
-			size_t len = numericvalue.size();
-			for (size_t i = 0; i < n; i++) {
-				if (len == 1) vec[i] = (T)numericvalue[0];
-				else vec[i] = (T)numericvalue[i];
+		const TYPE& get_type() const {
+			return type;
+		}
+
+		const std::string& get_varname() const {
+			return varname;
+		}
+
+		const std::string& get_keyname() const {
+			return keyname;
+		}
+
+		const size_t& get_column() const {
+			return column;
+		}
+
+		const std::vector<double>& get_numericvalue() const {
+			return numericvalue;
+		}
+
+		template<typename T>
+		inline void getcolumn_val(const std::vector<std::string>& colstrings, const size_t& columnnumber, T& v) const
+		{
+			if (columnnumber >= colstrings.size()) {
+				std::string msg = strprint("Aeeempting to access column %zu when there are only %zu columns in the current record string (check format and delimiters).", columnnumber + 1, colstrings.size());
+				glog.errormsg(_SRC_, msg);
+			}
+			else {
+				if (colstrings[columnnumber].size() == 0) {
+					v = undefinedvalue<T>();
+				}
+				else {
+					std::istringstream(colstrings[columnnumber]) >> v;
+					if (flip) apply_flip(v);
+				}
+			}
+		}
+
+		template<typename T>
+		bool getvalue(const std::vector<std::string>& fields, T& v) const
+		{
+			if (type == cFieldDefinition::TYPE::NUMERIC) {
+				v = (T)numericvalue[0];
+				return true;
+			}
+			else if (type == cFieldDefinition::TYPE::COLUMNNUMBER) {
+				getcolumn_val(fields, column - coff, v);
+				return true;
+			}
+			else if (type == cFieldDefinition::TYPE::UNAVAILABLE) {
+				v = undefinedvalue<T>();
+				return false;
+			}
+			else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
+				std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
+				glog.errormsg(_SRC_, msg);
+			}
+			else {
+				std::string msg = "Unknown cFieldDefinition::TYPE.";
+				glog.errormsg(_SRC_, msg);
 			}
 			return true;
 		}
-		else if (type == cFieldDefinition::TYPE::COLUMNNUMBER) {
-			for (size_t i = 0; i < n; i++) {
-				getcolumn_val(fields, i + column - coff, vec[i]);
+
+		template<typename T>
+		bool getvalue(const std::vector<std::string>& fields, std::vector<T>& vec, const size_t& n) const
+		{
+			vec.resize(n);
+			if (type == cFieldDefinition::TYPE::NUMERIC) {
+				size_t len = numericvalue.size();
+				for (size_t i = 0; i < n; i++) {
+					if (len == 1) vec[i] = (T)numericvalue[0];
+					else vec[i] = (T)numericvalue[i];
+				}
+				return true;
+			}
+			else if (type == cFieldDefinition::TYPE::COLUMNNUMBER) {
+				for (size_t i = 0; i < n; i++) {
+					getcolumn_val(fields, i + column - coff, vec[i]);
+				}
+				return true;
+			}
+			else if (type == cFieldDefinition::TYPE::UNAVAILABLE) {
+				vec = std::vector<T>(n, undefinedvalue<T>());
+				return false;
+			}
+			else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
+				std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
+				glog.errormsg(_SRC_, msg);
+			}
+			else {
+				std::string msg = "Unknown cFieldDefinition::TYPE.";
+				glog.errormsg(_SRC_, msg);
 			}
 			return true;
 		}
-		else if (type == cFieldDefinition::TYPE::UNAVAILABLE) {
-			vec = std::vector<T>(n, undefinedvalue<T>());
-			return false;
-		}
-		else if (type == cFieldDefinition::TYPE::VARIABLENAME) {
-			std::string msg = "cFieldDefinition::TYPE::VARIABLENAME not allowed here.";
-			glog.errormsg(_SRC_, msg);
-		}
-		else {
-			std::string msg = "Unknown cFieldDefinition::TYPE.";
-			glog.errormsg(_SRC_, msg);
-		}
-		return true;
-	}
 
-	template<typename T>
-	inline void ifnullconvert2zero(T& val) const {
-		//temporary hack to handle Nulls
-		if (val == (T)-999 || val == (T)-9999) val = (T)0;
-	}
+		template<typename T>
+		inline void ifnullconvert2zero(T& val) const {
+			//temporary hack to handle Nulls
+			if (val == (T)-999 || val == (T)-9999) val = (T)0;
+		}
 
 	private:
-	template<typename T>
-	inline void apply_operator(T& val) const {
-		if (val == undefinedvalue<T>()) return; //don't apply to undefined values
-		else if (op == ' ') return;//nothing to do
-		else if (op == '+') {
-			val += (T)opval;
+		template<typename T>
+		inline void apply_operator(T& val) const {
+			if (val == undefinedvalue<T>()) return; //don't apply to undefined values
+			else if (op == ' ') return;//nothing to do
+			else if (op == '+') {
+				val += (T)opval;
+			}
+			else if (op == '-') {
+				val -= (T)opval;
+			}
+			else if (op == '*') val *= (T)opval;
+			else if (op == '/') val /= (T)opval;
+			else glog.warningmsg(_SRC_, "Unknown operator %c\n", op);
+			return;
 		}
-		else if (op == '-') {
-			val -= (T)opval;
-		}
-		else if (op == '*') val *= (T)opval;
-		else if (op == '/') val /= (T)opval;
-		else glog.warningmsg(_SRC_, "Unknown operator %c\n", op);
-		return;
-	}
 
 	private:
-	template<typename T> 
-	inline void apply_flip(T& val) const {
-		if (flip == false) return;
-		if (val == undefinedvalue<T>()) return; //don't apply to undefined values
-		val *= (T)-1;
-		return;
-	}
-
-	public:
-	template<typename T> 
-	inline void apply_flip_and_operator(T& val, const T& nullval = undefinedvalue<T>()) const {
-		if (flip == false && op == ' ') return;
-		if (val == nullval) return; //don't apply to null values
-		apply_flip(val);
-		apply_operator(val);
-		return;
-	}
-
-	public:
-	template<typename T>
-	inline void apply_flip_and_operator(std::vector<T>& vec, const T& nullval = undefinedvalue<T>()) const {
-		if (flip == false && op == ' ') return;
-		for (size_t i = 0; i < vec.size(); i++) {
-			apply_flip_and_operator(vec[i],nullval);
+		template<typename T>
+		inline void apply_flip(T& val) const {
+			if (flip == false) return;
+			if (val == undefinedvalue<T>()) return; //don't apply to undefined values
+			val *= (T)-1;
+			return;
 		}
-		return;
-	}
-};
-using FDMap = std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>>;
-using cFDVar = std::pair<cFieldDefinition, cVrnt>;
 
-class cFdVrnt {
+	public:
+		template<typename T>
+		inline void apply_flip_and_operator(T& val, const T& nullval = undefinedvalue<T>()) const {
+			if (flip == false && op == ' ') return;
+			if (val == nullval) return; //don't apply to null values
+			apply_flip(val);
+			apply_operator(val);
+			return;
+		}
 
-public:
-	cFdVrnt(const cFieldDefinition& _fd, const cVrnt& _vrnt) {
-		fd = _fd;
-		vnt = _vrnt;
-	}
+	public:
+		template<typename T>
+		inline void apply_flip_and_operator(std::vector<T>& vec, const T& nullval = undefinedvalue<T>()) const {
+			if (flip == false && op == ' ') return;
+			for (size_t i = 0; i < vec.size(); i++) {
+				apply_flip_and_operator(vec[i], nullval);
+			}
+			return;
+		}
+	};
+	using FDMap = std::map<std::string, cFieldDefinition, caseinsensetiveless<std::string>>;
+	using cFDVar = std::pair<cFieldDefinition, cVrnt>;
 
-	cFieldDefinition fd;
-	cVrnt vnt;
-};
+	class cFdVrnt {
+
+	public:
+		cFdVrnt(const cFieldDefinition& _fd, const cVrnt& _vrnt) {
+			fd = _fd;
+			vnt = _vrnt;
+		}
+
+		cFieldDefinition fd;
+		cVrnt vnt;
+	};
+}

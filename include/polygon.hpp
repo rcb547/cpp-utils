@@ -8,58 +8,61 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <vector>
 #include "general_types.hpp"
 #include "general_utils.hpp"
 #include "file_utils.hpp"
 
-class cPolygon {
-	
-  public:
+#include <vector>
 
-	  std::vector<cPoint> vertex;
+namespace CppUtils {
 
-	  cPolygon(){};
+	class Polygon {
 
-	  cPolygon(const std::string& filename){
-		  loadfromfile(filename);
-	  };
-  
-	  bool loadfromfile(const std::string& filename)
-	  {
-		  vertex.resize(0);
-		  std::string str;
-		  std::ifstream ifs(filename);
-		  while(filegetline_ifs(ifs,str)){
-			  std::vector<std::string> t = tokenize(str);
-			  cPoint p;
-			  p.x = atof(t[0].c_str());
-			  p.y = atof(t[1].c_str());
-			  vertex.push_back(p);
-		  }
+	public:
 
-		  if (vertex[0] == vertex[vertex.size()-1]){
-			  vertex.resize(vertex.size() - 1);
-		  }
-		  
-		  return true;
-	  };
-	  	  
-	  bool isinside(const cPoint& p) const
-	  {
-		  size_t nv = vertex.size();
-		  //The following code is by Randolph Franklin, it returns 1 for interior points and 0 for exterior points. 
-		  int c = 0;
-		  size_t i, j;
-		  for (i = 0, j = nv - 1; i < nv; j = i++) {
-			  if ((((vertex[i].y <= p.y) && (p.y < vertex[j].y)) ||
-				  ((vertex[j].y <= p.y) && (p.y < vertex[i].y))) &&
-				  (p.x < (vertex[j].x - vertex[i].x) * (p.y - vertex[i].y) / (vertex[j].y - vertex[i].y) + vertex[i].x))
-				  c = !c;
-		  }
-		  if (c == 0)return false;
-		  else return true;
-	  };
+		std::vector<cPoint> vertex;
 
+		Polygon() {};
+
+		Polygon(const std::string& filename) {
+			loadfromfile(filename);
+		};
+
+		bool loadfromfile(const std::string& filename)
+		{
+			vertex.resize(0);
+			std::string str;
+			std::ifstream ifs(filename);
+			while (filegetline_ifs(ifs, str)) {
+				std::vector<std::string> t = tokenize(str);
+				cPoint p;
+				p.x = atof(t[0].c_str());
+				p.y = atof(t[1].c_str());
+				vertex.push_back(p);
+			}
+
+			if (vertex[0] == vertex[vertex.size() - 1]) {
+				vertex.resize(vertex.size() - 1);
+			}
+
+			return true;
+		};
+
+		bool isinside(const cPoint& p) const
+		{
+			size_t nv = vertex.size();
+			//The following code is by Randolph Franklin, it returns 1 for interior points and 0 for exterior points. 
+			int c = 0;
+			size_t i, j;
+			for (i = 0, j = nv - 1; i < nv; j = i++) {
+				if ((((vertex[i].y <= p.y) && (p.y < vertex[j].y)) ||
+					((vertex[j].y <= p.y) && (p.y < vertex[i].y))) &&
+					(p.x < (vertex[j].x - vertex[i].x) * (p.y - vertex[i].y) / (vertex[j].y - vertex[i].y) + vertex[i].x))
+					c = !c;
+			}
+			if (c == 0)return false;
+			else return true;
+		};
+	};
 };
 

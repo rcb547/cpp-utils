@@ -5,20 +5,22 @@
 
 #include <fstream>
 #include <iostream>
+#include <streambuf>
 
-class cStreamRedirecter
-{
-public:
-	cStreamRedirecter(std::ostream& dst, std::ostream& src)
-		: src(src), sbuf(src.rdbuf(dst.rdbuf())) {}
+namespace CppUtils {
+	class cStreamRedirecter {
+	public:
+		cStreamRedirecter(std::ostream& dst, std::ostream& src)
+			: src(src), sbuf(src.rdbuf(dst.rdbuf())) {
+		}
 
-	~cStreamRedirecter() { src.rdbuf(sbuf); }
-private:
+		~cStreamRedirecter() { src.rdbuf(sbuf); }
+	private:
 
-	std::ostream& src;
-	std::streambuf* sbuf;
-	// Prevent copying.
-	cStreamRedirecter(const cStreamRedirecter&) = delete;
-	cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
+		std::ostream& src;
+		std::streambuf* sbuf;
+		// Prevent copying.
+		cStreamRedirecter(const cStreamRedirecter&) = delete;
+		cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
+	};
 };
-

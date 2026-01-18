@@ -8,106 +8,107 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
-#include <cstdint>
 #include "general_utils.hpp"
 #include "blocklanguage.hpp"
 
-enum eStretchType {
-	LINEAR,
-	LOG10
-};
+#include <cstdint>
 
-class cStretch {
+namespace CppUtils {
+	enum eStretchType {
+		LINEAR,
+		LOG10
+	};
 
-public:
-	eStretchType type = eStretchType::LINEAR;
-	double lowclip  = 0;
-	double highclip = 1;	
-	int nbins = 256;
-	
-	cStretch(){ }
+	class cStretch {
 
-	cStretch(const double& _lowclip, const double& _highclip, const eStretchType& _type, const int& nbins=256){
-		lowclip  = _lowclip;
-		highclip = _highclip;
-		type     = _type;
-	}
+	public:
+		eStretchType type = eStretchType::LINEAR;
+		double lowclip = 0;
+		double highclip = 1;
+		int nbins = 256;
 
-	cStretch(const cBlock& b){
+		cStretch() {}
 
-		if(b.getvalue("LowClip",lowclip) == false){
-			std::string msg("Stretch LowClip not set\n");
-			glog.errormsg(_SRC_, msg);
+		cStretch(const double& _lowclip, const double& _highclip, const eStretchType& _type, const int& nbins = 256) {
+			lowclip = _lowclip;
+			highclip = _highclip;
+			type = _type;
 		}
 
-		if (b.getvalue("HighClip", highclip) == false){
-			std::string msg("Stretch HighClip not set\n");
-			glog.errormsg(_SRC_, msg);
-		}				
+		cStretch(const cBlock& b) {
 
-		std::string s = b.getstringvalue("Type");
-		int v = strcasecmp(s, "LINEAR");
-		if (strcasecmp(s, "LINEAR") == 0){ 
-			type = eStretchType::LINEAR;
+			if (b.getvalue("LowClip", lowclip) == false) {
+				std::string msg("Stretch LowClip not set\n");
+				glog.errormsg(_SRC_, msg);
+			}
+
+			if (b.getvalue("HighClip", highclip) == false) {
+				std::string msg("Stretch HighClip not set\n");
+				glog.errormsg(_SRC_, msg);
+			}
+
+			std::string s = b.getstringvalue("Type");
+			int v = strcasecmp(s, "LINEAR");
+			if (strcasecmp(s, "LINEAR") == 0) {
+				type = eStretchType::LINEAR;
+			}
+			else if (strcasecmp(s, "LOG10") == 0) {
+				type = eStretchType::LOG10;
+			}
+			else {
+				std::string msg("ColourStretch type not set\n");
+				glog.errormsg(_SRC_, msg);
+			}
 		}
-		else if (strcasecmp(s, "LOG10") == 0){
-			type = eStretchType::LOG10;
+
+
+		int index(const double& val) const {
+			if (type == eStretchType::LINEAR) {
+				return linearstretch(val, lowclip, highclip, nbins);
+			}
+			else {
+				return log10stretch(val, lowclip, highclip, nbins);
+			}
 		}
-		else{
-			std::string msg("ColourStretch type not set\n");
-			glog.errormsg(_SRC_, msg);
-		}		
-	}
-	
 
-	int index(const double& val) const {
-		if (type == eStretchType::LINEAR){
-			return linearstretch(val, lowclip, highclip, nbins);
+		static int linearstretch(const double val, const double lowclip, const double highclip, const int nbins = 256)
+		{
+			int bin;
+			if (val <= lowclip) bin = 0;
+			else if (val >= highclip) bin = nbins - 1;
+			else bin = (int)((double)nbins * (val - lowclip) / (highclip - lowclip));
+			//if (bin >= nbins) bin = nbins - 1;
+			//if (bin < 0) bin = 0;
+			return bin;
 		}
-		else{
-			return log10stretch(val, lowclip, highclip, nbins);
-		}		
-	}
 
-	static int linearstretch(const double val, const double lowclip, const double highclip, const int nbins = 256)
-	{
-		int bin;
-		if (val <= lowclip) bin = 0;
-		else if (val >= highclip) bin = nbins - 1;
-		else bin = (int)((double)nbins * (val - lowclip) / (highclip - lowclip));
-		//if (bin >= nbins) bin = nbins - 1;
-		//if (bin < 0) bin = 0;
-		return bin;
-	}
+		static double inverselinearstretch(const int bin, const double lowclip, const double highclip, const int nbins = 256)
+		{
+			return lowclip + ((double)bin / (double)nbins) * (highclip - lowclip);
+		}
 
-	static double inverselinearstretch(const int bin, const double lowclip, const double highclip, const int nbins = 256)
-	{
-		return lowclip + ((double)bin / (double)nbins) * (highclip - lowclip);
-	}
+		static int log10stretch(const double val, const double lowclip, const double highclip, const int nbins = 256)
+		{
+			if (val <= lowclip) return  0;
+			if (val >= highclip) return nbins - 1;
 
-	static int log10stretch(const double val, const double lowclip, const double highclip, const int nbins = 256)
-	{
-		if (val <= lowclip) return  0;
-		if (val >= highclip) return nbins-1;
+			int bin;
+			double logl = log10(lowclip);
+			double logh = log10(highclip);
+			if (val <= 0.0) bin = 0;
+			else bin = (int)((double)nbins * (log10(val) - logl) / (logh - logl));
+			//if (bin >= nbins) bin = (nbins - 1);
+			//if (bin < 0) bin = 0;
+			return bin;
+		}
 
-		int bin;
-		double logl = log10(lowclip);
-		double logh = log10(highclip);
-		if (val <= 0.0) bin = 0;
-		else bin = (int)((double)nbins * (log10(val) - logl) / (logh - logl));
-		//if (bin >= nbins) bin = (nbins - 1);
-		//if (bin < 0) bin = 0;
-		return bin;
-	}
-
-	static double inverselog10stretch(const int bin, const double lowclip, const double highclip, const int nbins = 256)
-	{
-		double logl = log10(lowclip);
-		double logh = log10(highclip);
-		double lval = logl + ((double)bin / (double)nbins)*(logh - logl);
-		return pow(10.0, lval);
-	}
-
-	
+		static double inverselog10stretch(const int bin, const double lowclip, const double highclip, const int nbins = 256)
+		{
+			double logl = log10(lowclip);
+			double logh = log10(highclip);
+			double lval = logl + ((double)bin / (double)nbins) * (logh - logl);
+			return pow(10.0, lval);
+		};
+	};
 };
 

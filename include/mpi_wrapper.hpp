@@ -11,311 +11,311 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <stdint.h>
 #include <vector>
 #include <mpi.h>
+#include "string_print.hpp"
 
-//#include "logger.hpp"
+namespace CppUtils {
+	class cMpiComm;
+	class cMpiEnv;
+	class cMpiEnv {
 
-class cMpiComm;
-class cMpiEnv;
+	public:
+		bool startandstop;
 
-class cMpiEnv{
+		cMpiEnv() {
+			startandstop = false;
+		};
 
-public:
-	bool startandstop;
+		cMpiEnv(int argc, char** argv, bool _startandstop = true) {
+			startandstop = _startandstop;
+			if (startandstop)start(argc, argv);
+		};
 
-	cMpiEnv(){
-		startandstop = false;		
-	};
+		~cMpiEnv() {
+			if (startandstop)stop();
+		};
 
-	cMpiEnv(int argc, char** argv, bool _startandstop=true){
-		startandstop = _startandstop;
-		if (startandstop)start(argc, argv);
-	};
+		static std::string processor_name() {
+			int len;
+			char pname[MPI_MAX_PROCESSOR_NAME + 1];
+			MPI_Get_processor_name(pname, &len);
+			return std::string(pname);
+		};
 
-	~cMpiEnv(){
-		if (startandstop)stop();
-	};
+		static void start(int argc, char** argv) {
+			int ierr = MPI_Init(&argc, &argv);
+			chkerr(ierr);
+			return;
+		};
 
-	static std::string processor_name(){
-		int len;
-		char pname[MPI_MAX_PROCESSOR_NAME + 1];
-		MPI_Get_processor_name(pname, &len);		
-		return std::string(pname);
-	};
-
-	static void start(int argc, char** argv){
-		int ierr = MPI_Init(&argc, &argv);		
-		chkerr(ierr);
-		return;
-	};
-
-	static void stop(){
-		int ierr = MPI_Finalize();
-		chkerr(ierr);
-	}
-
-	static std::string errorstring(int ierr){
-
-		std::string s;
-
-		if (ierr == MPI_SUCCESS) s = "MPI_SUCCESS: No error; MPI routine completed successfully.";
-		else if (ierr == MPI_ERR_COMM) s = "MPI_ERR_COMM: Invalid communicator. A common error is to use a null communicator in a call(not even allowed in MPI_Comm_rank).";
-		else if (ierr == MPI_ERR_COUNT) s = "MPI_ERR_COUNT: Invalid count argument. Count arguments must be non - negative; a count of zero is often valid.";
-		else if (ierr == MPI_ERR_TYPE) s = "MPI_ERR_TYPE: Invalid datatype argument. May be an uncommitted MPI_Datatype(see MPI_Type_commit).";
-		else if (ierr == MPI_ERR_BUFFER) s = "MPI_ERR_BUFFER: Invalid buffer pointer. Usually a null buffer where one is not valid.";
-		else if (ierr == MPI_ERR_ROOT) s = "MPI_ERR_ROOT: Invalid root. The root must be specified as a rank in the communicator. Ranks must be between zero and the size of the communicator minus one.";
-		else{
-
+		static void stop() {
+			int ierr = MPI_Finalize();
+			chkerr(ierr);
 		}
-		return s;
-	}
 
-	static bool chkerr(int ierr){
-		if (ierr == MPI_SUCCESS) {
-			return true;
-		}
-		else{
-			std::cout << errorstring(ierr)  << std::endl;
-			return false;
-		}
-	}
+		static std::string errorstring(int ierr) {
 
-	static MPI_Datatype mpitype(const char& v){ return MPI_CHAR; }
-	static MPI_Datatype mpitype(const size_t& v){ return MPI_UINT64_T; }
-	static MPI_Datatype mpitype(const int& v){ return MPI_INT; }
-	static MPI_Datatype mpitype(const float& v){ return MPI_FLOAT; }
-	static MPI_Datatype mpitype(const double& v){ return MPI_DOUBLE; }	
-	static MPI_Datatype mpitype(const std::string& s){ return MPI_CHAR; }
-	
-	template < typename T >
-	static MPI_Datatype mpitype(const std::vector<T>& v){
-		T dummy;
-		return mpitype(dummy);
-	}
+			std::string s;
 
-	static bool isinitialised(){
-		int initialised;
-		int ierr = MPI_Initialized(&initialised);
-		chkerr(ierr);
-		if (initialised)return true;
-		else return false;
-	}
+			if (ierr == MPI_SUCCESS) s = "MPI_SUCCESS: No error; MPI routine completed successfully.";
+			else if (ierr == MPI_ERR_COMM) s = "MPI_ERR_COMM: Invalid communicator. A common error is to use a null communicator in a call(not even allowed in MPI_Comm_rank).";
+			else if (ierr == MPI_ERR_COUNT) s = "MPI_ERR_COUNT: Invalid count argument. Count arguments must be non - negative; a count of zero is often valid.";
+			else if (ierr == MPI_ERR_TYPE) s = "MPI_ERR_TYPE: Invalid datatype argument. May be an uncommitted MPI_Datatype(see MPI_Type_commit).";
+			else if (ierr == MPI_ERR_BUFFER) s = "MPI_ERR_BUFFER: Invalid buffer pointer. Usually a null buffer where one is not valid.";
+			else if (ierr == MPI_ERR_ROOT) s = "MPI_ERR_ROOT: Invalid root. The root must be specified as a rank in the communicator. Ranks must be between zero and the size of the communicator minus one.";
+			else {
 
-	static MPI_Comm world_comm(){
-		return MPI_COMM_WORLD;		
-	}
-
-	static int world_size(){
-		int s;
-		int ierr = MPI_Comm_size(MPI_COMM_WORLD, &s);
-		chkerr(ierr);
-		return s;
-	}
-
-	static int world_rank(){
-		int r;
-		int ierr = MPI_Comm_rank(MPI_COMM_WORLD, &r);
-		chkerr(ierr);
-		return r;
-	}
-
-	static void world_barrier() {		
-		int ierr = MPI_Barrier(MPI_COMM_WORLD);
-		chkerr(ierr);		
-	}
-
-	static void printsizeofs()
-	{
-		printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
-		printf("sizeof(bool) = %zu\n", sizeof(bool));
-		printf("sizeof(int) = %zu\n", sizeof(int));
-		printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
-		printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
-		printf("sizeof(size_t) = %zu\n", sizeof(size_t));		
-	}
-
-};
-
-class cMpiComm{
-
-	MPI_Comm comm;
-
-public:
-
-	cMpiComm(){
-		comm = MPI_COMM_NULL;
-	}
-
-	cMpiComm(const MPI_Comm& _comm){
-		set(_comm);
-	}
-
-	operator const MPI_Comm& ()
-	{		
-		return comm;
-	}
-
-	void set(const MPI_Comm& _comm){
-		comm = _comm;
-	}
-
-	const MPI_Comm& get(){
-		return comm;
-	}
-
-	int size()
-	{
-		int s;
-		int ierr = MPI_Comm_size(comm, &s);
-		chkerr(ierr);
-		return s; 
-	}
-
-	int rank()
-	{ 
-		int r;		
-		int ierr = MPI_Comm_rank(comm, &r);
-		chkerr(ierr);
-		return r;
-	}
-
-	void barrier()
-	{
-		int ierr = MPI_Barrier(comm);
-		chkerr(ierr);
-	}
-
-	bool chkerr(int ierr){
-		return cMpiEnv::chkerr(ierr);
-	}
-
-	void syncprintf(const char* fmt, ...)
-	{		
-		size_t sz = (size_t)ceil(log10(size()));
-		if (sz == 0)sz = 1;
-		std::string szfmt = "[%" + strprint("%lu",sz) + "lu] ";
-		
-		for (int i = 0; i < size(); i++){
-			if (i == rank()){
-				va_list vargs;
-				va_start(vargs, fmt);
-				std::printf(szfmt.c_str(), rank());
-				std::vprintf(fmt, vargs);
-				std::fflush(stdout);
-				va_end(vargs);
 			}
-			barrier();
-		}
-		return;
-	}
-
-	template < typename T >
-	bool bcast(T& value, int root = 0){
-		int ierr = MPI_Bcast(&value, 1, cMpiEnv::mpitype(value), root, comm);
-		return chkerr(ierr);
-	};
-
-	template < typename T >
-	bool bcast(std::vector<T>& v, int root = 0){
-		size_t n = v.size();
-		bcast(n, root);
-		v.resize(n);
-		int ierr = MPI_Bcast(v.data(), (int)n, cMpiEnv::mpitype(v), root, comm);
-		return chkerr(ierr);
-	};
-
-	bool bcast(std::string& s, int root = 0){
-		std::vector<char> buf(s.begin(), s.end());		
-		bool status = bcast(buf, root);
-		if (rank() != root){
-			buf.push_back(0);
-			s = std::string(buf.data());
-		}
-		return status;
-	};
-
-	template < typename T >
-	bool isend(T& value, int destination){				
-		MPI_Request request;
-		int tag = 0;
-		int ierr = MPI_Isend(&value, 1, cMpiEnv::mpitype(value), destination, tag, comm, &request);
-		return chkerr(ierr);
-	};
-
-	template < typename T >
-	bool isend_vec(std::vector<T>& v, int destination){		
-		MPI_Request request;
-		int tag = 0;
-		int ierr = MPI_Isend(v.data(), (int)v.size(), cMpiEnv::mpitype(v), destination, tag, comm, &request);
-		return chkerr(ierr);
-	};
-
-	bool isend_str(const std::string& s, int destination){				
-		MPI_Request request;
-		int tag = 0;
-		int ierr = MPI_Isend((void*)s.data(), (int)s.size(), cMpiEnv::mpitype(s), destination, tag, comm, &request);
-		return chkerr(ierr);
-	};
-	
-	template < typename T >
-	bool irecv(T& value, int source){
-		MPI_Request request;
-		int tag = 0;
-		int ierr = MPI_Irecv(&value, 1, cMpiEnv::mpitype(value), source, tag, comm, &request);
-		return chkerr(ierr);
-	};
-
-	template < typename T >
-	bool irecv_vec(std::vector<T>& v, int source){				
-		MPI_Status status;
-		int flag;
-		MPI_Request request;
-		int tag = 0;
-		int n;
-		int ierr;
-		
-		ierr = MPI_Iprobe(source, tag, comm, &flag, &status);
-		if (flag == 0){
-			v.resize(0);
-			return false;
+			return s;
 		}
 
-		ierr = MPI_Get_count(&status, cMpiEnv::mpitype(v), &n);
-		v.resize(n);
-		ierr = MPI_Irecv(v.data(), n, cMpiEnv::mpitype(v), source, tag, comm, &request);
-		return chkerr(ierr);
-	};
-	
-	bool irecv_str(std::string& s, int source){		
-		MPI_Status status;
-		int flag;
-		MPI_Request request;
-		int tag = 0;
-		int count = 1;
-		int ierr;
-		ierr = MPI_Iprobe(source, tag, comm, &flag, &status);
-		if (flag == 0){
-			s.resize(0);
-			return false;
+		static bool chkerr(int ierr) {
+			if (ierr == MPI_SUCCESS) {
+				return true;
+			}
+			else {
+				std::cout << errorstring(ierr) << std::endl;
+				return false;
+			}
 		}
 
-		ierr = MPI_Get_count(&status, cMpiEnv::mpitype(s), &count);		
-		s.resize(count);
-		ierr = MPI_Irecv((void*)s.data(), count, cMpiEnv::mpitype(s), source, tag, comm, &request);
-		return chkerr(ierr);
+		static MPI_Datatype mpitype(const char& v) { return MPI_CHAR; }
+		static MPI_Datatype mpitype(const size_t& v) { return MPI_UINT64_T; }
+		static MPI_Datatype mpitype(const int& v) { return MPI_INT; }
+		static MPI_Datatype mpitype(const float& v) { return MPI_FLOAT; }
+		static MPI_Datatype mpitype(const double& v) { return MPI_DOUBLE; }
+		static MPI_Datatype mpitype(const std::string& s) { return MPI_CHAR; }
+
+		template < typename T >
+		static MPI_Datatype mpitype(const std::vector<T>& v) {
+			T dummy;
+			return mpitype(dummy);
+		}
+
+		static bool isinitialised() {
+			int initialised;
+			int ierr = MPI_Initialized(&initialised);
+			chkerr(ierr);
+			if (initialised)return true;
+			else return false;
+		}
+
+		static MPI_Comm world_comm() {
+			return MPI_COMM_WORLD;
+		}
+
+		static int world_size() {
+			int s;
+			int ierr = MPI_Comm_size(MPI_COMM_WORLD, &s);
+			chkerr(ierr);
+			return s;
+		}
+
+		static int world_rank() {
+			int r;
+			int ierr = MPI_Comm_rank(MPI_COMM_WORLD, &r);
+			chkerr(ierr);
+			return r;
+		}
+
+		static void world_barrier() {
+			int ierr = MPI_Barrier(MPI_COMM_WORLD);
+			chkerr(ierr);
+		}
+
+		static void printsizeofs()
+		{
+			printf("sizeof(MPI_Int) = %zu\n", sizeof(MPI_INT));
+			printf("sizeof(bool) = %zu\n", sizeof(bool));
+			printf("sizeof(int) = %zu\n", sizeof(int));
+			printf("sizeof(int32_t) = %zu\n", sizeof(int32_t));
+			printf("sizeof(int64_t) = %zu\n", sizeof(int64_t));
+			printf("sizeof(size_t) = %zu\n", sizeof(size_t));
+		}
+
 	};
 
-	template < typename T >
-	T sum(T& value){
-		T s;
-		int ierr = MPI_Allreduce(&value, &s, 1, cMpiEnv::mpitype(value), MPI_SUM, comm);
-		chkerr(ierr);
-		return s;
-	};
+	class cMpiComm {
 
-	template < typename T >
-	double mean(T& value){	
-		return (double)sum(value)/size();
-	};
+		MPI_Comm comm;
 
+	public:
+
+		cMpiComm() {
+			comm = MPI_COMM_NULL;
+		}
+
+		cMpiComm(const MPI_Comm& _comm) {
+			set(_comm);
+		}
+
+		operator const MPI_Comm& ()
+		{
+			return comm;
+		}
+
+		void set(const MPI_Comm& _comm) {
+			comm = _comm;
+		}
+
+		const MPI_Comm& get() {
+			return comm;
+		}
+
+		int size()
+		{
+			int s;
+			int ierr = MPI_Comm_size(comm, &s);
+			chkerr(ierr);
+			return s;
+		}
+
+		int rank()
+		{
+			int r;
+			int ierr = MPI_Comm_rank(comm, &r);
+			chkerr(ierr);
+			return r;
+		}
+
+		void barrier()
+		{
+			int ierr = MPI_Barrier(comm);
+			chkerr(ierr);
+		}
+
+		bool chkerr(int ierr) {
+			return cMpiEnv::chkerr(ierr);
+		}
+
+		void syncprintf(const char* fmt, ...)
+		{
+			size_t sz = (size_t)std::ceil(std::log10(size()));
+			if (sz == 0)sz = 1;
+			std::string szfmt = "[%" + strprint("%lu", sz) + "lu] ";
+
+			for (int i = 0; i < size(); i++) {
+				if (i == rank()) {
+					va_list vargs;
+					va_start(vargs, fmt);
+					std::printf(szfmt.c_str(), rank());
+					std::vprintf(fmt, vargs);
+					std::fflush(stdout);
+					va_end(vargs);
+				}
+				barrier();
+			}
+			return;
+		}
+
+		template < typename T >
+		bool bcast(T& value, int root = 0) {
+			int ierr = MPI_Bcast(&value, 1, cMpiEnv::mpitype(value), root, comm);
+			return chkerr(ierr);
+		};
+
+		template < typename T >
+		bool bcast(std::vector<T>& v, int root = 0) {
+			size_t n = v.size();
+			bcast(n, root);
+			v.resize(n);
+			int ierr = MPI_Bcast(v.data(), (int)n, cMpiEnv::mpitype(v), root, comm);
+			return chkerr(ierr);
+		};
+
+		bool bcast(std::string& s, int root = 0) {
+			std::vector<char> buf(s.begin(), s.end());
+			bool status = bcast(buf, root);
+			if (rank() != root) {
+				buf.push_back(0);
+				s = std::string(buf.data());
+			}
+			return status;
+		};
+
+		template < typename T >
+		bool isend(T& value, int destination) {
+			MPI_Request request;
+			int tag = 0;
+			int ierr = MPI_Isend(&value, 1, cMpiEnv::mpitype(value), destination, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		template < typename T >
+		bool isend_vec(std::vector<T>& v, int destination) {
+			MPI_Request request;
+			int tag = 0;
+			int ierr = MPI_Isend(v.data(), (int)v.size(), cMpiEnv::mpitype(v), destination, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		bool isend_str(const std::string& s, int destination) {
+			MPI_Request request;
+			int tag = 0;
+			int ierr = MPI_Isend((void*)s.data(), (int)s.size(), cMpiEnv::mpitype(s), destination, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		template < typename T >
+		bool irecv(T& value, int source) {
+			MPI_Request request;
+			int tag = 0;
+			int ierr = MPI_Irecv(&value, 1, cMpiEnv::mpitype(value), source, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		template < typename T >
+		bool irecv_vec(std::vector<T>& v, int source) {
+			MPI_Status status;
+			int flag;
+			MPI_Request request;
+			int tag = 0;
+			int n;
+			int ierr;
+
+			ierr = MPI_Iprobe(source, tag, comm, &flag, &status);
+			if (flag == 0) {
+				v.resize(0);
+				return false;
+			}
+
+			ierr = MPI_Get_count(&status, cMpiEnv::mpitype(v), &n);
+			v.resize(n);
+			ierr = MPI_Irecv(v.data(), n, cMpiEnv::mpitype(v), source, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		bool irecv_str(std::string& s, int source) {
+			MPI_Status status;
+			int flag;
+			MPI_Request request;
+			int tag = 0;
+			int count = 1;
+			int ierr;
+			ierr = MPI_Iprobe(source, tag, comm, &flag, &status);
+			if (flag == 0) {
+				s.resize(0);
+				return false;
+			}
+
+			ierr = MPI_Get_count(&status, cMpiEnv::mpitype(s), &count);
+			s.resize(count);
+			ierr = MPI_Irecv((void*)s.data(), count, cMpiEnv::mpitype(s), source, tag, comm, &request);
+			return chkerr(ierr);
+		};
+
+		template < typename T >
+		T sum(T& value) {
+			T s;
+			int ierr = MPI_Allreduce(&value, &s, 1, cMpiEnv::mpitype(value), MPI_SUM, comm);
+			chkerr(ierr);
+			return s;
+		};
+
+		template < typename T >
+		double mean(T& value) {
+			return (double)sum(value) / size();
+		};
+
+	};
 };
 

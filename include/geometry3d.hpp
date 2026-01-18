@@ -8,431 +8,436 @@ Author: Ross C. Brodie, Geoscience Australia.
 
 #pragma once
 
+#include "general_constants.hpp"
+
 #include <cmath>
 #include <vector>
 #include <cfloat>
 #include <cfloat>
 #include <cassert>
-#include "general_constants.hpp"
 
-namespace Geometry3D {
-	class cVec;//forward declarations
-	class cPnt;//forward declarations
-	class cLine;//forward declarations
-	class cLineSeg;//forward declarations
 
-	class cVec {
+namespace CppUtils {
+	namespace Geometry3D {
+		class cVec;//forward declarations
+		class cPnt;//forward declarations
+		class cLine;//forward declarations
+		class cLineSeg;//forward declarations
 
-	public:
+		class cVec {
 
-		double x = 0.0;
-		double y = 0.0;
-		double z = 0.0;
+		public:
 
-		cVec() {};
+			double x = 0.0;
+			double y = 0.0;
+			double z = 0.0;
 
-		cVec(const double& xo, const double& yo, const double& zo) {
-			x = xo; y = yo; z = zo;
-		}
+			cVec() {};
 
-		cVec(const std::vector<double>& v) {
-			assert(v.size() == 3);
-			x = v[0]; y = v[1]; z = v[2];
-		}
+			cVec(const double& xo, const double& yo, const double& zo) {
+				x = xo; y = yo; z = zo;
+			}
 
-		//void set(double xo, double yo, double zo) { x = xo; y = yo; z = zo; }
+			cVec(const std::vector<double>& v) {
+				assert(v.size() == 3);
+				x = v[0]; y = v[1]; z = v[2];
+			}
 
-		cVec& operator=(const double& a) {
-			x = a; y = a; z = a;
-			return *this;
-		}
+			//void set(double xo, double yo, double zo) { x = xo; y = yo; z = zo; }
 
-		cVec& operator=(const cVec& v) {
-			x = v.x; y = v.y; z = v.z;
-			return *this;
-		}
+			cVec& operator=(const double& a) {
+				x = a; y = a; z = a;
+				return *this;
+			}
 
-		cVec& operator=(const std::vector<double>& v) {
-			assert(v.size() == 3);
-			x = v[0]; y = v[1]; z = v[2];
-			return *this;
-		}
+			cVec& operator=(const cVec& v) {
+				x = v.x; y = v.y; z = v.z;
+				return *this;
+			}
 
-		cVec& operator+=(const cVec& v) {
-			x += v.x; y += v.y; z += v.z;
-			return *this;
-		}
+			cVec& operator=(const std::vector<double>& v) {
+				assert(v.size() == 3);
+				x = v[0]; y = v[1]; z = v[2];
+				return *this;
+			}
 
-		cVec& operator-=(const cVec& v) {
-			x -= v.x; y -= v.y; z -= v.z;
-			return *this;
-		}
+			cVec& operator+=(const cVec& v) {
+				x += v.x; y += v.y; z += v.z;
+				return *this;
+			}
 
-		cVec& operator*=(const cVec& v) {
-			x *= v.x; y *= v.y; z *= v.z;
-			return *this;
-		}
+			cVec& operator-=(const cVec& v) {
+				x -= v.x; y -= v.y; z -= v.z;
+				return *this;
+			}
 
-		cVec& operator/=(const cVec& v) {
-			x /= v.x; y /= v.y; z /= v.z;
-			return *this;
-		}
+			cVec& operator*=(const cVec& v) {
+				x *= v.x; y *= v.y; z *= v.z;
+				return *this;
+			}
 
-		cVec& operator*=(const double& s) {
-			x *= s; y *= s; z *= s;
-			return *this;
-		}
+			cVec& operator/=(const cVec& v) {
+				x /= v.x; y /= v.y; z /= v.z;
+				return *this;
+			}
 
-		cVec& operator/=(const double& s) {
-			x /= s; y /= s; z /= s;
-			return *this;
-		}
+			cVec& operator*=(const double& s) {
+				x *= s; y *= s; z *= s;
+				return *this;
+			}
 
-		cVec operator+(const cVec& a) {
-			return cVec(x + a.x, y + a.y, z + a.z);
-		}
+			cVec& operator/=(const double& s) {
+				x /= s; y /= s; z /= s;
+				return *this;
+			}
 
-		cVec operator-(const cVec& a) {
-			return cVec(x - a.x, y - a.y, z - a.z);
-		}
+			cVec operator+(const cVec& a) {
+				return cVec(x + a.x, y + a.y, z + a.z);
+			}
 
-		cVec operator*(const cVec& a) {
-			return cVec(x * a.x, y * a.y, z * a.z);
-		}
+			cVec operator-(const cVec& a) {
+				return cVec(x - a.x, y - a.y, z - a.z);
+			}
 
-		cVec operator/(const cVec& a) {
-			return cVec(x / a.x, y / a.y, z / a.z);
-		}
+			cVec operator*(const cVec& a) {
+				return cVec(x * a.x, y * a.y, z * a.z);
+			}
 
-		cVec operator-() {
-			return cVec(-x, -y, -z);
-		}
+			cVec operator/(const cVec& a) {
+				return cVec(x / a.x, y / a.y, z / a.z);
+			}
 
-		friend cVec operator+(const cVec& a, const cVec& b) { return cVec(a.x + b.x, a.y + b.y, a.z + b.z); }
+			cVec operator-() {
+				return cVec(-x, -y, -z);
+			}
 
-		friend cVec operator-(const cVec& a, const cVec& b) { return cVec(a.x - b.x, a.y - b.y, a.z - b.z); }
+			friend cVec operator+(const cVec& a, const cVec& b) { return cVec(a.x + b.x, a.y + b.y, a.z + b.z); }
 
-		friend cVec operator*(const cVec& v, double s) { return cVec(v.x * s, v.y * s, v.z * s); }
+			friend cVec operator-(const cVec& a, const cVec& b) { return cVec(a.x - b.x, a.y - b.y, a.z - b.z); }
 
-		friend cVec operator*(const double& s, const cVec& v) { return cVec(v.x * s, v.y * s, v.z * s); }
+			friend cVec operator*(const cVec& v, double s) { return cVec(v.x * s, v.y * s, v.z * s); }
 
-		friend cVec operator/(const cVec& v, double s) { return cVec(v.x / s, v.y / s, v.z / s); }
+			friend cVec operator*(const double& s, const cVec& v) { return cVec(v.x * s, v.y * s, v.z * s); }
 
-		friend cVec operator/(const double& s, const cVec& v) { return cVec(v.x / s, v.y / s, v.z / s); }
+			friend cVec operator/(const cVec& v, double s) { return cVec(v.x / s, v.y / s, v.z / s); }
 
-		int operator==(const cVec& a) const
-		{
-			if (fabs(x - a.x) < DBL_EPSILON && fabs(y - a.y) < DBL_EPSILON && fabs(z - a.z) < DBL_EPSILON)return 1;
-			else return 0;
-		}
+			friend cVec operator/(const double& s, const cVec& v) { return cVec(v.x / s, v.y / s, v.z / s); }
 
-		int operator!=(const cVec& a) const
-		{
-			if (*this == a) return 0;
-			else return 1;
-		}
+			int operator==(const cVec& a) const
+			{
+				if (fabs(x - a.x) < DBL_EPSILON && fabs(y - a.y) < DBL_EPSILON && fabs(z - a.z) < DBL_EPSILON)return 1;
+				else return 0;
+			}
 
-		void rotate_inplace(const double& angle, const cVec& axis) {
-			if (angle == 0.0) return;
+			int operator!=(const cVec& a) const
+			{
+				if (*this == a) return 0;
+				else return 1;
+			}
 
-			cVec a = axis.unit();
-			double cosangle = cos(angle * D2R<double>);
-			double sinangle = sin(angle * D2R<double>);
+			void rotate_inplace(const double& angle, const cVec& axis) {
+				if (angle == 0.0) return;
 
-			double xx = a.x * a.x;   double yy = a.y * a.y;   double zz = a.z * a.z;
-			double xy = a.x * a.y;   double xz = a.x * a.z;   double yz = a.y * a.z;
+				cVec a = axis.unit();
+				double cosangle = cos(angle * D2R<double>);
+				double sinangle = sin(angle * D2R<double>);
 
-			double mat[9];
+				double xx = a.x * a.x;   double yy = a.y * a.y;   double zz = a.z * a.z;
+				double xy = a.x * a.y;   double xz = a.x * a.z;   double yz = a.y * a.z;
 
-			double oneminuscosangle = (1.0 - cosangle);
+				double mat[9];
 
-			mat[0] = xx + cosangle * (1 - xx);
-			mat[4] = yy + cosangle * (1 - yy);
-			mat[8] = zz + cosangle * (1 - zz);
+				double oneminuscosangle = (1.0 - cosangle);
 
-			mat[1] = xy * oneminuscosangle - a.z * sinangle;
-			mat[3] = xy * oneminuscosangle + a.z * sinangle;
+				mat[0] = xx + cosangle * (1 - xx);
+				mat[4] = yy + cosangle * (1 - yy);
+				mat[8] = zz + cosangle * (1 - zz);
 
-			mat[2] = xz * oneminuscosangle + a.y * sinangle;
-			mat[6] = xz * oneminuscosangle - a.y * sinangle;
+				mat[1] = xy * oneminuscosangle - a.z * sinangle;
+				mat[3] = xy * oneminuscosangle + a.z * sinangle;
 
-			mat[5] = yz * oneminuscosangle - a.x * sinangle;
-			mat[7] = yz * oneminuscosangle + a.x * sinangle;
+				mat[2] = xz * oneminuscosangle + a.y * sinangle;
+				mat[6] = xz * oneminuscosangle - a.y * sinangle;
 
-			const double u = mat[0] * x + mat[1] * y + mat[2] * z;
-			const double v = mat[3] * x + mat[4] * y + mat[5] * z;
-			const double w = mat[6] * x + mat[7] * y + mat[8] * z;
+				mat[5] = yz * oneminuscosangle - a.x * sinangle;
+				mat[7] = yz * oneminuscosangle + a.x * sinangle;
 
-			x = u;
-			y = v;
-			z = w;
+				const double u = mat[0] * x + mat[1] * y + mat[2] * z;
+				const double v = mat[3] * x + mat[4] * y + mat[5] * z;
+				const double w = mat[6] * x + mat[7] * y + mat[8] * z;
 
-		}
+				x = u;
+				y = v;
+				z = w;
 
-		cVec rotate(const double& angle, const cVec& axis) const {
-			cVec v(*this);
-			v.rotate_inplace(angle, axis);
-			return v;
-		}
-
-		double norm_squared() const {
-			return x * x + y * y + z * z;
-		}
-
-		double norm() const {
-			return std::sqrt(x * x + y * y + z * z);
-			//return std::hypot(x, y, z);
-		}
+			}
 
-		double norm2n(const double& power) const {
-			return std::pow(x * x + y * y + z * z, 0.5 * power);
-		}
+			cVec rotate(const double& angle, const cVec& axis) const {
+				cVec v(*this);
+				v.rotate_inplace(angle, axis);
+				return v;
+			}
 
-		void unitise() {
-			const double len = norm();
-			x /= len; y /= len; z /= len;
-		}
+			double norm_squared() const {
+				return x * x + y * y + z * z;
+			}
 
-		cVec unit() const {
-			cVec v(*this);
-			v.unitise();
-			return v;
-		}
+			double norm() const {
+				return std::sqrt(x * x + y * y + z * z);
+				//return std::hypot(x, y, z);
+			}
 
-		double dot(const cVec& v) const {
-			return v.x * x + v.y * y + v.z * z;
-		}
+			double norm2n(const double& power) const {
+				return std::pow(x * x + y * y + z * z, 0.5 * power);
+			}
 
-		friend double dot(const cVec& a, const cVec& b) {
-			return a.dot(b);
-		}
+			void unitise() {
+				const double len = norm();
+				x /= len; y /= len; z /= len;
+			}
 
-		cVec cross(const cVec& b) const {
-			cVec c;//c = a x b (a is this cVec)
-			c.x = y * b.z - b.y * z;
-			c.y = z * b.x - b.z * x;
-			c.z = x * b.y - b.x * y;
-			return c;
-		}
-
-		friend cVec cross(const cVec& a, const cVec& b) {
-			return a.cross(b);
-		}
-
-		friend std::ostream& operator<<(std::ostream& os, cVec& v) {
-			os << v.x << std::endl << v.y << std::endl << v.z;
-			return os;
-		}
-	};
-
-	class cPnt : public cVec {
-
-	public:
-
-		cPnt() : cVec(0.0, 0.0, 0.0) {}
-
-		cPnt(const cVec& v) : cVec(v) {}
-
-		cPnt(const double& xo, const double& yo, const double& zo) : cVec(xo, yo, zo) {}
-
-		cPnt(const std::vector<double>& v) {
-			x = v[0]; y = v[1]; z = v[2];
-		}
-
-		cPnt& operator=(const std::vector<double>& v)
-		{
-			x = v[0]; y = v[1]; z = v[2];
-			return *this;
-		}
-
-		cPnt& operator=(const cVec& v) {
-			x = v.x; y = v.y; z = v.z;
-			return *this;
-		}
-
-		cPnt operator+(const cVec& a) {
-			return cPnt(x + a.x, y + a.y, z + a.z);
-		}
-
-		cPnt operator-(const cVec& a) {
-			return cPnt(x - a.x, y - a.y, z - a.z);
-		}
-
-		double distance(const cPnt& p) const
-		{
-			const double dx = p.x - x;
-			const double dy = p.y - y;
-			const double dz = p.z - z;
-			return std::sqrt(dx * dx + dy * dy + dz * dz);
-		}
-
-		static cVec unitnormal(const cPnt& p1, const cPnt& p2, const cPnt& p3)
-		{
-			//p1 p2 p3 are counter clockwise
-			//about the returned normal
-			cVec a = p2 - p1;
-			cVec b = p3 - p2;
-			cVec n = a.cross(b);
-			n.unitise();
-			return n;
-		}
-
-	};
-
-	class cLine {
-
-	protected:
-
-		cVec PLL;
-		cPnt PNT;
-
-	public:
-
-		cLine(const cPnt& p, const cPnt& q) {
-			PLL = (p - q).unit();
-			PNT = p;
-		}
-
-		cLine(const cVec& v, const cPnt& p) {
-			PLL = v.unit();
-			PNT = p;
-		}
-		cLine() { PLL = cVec(); PNT = cPnt(); }
-
-		const cVec pll() const { return PLL; }
-		const cPnt pnt() const { return PNT; }
-
-		void setpll(const cVec& v) { PLL = v.unit(); }
-		void setpnt(const cPnt& p) { PNT = p; }
-		void set(const cVec& v, const cPnt& p) { PLL = v.unit(); PNT = p; }
-
-		int operator==(const cLine& m) const
-		{
-			if (PLL == m.PLL) {
-				cVec v = PNT - m.PNT;
+			cVec unit() const {
+				cVec v(*this);
 				v.unitise();
-				if (PLL == v || PLL == -v) return 1;
+				return v;
 			}
-			return 0;
-		}
 
-		int operator!=(const cLine& m)
-		{
-			if (*this == m) return 0;
-			else return 1;
-		}
+			double dot(const cVec& v) const {
+				return v.x * x + v.y * y + v.z * z;
+			}
 
-		inline cLine operator=(const cLine& m)
-		{
-			PLL = m.PLL;
-			PNT = m.PNT;
-			return *this;
-		}
+			friend double dot(const cVec& a, const cVec& b) {
+				return a.dot(b);
+			}
 
-		double distance(const cPnt& p) const
-		{
-			cVec v = PLL.cross(p - PNT);
-			return v.norm();
-		}
+			cVec cross(const cVec& b) const {
+				cVec c;//c = a x b (a is this cVec)
+				c.x = y * b.z - b.y * z;
+				c.y = z * b.x - b.z * x;
+				c.z = x * b.y - b.x * y;
+				return c;
+			}
 
-		double distance(const cLine& n) const
-		{
-			cVec w = PNT - n.PNT;
-			if (w.norm() < DBL_EPSILON) return 0;
-			cVec v = n.PLL.cross(PLL);
-			if (v.norm() < DBL_EPSILON) return n.distance(PNT);
-			return fabs(w.dot(v)) / v.norm();
-		}
+			friend cVec cross(const cVec& a, const cVec& b) {
+				return a.cross(b);
+			}
 
-		cPnt closestpointonline(const cPnt& p)
-		{
-			double s = PLL.dot(p - PNT);
-			return PNT + s * PLL;
-		}
+			friend std::ostream& operator<<(std::ostream& os, cVec& v) {
+				os << v.x << std::endl << v.y << std::endl << v.z;
+				return os;
+			}
+		};
 
-		int online(const cPnt& p)
-		{
-			if (p == PNT) return 1;
-			cVec a = p - PNT;
-			a.unitise();
-			if (PLL == a || PLL == -a) return 1;
-			else return 0;
-		}
+		class cPnt : public cVec {
 
-		static int closestpoints(const cLine& m, const cLine& n, cPnt& p, cPnt& q)
-		{
-			const double AD = m.PNT.dot(n.PLL);
-			const double AB = m.PNT.dot(m.PLL);
-			const double BC = m.PLL.dot(n.PNT);
-			const double BD = m.PLL.dot(n.PLL);
-			const double CD = n.PNT.dot(n.PLL);
+		public:
 
-			if ((BD * BD - 1.0) < DBL_EPSILON)return 0;
+			cPnt() : cVec(0.0, 0.0, 0.0) {}
 
-			double t = (AD - AB * BD + BC * BD - CD) / (1.0 - BD * BD);
-			q = n.PNT + t * n.PLL;
-			double s = -1.0 * m.PLL.dot(m.PNT - q);
-			p = m.PNT + s * m.PLL;
+			cPnt(const cVec& v) : cVec(v) {}
 
-			return 1;
-		}
+			cPnt(const double& xo, const double& yo, const double& zo) : cVec(xo, yo, zo) {}
+
+			cPnt(const std::vector<double>& v) {
+				x = v[0]; y = v[1]; z = v[2];
+			}
+
+			cPnt& operator=(const std::vector<double>& v)
+			{
+				x = v[0]; y = v[1]; z = v[2];
+				return *this;
+			}
+
+			cPnt& operator=(const cVec& v) {
+				x = v.x; y = v.y; z = v.z;
+				return *this;
+			}
+
+			cPnt operator+(const cVec& a) {
+				return cPnt(x + a.x, y + a.y, z + a.z);
+			}
+
+			cPnt operator-(const cVec& a) {
+				return cPnt(x - a.x, y - a.y, z - a.z);
+			}
+
+			double distance(const cPnt& p) const
+			{
+				const double dx = p.x - x;
+				const double dy = p.y - y;
+				const double dz = p.z - z;
+				return std::sqrt(dx * dx + dy * dy + dz * dz);
+			}
+
+			static cVec unitnormal(const cPnt& p1, const cPnt& p2, const cPnt& p3)
+			{
+				//p1 p2 p3 are counter clockwise
+				//about the returned normal
+				cVec a = p2 - p1;
+				cVec b = p3 - p2;
+				cVec n = a.cross(b);
+				n.unitise();
+				return n;
+			}
+
+		};
+
+		class cLine {
+
+		protected:
+
+			cVec PLL;
+			cPnt PNT;
+
+		public:
+
+			cLine(const cPnt& p, const cPnt& q) {
+				PLL = (p - q).unit();
+				PNT = p;
+			}
+
+			cLine(const cVec& v, const cPnt& p) {
+				PLL = v.unit();
+				PNT = p;
+			}
+			cLine() { PLL = cVec(); PNT = cPnt(); }
+
+			const cVec pll() const { return PLL; }
+			const cPnt pnt() const { return PNT; }
+
+			void setpll(const cVec& v) { PLL = v.unit(); }
+			void setpnt(const cPnt& p) { PNT = p; }
+			void set(const cVec& v, const cPnt& p) { PLL = v.unit(); PNT = p; }
+
+			int operator==(const cLine& m) const
+			{
+				if (PLL == m.PLL) {
+					cVec v = PNT - m.PNT;
+					v.unitise();
+					if (PLL == v || PLL == -v) return 1;
+				}
+				return 0;
+			}
+
+			int operator!=(const cLine& m)
+			{
+				if (*this == m) return 0;
+				else return 1;
+			}
+
+			inline cLine operator=(const cLine& m)
+			{
+				PLL = m.PLL;
+				PNT = m.PNT;
+				return *this;
+			}
+
+			double distance(const cPnt& p) const
+			{
+				cVec v = PLL.cross(p - PNT);
+				return v.norm();
+			}
+
+			double distance(const cLine& n) const
+			{
+				cVec w = PNT - n.PNT;
+				if (w.norm() < DBL_EPSILON) return 0;
+				cVec v = n.PLL.cross(PLL);
+				if (v.norm() < DBL_EPSILON) return n.distance(PNT);
+				return fabs(w.dot(v)) / v.norm();
+			}
+
+			cPnt closestpointonline(const cPnt& p)
+			{
+				double s = PLL.dot(p - PNT);
+				return PNT + s * PLL;
+			}
+
+			int online(const cPnt& p)
+			{
+				if (p == PNT) return 1;
+				cVec a = p - PNT;
+				a.unitise();
+				if (PLL == a || PLL == -a) return 1;
+				else return 0;
+			}
+
+			static int closestpoints(const cLine& m, const cLine& n, cPnt& p, cPnt& q)
+			{
+				const double AD = m.PNT.dot(n.PLL);
+				const double AB = m.PNT.dot(m.PLL);
+				const double BC = m.PLL.dot(n.PNT);
+				const double BD = m.PLL.dot(n.PLL);
+				const double CD = n.PNT.dot(n.PLL);
+
+				if ((BD * BD - 1.0) < DBL_EPSILON)return 0;
+
+				double t = (AD - AB * BD + BC * BD - CD) / (1.0 - BD * BD);
+				q = n.PNT + t * n.PLL;
+				double s = -1.0 * m.PLL.dot(m.PNT - q);
+				p = m.PNT + s * m.PLL;
+
+				return 1;
+			}
+		};
+
+		class cLineSeg {
+
+		protected:
+
+			cPnt P;
+			cPnt Q;
+
+		public:
+
+			cLineSeg() {
+				P = cPnt();
+				Q = cPnt();
+			}
+
+			cLineSeg(const cPnt& p, const cPnt& q) {
+				P = p;
+				Q = q;
+			}
+
+			const cPnt p() const { return P; }
+			const cPnt q() const { return Q; }
+
+			void setp(const cPnt& p) { P = p; }
+			void setq(const cPnt& q) { Q = q; }
+			void set(const cPnt& p, cPnt& q) { P = p; Q = q; }
+
+			cPnt closestpoint(const cPnt& pnt)
+			{
+				cLine m(P, Q);
+				cPnt c = m.closestpointonline(pnt);
+
+				double dx = std::fabs(P.x - Q.x);
+				double dy = std::fabs(P.y - Q.y);
+
+				if (dx > dy) {
+					if (c.x < P.x && c.x < Q.x) {}
+					else if (c.x > P.x && c.x > Q.x) {}
+					else return c;
+				}
+				else if (dx < dy) {
+					if (c.y < P.y && c.y < Q.y) {}
+					else if (c.y > P.y && c.y > Q.y) {}
+					else return c;
+				}
+
+				double dp = pnt.distance(P);
+				double dq = pnt.distance(Q);
+
+				if (dp < dq)return P;
+				else return Q;
+			}
+		};
+
+		const cVec xaxis(1.0, 0.0, 0.0);
+		const cVec yaxis(0.0, 1.0, 0.0);
+		const cVec zaxis(0.0, 0.0, 1.0);
+
 	};
-
-	class cLineSeg {
-
-	protected:
-
-		cPnt P;
-		cPnt Q;
-
-	public:
-
-		cLineSeg() {
-			P = cPnt();
-			Q = cPnt();
-		}
-
-		cLineSeg(const cPnt& p, const cPnt& q) {
-			P = p;
-			Q = q;
-		}
-
-		const cPnt p() const { return P; }
-		const cPnt q() const { return Q; }
-
-		void setp(const cPnt& p) { P = p; }
-		void setq(const cPnt& q) { Q = q; }
-		void set(const cPnt& p, cPnt& q) { P = p; Q = q; }
-
-		cPnt closestpoint(const cPnt& pnt)
-		{
-			cLine m(P, Q);
-			cPnt c = m.closestpointonline(pnt);
-
-			double dx = std::fabs(P.x - Q.x);
-			double dy = std::fabs(P.y - Q.y);
-
-			if (dx > dy) {
-				if (c.x < P.x && c.x < Q.x) {}
-				else if (c.x > P.x && c.x > Q.x) {}
-				else return c;
-			}
-			else if (dx < dy) {
-				if (c.y < P.y && c.y < Q.y) {}
-				else if (c.y > P.y && c.y > Q.y) {}
-				else return c;
-			}
-
-			double dp = pnt.distance(P);
-			double dq = pnt.distance(Q);
-
-			if (dp < dq)return P;
-			else return Q;
-		}
-	};
-
-	const cVec xaxis(1.0, 0.0, 0.0);
-	const cVec yaxis(0.0, 1.0, 0.0);
-	const cVec zaxis(0.0, 0.0, 1.0);
-
 };
+
