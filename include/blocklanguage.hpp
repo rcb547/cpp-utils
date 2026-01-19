@@ -17,6 +17,7 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <filesystem>
 
 namespace CppUtils {
 
@@ -46,7 +47,7 @@ namespace CppUtils {
 
 		cBlock() {}
 
-		cBlock(const fs::path& filepath) {
+		cBlock(const std::filesystem::path& filepath) {
 			loadfromfile(filepath);
 		}
 
@@ -55,10 +56,10 @@ namespace CppUtils {
 			return false;
 		}
 
-		void loadfromfile(const fs::path& filepath)
+		void loadfromfile(const std::filesystem::path& filepath)
 		{
-			Filename = fs::path(filepath).make_preferred().string();
-			if (fs::exists(Filename) == false) {
+			Filename = std::filesystem::path(filepath).make_preferred().string();
+			if (std::filesystem::exists(Filename) == false) {
 				glog.errormsg(_SRC_, "Could not open file: %s\n", Filename.c_str());
 			}
 			std::ifstream ifs = fileopen(Filename);
@@ -485,10 +486,10 @@ namespace CppUtils {
 			return true;
 		}
 
-		bool getvalue(const std::string key, fs::path& value) const {
+		bool getvalue(const std::string key, std::filesystem::path& value) const {
 			std::string v;
 			if (getvalue(key, v)) {
-				value = fs::path(v);
+				value = std::filesystem::path(v);
 				value.make_preferred();
 				return true;
 			}

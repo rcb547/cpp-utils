@@ -8,19 +8,19 @@
 #include <streambuf>
 
 namespace CppUtils {
-	class cStreamRedirecter {
+	class StreamRedirecter {
 	public:
-		cStreamRedirecter(std::ostream& dst, std::ostream& src)
+		StreamRedirecter(std::ostream& dst, std::ostream& src)
 			: src(src), sbuf(src.rdbuf(dst.rdbuf())) {
 		}
 
-		~cStreamRedirecter() { src.rdbuf(sbuf); }
+		~StreamRedirecter() { src.rdbuf(sbuf); }
 	private:
 
 		std::ostream& src;
 		std::streambuf* sbuf;
 		// Prevent copying.
-		cStreamRedirecter(const cStreamRedirecter&) = delete;
-		cStreamRedirecter& operator=(const cStreamRedirecter&) = delete;
+		StreamRedirecter(const StreamRedirecter&) = delete;
+		StreamRedirecter& operator=(const StreamRedirecter&) = delete;
 	};
 };

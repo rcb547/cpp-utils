@@ -25,24 +25,25 @@ Author: Ross C. Brodie, Geoscience Australia.
 #include <numeric>
 
 namespace CppUtils {
-	namespace fs = std::filesystem;
+	//namespace fs = std::filesystem;
+	using namespace std::filesystem;
 
 	inline char pathseparator() {
-		char c = fs::path::preferred_separator;
+		char c = std::filesystem::path::preferred_separator;
 		return c;
 	};
 
 	inline std::string pathseparatorstring() {
-		return (fs::path("") += fs::path::preferred_separator).string();
+		return (std::filesystem::path("") += std::filesystem::path::preferred_separator).string();
 	};
 
 	inline void fixseparator(std::string& path) {
-		fs::path p(path);
+		std::filesystem::path p(path);
 		path = p.make_preferred().string();;
 	}
 
 	inline std::string fixseparator(const std::string& path) {
-		fs::path p(path);
+		std::filesystem::path p(path);
 		return p.make_preferred().string();
 	};
 
@@ -57,11 +58,11 @@ namespace CppUtils {
 		}
 	};
 
-	inline void remove_trailing_separator(fs::path& path)
+	inline void remove_trailing_separator(std::filesystem::path& path)
 	{
 		std::string s = path.string();
 		remove_trailing_separator(s);
-		path = fs::path(s);
+		path = std::filesystem::path(s);
 	};
 
 	inline void add_trailing_separator(std::string& path)
@@ -71,40 +72,40 @@ namespace CppUtils {
 		path += pathseparatorstring();
 	};
 
-	inline fs::path append_extension(const fs::path& path, const fs::path& extension)
+	inline std::filesystem::path append_extension(const std::filesystem::path& path, const std::filesystem::path& extension)
 	{
-		fs::path p(path);
+		std::filesystem::path p(path);
 		p += extension;
 		return p;
 	};
 
-	inline fs::path change_extension(const fs::path& path, const std::string& new_extension)
+	inline std::filesystem::path change_extension(const std::filesystem::path& path, const std::string& new_extension)
 	{
-		return fs::path(path).replace_extension(new_extension);
+		return std::filesystem::path(path).replace_extension(new_extension);
 	};
 
-	inline bool makedirectory(const fs::path& dirname)
+	inline bool makedirectory(const std::filesystem::path& dirname)
 	{
 		if (dirname.string().size() == 0) return true;
-		if (fs::exists(dirname)) return true;
+		if (std::filesystem::exists(dirname)) return true;
 
 		std::string p = dirname.string();
 		remove_trailing_separator(p);
 
-		fs::path dpath = fs::path(p).make_preferred();
-		if (fs::exists(dpath)) return true;
+		std::filesystem::path dpath = std::filesystem::path(p).make_preferred();
+		if (std::filesystem::exists(dpath)) return true;
 
 		std::error_code ec;
-		bool status = fs::create_directories(dpath, ec);
+		bool status = std::filesystem::create_directories(dpath, ec);
 		if (status == false) {
 			glog.warningmsg(_SRC_, "Could not create directory %s (%s)\n", dpath.string().c_str(), ec.message().c_str());
 		}
 		return status;
 	}
 
-	inline bool makedirectory_for(const fs::path& deeppath) {
+	inline bool makedirectory_for(const std::filesystem::path& deeppath) {
 		//deeppath can be directory or file
-		fs::path p = deeppath;
+		std::filesystem::path p = deeppath;
 		p.make_preferred();
 		bool status = makedirectory(p.parent_path());
 		if (status == false) {
@@ -114,8 +115,8 @@ namespace CppUtils {
 	};
 
 	// Chexks for existence and open failure
-	inline std::ifstream ifstream_ex(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::in) {
-		fs::path fpath = fs::path(filepath).make_preferred();
+	inline std::ifstream ifstream_ex(const std::filesystem::path filepath, const std::ios_base::openmode mode = std::ios_base::in) {
+		std::filesystem::path fpath = std::filesystem::path(filepath).make_preferred();
 		std::ifstream ifs(fpath, mode);
 		if (ifs.fail()) {
 			std::string errstr = std::strerror(errno);
@@ -125,8 +126,8 @@ namespace CppUtils {
 	};
 
 	// Chexks for existence and open failure
-	inline std::ifstream fileopen(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::in) {
-		fs::path fpath = fs::path(filepath).make_preferred();
+	inline std::ifstream fileopen(const std::filesystem::path filepath, const std::ios_base::openmode mode = std::ios_base::in) {
+		std::filesystem::path fpath = std::filesystem::path(filepath).make_preferred();
 		std::ifstream ifs(fpath, mode);
 		if (ifs.fail()) {
 			std::string errstr = std::strerror(errno);
@@ -136,8 +137,8 @@ namespace CppUtils {
 	};
 
 	// Chexks for open failure
-	inline std::ofstream ofstream_ex(const fs::path filepath, const std::ios_base::openmode mode = std::ios_base::out) {
-		fs::path fpath = fs::path(filepath).make_preferred();
+	inline std::ofstream ofstream_ex(const std::filesystem::path filepath, const std::ios_base::openmode mode = std::ios_base::out) {
+		std::filesystem::path fpath = std::filesystem::path(filepath).make_preferred();
 		bool status = makedirectory_for(fpath);
 		if (status == false) {
 			glog.errormsg(_SRC_, "Unable to create directory for file %s\n", fpath.string().c_str());
@@ -153,7 +154,7 @@ namespace CppUtils {
 
 	inline std::string getcurrentdirectory()
 	{
-		return fs::current_path().string();
+		return std::filesystem::current_path().string();
 	};
 
 	class FilePathParts {
@@ -165,54 +166,54 @@ namespace CppUtils {
 
 		FilePathParts() = delete;
 
-		FilePathParts(const fs::path filepath) {
-			fs::path p = filepath;
+		FilePathParts(const std::filesystem::path filepath) {
+			std::filesystem::path p = filepath;
 			p.make_preferred();
-			directory = (p.parent_path() += fs::path::preferred_separator).string();
+			directory = (p.parent_path() += std::filesystem::path::preferred_separator).string();
 			stem = p.stem().string();
 			extension = p.extension().string();
 		};
 
 		//FilePathParts(const std::string& filepath) {
-		//	fs::path p = filepath;
+		//	std::filesystem::path p = filepath;
 		//	p.make_preferred();
-		//	directory = (p.parent_path() += fs::path::preferred_separator).string();
+		//	directory = (p.parent_path() += std::filesystem::path::preferred_separator).string();
 		//	stem = p.stem().string();
 		//	extension = p.extension().string();
 		//};
 	};
 
 	inline std::string extractfiledirectory_nosep(const std::string& pathname) {
-		fs::path p = fs::path(pathname).make_preferred();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
 		return p.parent_path().string();
 	}
 
 	inline std::string extractfiledirectory(const std::string& pathname) {
-		fs::path p = fs::path(pathname).make_preferred();
-		return (p.parent_path() += fs::path::preferred_separator).string();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
+		return (p.parent_path() += std::filesystem::path::preferred_separator).string();
 	}
 
 	inline std::string extractfilepath_noextension(const std::string& pathname)
 	{
-		fs::path p = fs::path(pathname).make_preferred();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
 		return p.replace_extension().string();
 	}
 
 	inline std::string extractfilename(const std::string& pathname)
 	{
-		fs::path p = fs::path(pathname).make_preferred();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
 		return p.filename().string();
 	};
 
 	inline std::string extractfilestem(const std::string& pathname)
 	{
-		fs::path p = fs::path(pathname).make_preferred();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
 		return p.stem().string();
 	};
 
 	inline std::string extractfileextension(const std::string& pathname)
 	{
-		fs::path p = fs::path(pathname).make_preferred();
+		std::filesystem::path p = std::filesystem::path(pathname).make_preferred();
 		return p.filename().extension().string();
 	};
 
@@ -222,7 +223,7 @@ namespace CppUtils {
 		return fpp.directory + insertion + fpp.stem + fpp.extension;
 	};
 
-	inline fs::path insert_after_filename(const fs::path& pathname, const std::string& insertion) {
+	inline std::filesystem::path insert_after_filename(const std::filesystem::path& pathname, const std::string& insertion) {
 		FilePathParts fpp(pathname);
 		return fpp.directory + fpp.stem + insertion + fpp.extension;
 	};
@@ -261,8 +262,8 @@ namespace CppUtils {
 			std::regex match_regex(regex_pattern);
 
 			std::vector<std::string> pathlist;
-			auto it = fs::directory_iterator(basepathname);
-			for (fs::directory_entry const& de : it) {
+			auto it = std::filesystem::directory_iterator(basepathname);
+			for (std::filesystem::directory_entry const& de : it) {
 				if (de.is_regular_file()) {
 					const std::string filename = de.path().filename().string();
 					if (std::regex_match(filename, match_regex)) {
@@ -288,8 +289,8 @@ namespace CppUtils {
 
 		static std::vector<std::string> getfilelist(const std::string& pathname) {
 			std::vector<std::string> pathlist;
-			auto it = fs::directory_iterator(fs::path(pathname).make_preferred());
-			for (fs::directory_entry const& de : it) {
+			auto it = std::filesystem::directory_iterator(std::filesystem::path(pathname).make_preferred());
+			for (std::filesystem::directory_entry const& de : it) {
 				if (de.is_regular_file()) {
 					const std::string pathname = de.path().string();
 					pathlist.push_back(pathname);
@@ -301,8 +302,8 @@ namespace CppUtils {
 		static std::vector<std::string> getfilelist(const std::string& pathname, std::string extension) {
 			if (extension[0] != '.') extension = "." + extension;
 			std::vector<std::string> pathlist;
-			auto it = fs::directory_iterator(fs::path(pathname).make_preferred());
-			for (fs::directory_entry const& de : it) {
+			auto it = std::filesystem::directory_iterator(std::filesystem::path(pathname).make_preferred());
+			for (std::filesystem::directory_entry const& de : it) {
 				if (de.is_regular_file() && de.path().has_extension()) {
 					const std::string e = de.path().extension().string();
 					if (extension == de.path().extension().string()) {
@@ -315,8 +316,8 @@ namespace CppUtils {
 
 		static std::vector<std::string> getfilelist_recursive(const std::string& pathname) {
 			std::vector<std::string> pathlist;
-			fs::directory_options options = fs::directory_options::skip_permission_denied;
-			auto it = fs::recursive_directory_iterator(fs::path(pathname).make_preferred(), options);
+			std::filesystem::directory_options options = std::filesystem::directory_options::skip_permission_denied;
+			auto it = std::filesystem::recursive_directory_iterator(std::filesystem::path(pathname).make_preferred(), options);
 			for (auto const& de : it) {
 				std::cout << de.path().string() << std::endl;
 				if (de.is_regular_file()) {
@@ -330,8 +331,8 @@ namespace CppUtils {
 		static std::vector<std::string> getfilelist_recursive(const std::string& pathname, std::string extension) {
 			if (extension[0] != '.') extension = "." + extension;
 			std::vector<std::string> pathlist;
-			fs::directory_options options = fs::directory_options::skip_permission_denied;
-			auto it = fs::recursive_directory_iterator(fs::path(pathname).make_preferred(), options);
+			std::filesystem::directory_options options = std::filesystem::directory_options::skip_permission_denied;
+			auto it = std::filesystem::recursive_directory_iterator(std::filesystem::path(pathname).make_preferred(), options);
 			for (auto const& de : it) {
 				std::cout << de.path().string() << std::endl;
 				if (de.is_regular_file()) {
@@ -363,7 +364,7 @@ namespace CppUtils {
 		std::vector<std::uintmax_t> filesize(n);
 
 		for (size_t i = 0; i < n; i++) {
-			filesize[i] = fs::file_size(filelist[i].c_str());
+			filesize[i] = std::filesystem::file_size(filelist[i].c_str());
 		}
 		std::vector<size_t> indices;
 		if (ascending == true)indices = sort_indices(filesize, std::less<std::uintmax_t>{});
@@ -382,16 +383,16 @@ namespace CppUtils {
 		else return false;
 	}
 
-	inline std::FILE* fileopen(const fs::path filepath, const std::string mode)
+	inline std::FILE* fileopen(const std::filesystem::path filepath, const std::string mode)
 	{
-		fs::path fpath(filepath);
+		std::filesystem::path fpath(filepath);
 		fpath.make_preferred();
 		if (mode[0] == 'w' || mode[0] == 'a') {
 			bool status = makedirectory_for(fpath);
 			if (status == false) return nullptr;
 		}
 		else if (mode[0] == 'r') {
-			if (fs::exists(fpath) == false) {
+			if (std::filesystem::exists(fpath) == false) {
 				glog.warningmsg(_SRC_, "Unable to open file %s (file does not exist)\n", fpath.string().c_str());
 			}
 		}

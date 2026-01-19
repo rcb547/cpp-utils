@@ -39,7 +39,7 @@ namespace CppUtils {
 		static constexpr int newline = 10;
 		static constexpr int carriagereturn = 13;
 		std::ifstream IFS;
-		fs::path FileName;
+		std::filesystem::path FileName;
 		size_t FileSize = 0;
 		size_t RecordLength = 0;//Length in bytes of records including "\r\n" or "\n"
 		std::string CurrentRecord;
@@ -112,7 +112,7 @@ namespace CppUtils {
 
 		cAsciiColumnFile() {};
 
-		cAsciiColumnFile(const fs::path& filename) {
+		cAsciiColumnFile(const std::filesystem::path& filename) {
 			openfile(filename);
 		};
 
@@ -190,7 +190,7 @@ namespace CppUtils {
 			IFS.seekg(0);
 		}
 
-		bool openfile(const fs::path& datafilename) {
+		bool openfile(const std::filesystem::path& datafilename) {
 			FileName = datafilename;
 			FileName.make_preferred();
 			//Open in binary mode so \r\n does not get converted to \n
@@ -404,7 +404,7 @@ namespace CppUtils {
 			return true;
 		};
 
-		void parse_dfn_header(const fs::path& dfnpath) {
+		void parse_dfn_header(const std::filesystem::path& dfnpath) {
 			cASEGGDF2Header H(dfnpath);
 			fields = H.getfields();
 			ST_string = H.get_ST_string();

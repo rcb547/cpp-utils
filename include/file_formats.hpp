@@ -709,7 +709,7 @@ namespace CppUtils {
 
 	public:
 
-		cASEGGDF2Header(const fs::path& dfnpath) {
+		cASEGGDF2Header(const std::filesystem::path& dfnpath) {
 			valid = read(dfnpath);
 		};
 
@@ -744,7 +744,7 @@ namespace CppUtils {
 			return status;
 		};
 
-		bool read(const fs::path& dfnfile) {
+		bool read(const std::filesystem::path& dfnfile) {
 			std::vector<cAsciiColumnField> _fields;
 			std::string _ST_string;
 			std::string _RT_string;
@@ -757,7 +757,7 @@ namespace CppUtils {
 			return valid;
 		}
 
-		static bool read_static(const fs::path& dfnfile, std::vector<cAsciiColumnField>& _fields, std::string& _ST_string, std::string& _RT_string) {
+		static bool read_static(const std::filesystem::path& dfnfile, std::vector<cAsciiColumnField>& _fields, std::string& _ST_string, std::string& _RT_string) {
 			bool status = false;
 			_fields.clear();
 

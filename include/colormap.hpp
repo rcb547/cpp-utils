@@ -59,7 +59,7 @@ namespace CppUtils {
 		};
 
 		bool load(const std::string s) {
-			if (fs::exists(s)) {
+			if (std::filesystem::exists(s)) {
 				return loadErMapperLUT(s);
 			}
 			return loadbuiltin(s);
@@ -67,7 +67,7 @@ namespace CppUtils {
 
 		bool loadErMapperLUT(const std::string lutfile) {
 
-			if (fs::exists(lutfile) == false)return false;
+			if (std::filesystem::exists(lutfile) == false)return false;
 
 			cBlock B(lutfile);
 			size_t n = B.getsizetvalue("NrEntries");
